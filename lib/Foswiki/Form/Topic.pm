@@ -61,6 +61,32 @@ sub renderForDisplay {
   return $this->SUPER::renderForDisplay($format, $value, $attrs);
 }
 
+sub populateMetaFromQueryData {
+  my ( $this, $query, $meta, $old ) = @_;
+
+  if ( $this->isMultiValued() ) {
+      my @values = $query->param( $this->{name} );
+
+      if ( scalar(@values) == 1 && defined $values[0] ) {
+	  @values = split( /,|%2C/, $values[0] );
+      }
+      my %vset = ();
+      foreach my $val (@values) {
+	  $val ||= '';
+	  $val =~ s/^\s*//o;
+	  $val =~ s/\s*$//o;
+
+	  # skip empty values
+	  $vset{$val} = ( defined $val && $val =~ /\S/ );
+      }
+
+      # populate options first
+      $this->{_options} = [sort keys %vset];
+  }
+
+  return $this->SUPER::populateMetaFromQueryData($query, $meta, $old);
+}
+
 sub getDisplayValue {
   my ($this, $value) = @_;
 
@@ -141,13 +167,25 @@ sub renderForEdit {
   }
   push @htmlData, 'data-width="'.$size.'"';
 
-  my $topicTitle = $this->getTopicTitle($baseWeb, $value);
-  push @htmlData, 'data-value-text="'.$topicTitle.'"';
+  if ($this->isMultiValued) {
+    my @topicTitles = ();
+    foreach my $v (split(/\s*,\s*/, $value)) {
+      push @topicTitles, '"'.$v.'":"'.encode($this->getTopicTitle($baseWeb, $v)).'"';
+    }
+    push @htmlData, "data-value-text='{".join(', ', @topicTitles)."}'";
+  } else {
+    my $topicTitle = encode($this->getTopicTitle($baseWeb, $value));
+    push @htmlData, 'data-value-text="'.$topicTitle.'"';
+  }
 
   while (my ($key, $val) = each %{$this->param()}) {
     next if $key =~ /^(web)$/;
     $key = lc(Foswiki::spaceOutWikiWord($key, "-"));
     push @htmlData, 'data-'.$key.'="'.$val.'"';
+  }
+
+  if ($this->isMultiValued) {
+    push @htmlData, 'data-multiple="true"';
   }
 
   $this->addJavascript();
@@ -208,6 +246,14 @@ sub getTopicTitle {
   $title =~ s/^\s*//;
 
   return $title;
+}
+
+sub encode {
+  my $text = shift;
+
+  $text =~ s/([^0-9a-zA-Z-_.:~!*\/])/'%'.sprintf('%02x',ord($1))/ge;
+
+  return $text;
 }
 
 1;

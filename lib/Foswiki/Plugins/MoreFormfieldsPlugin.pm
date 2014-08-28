@@ -1,6 +1,6 @@
-# Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
+# Plugin for Foswiki -V The Free and Open Source Wiki, http://foswiki.org/
 #
-# MyEmptyPlugin is Copyright (C) 2013-2014 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2013-2014 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,13 +25,27 @@ use Foswiki::Plugins ();
 
 use Error qw(:try);
 
-our $VERSION = '0.01';
-our $RELEASE = '0.01';
+our $VERSION = '0.11';
+our $RELEASE = '0.11';
 our $SHORTDESCRIPTION = 'Additionall formfield types for %SYSTEMWEB%.DataForms';
 our $NO_PREFS_IN_TOPIC = 1;
 
+our $iconService;
 
 sub initPlugin {
+
+  Foswiki::Func::registerRESTHandler('icon', sub {
+    unless (defined $iconService) {
+      require Foswiki::Plugins::MoreFormfieldsPlugin::IconService;
+      $iconService = Foswiki::Plugins::MoreFormfieldsPlugin::IconService->new();
+    }
+    $iconService->handleRest(@_);
+  }, 
+    authenticate => 0,
+    validate => 0,
+    http_allow => 'GET,POST',
+  );
+
   return 1;
 }
 

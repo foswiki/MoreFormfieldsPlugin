@@ -9,11 +9,13 @@ lib/Foswiki/Form/Netmask.pm 0644
 lib/Foswiki/Form/NetworkAddressField.pm 0644
 lib/Foswiki/Form/Phonenumber.pm 0644
 lib/Foswiki/Form/Select2.pm 0644
+lib/Foswiki/Form/Smartbox.pm 0644
 lib/Foswiki/Form/Time.pm 0644
 lib/Foswiki/Form/Topic.pm 0644
 lib/Foswiki/Form/User.pm 0644
 lib/Foswiki/Plugins/MoreFormfieldsPlugin/Clockpicker.pm 0644
 lib/Foswiki/Plugins/MoreFormfieldsPlugin/Config.spec 0644
+lib/Foswiki/Plugins/MoreFormfieldsPlugin/IconService.pm 0644
 lib/Foswiki/Plugins/MoreFormfieldsPlugin.pm 0644
 pub/System/MoreFormfieldsPlugin/clockpicker.css 0644
 pub/System/MoreFormfieldsPlugin/clockpicker.css.gz 0644
@@ -39,6 +41,9 @@ pub/System/MoreFormfieldsPlugin/phonenumber.js 0644
 pub/System/MoreFormfieldsPlugin/phonenumber.js.gz 0644
 pub/System/MoreFormfieldsPlugin/phonenumber.uncompressed.js 0644
 pub/System/MoreFormfieldsPlugin/phone.png 0644
+pub/System/MoreFormfieldsPlugin/smartbox.js 0644
+pub/System/MoreFormfieldsPlugin/smartbox.js.gz 0644
+pub/System/MoreFormfieldsPlugin/smartbox.uncompressed.js 0644
 pub/System/MoreFormfieldsPlugin/topicfield.js 0644
 pub/System/MoreFormfieldsPlugin/topicfield.js.gz 0644
 pub/System/MoreFormfieldsPlugin/topicfield.uncompressed.js 0644

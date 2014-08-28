@@ -18,12 +18,9 @@ package Foswiki::Form::Icon;
 use strict;
 use warnings;
 
-use YAML ();
 use Foswiki::Plugins::JQueryPlugin ();
 use Foswiki::Form::FieldDefinition ();
 our @ISA = ('Foswiki::Form::FieldDefinition');
-
-our %icons = ();
 
 BEGIN {
   if ($Foswiki::cfg{UseLocale}) {
@@ -41,15 +38,18 @@ sub new {
   $size = 10 if (!$size || $size < 1);
   $this->{size} = $size;
 
-  if ($this->{type} =~ /\+/) {
-    my %modifiers = map {lc($_) => 1} grep {!/^icon$/} split(/\+/,$this->{type});
-    @{$this->{modifiers}} = keys %modifiers;
-    $this->{groupPattern} = join("|", @{$this->{modifiers}});
+  return $this;
+}
+
+sub param {
+  my ($this, $key) = @_;
+
+  unless (defined $this->{_params}) {
+    my %params = Foswiki::Func::extractParameters($this->{value});
+    $this->{_params} = \%params;
   }
 
-  $this->{hasMultipleGroups} = (!defined($this->{modifiers}) || scalar(@{$this->{modifiers}}) > 1);
-
-  return $this;
+  return (defined $key)?$this->{_params}{$key}:$this->{_params};
 }
 
 sub renderForEdit {
@@ -62,95 +62,34 @@ sub renderForEdit {
 <script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/iconfield.js'></script>
 HERE
 
-  $this->readIcons();
+  my @htmlData = ();
+  push @htmlData, "type='hidden'";
+  push @htmlData, "class='".$this->cssClasses("foswikiIconField")."'";
+  push @htmlData, "name='$this->{name}'";
+  push @htmlData, "value='$value'";
+  
+  my $cat = $this->param("cat");
+  push @htmlData, "data-cat='$cat'" if $cat;
 
-  my $html = "<select class='".$this->cssClasses("foswikiFontAwesomeIconPicker")."' style='width:".$this->{size}."em' name='".$this->{name}."'>\n";
-  $html .= '<option></option>';
-  foreach my $group (sort keys %icons) {
-    next if $this->{groupPattern} && $group !~ /$this->{groupPattern}/i;
+  my $include = $this->param("include");
+  push @htmlData, "data-include='$include'" if $include;
 
-    my $groupLabel = $group;
-    $groupLabel =~ s/^FamFamFam//;
-    $groupLabel =~ s/([a-z])([A-Z0-9])/$1 $2/g;
+  my $exclude = $this->param("exclude");
+  push @htmlData, "data-exclude='$exclude'" if $exclude;
 
-    $html .= "  <optgroup label='$groupLabel'>\n" if scalar$this->{hasMultipleGroups};
-
-    foreach my $entry (sort {$a->{id} cmp $b->{id}} @{$icons{$group}}) {
-      my $text = $entry->{id};
-      $text =~ s/^fa\-//;
-      $html .= "    <option value='$entry->{id}'".($value && $entry->{id} eq $value?"selected":"")." ".($entry->{url}?"data-url='$entry->{url}'":"").">$text</option>\n";
-    }
-
-    $html .= "  </optgroup>\n" if $this->{hasMultipleGroups};
+  my $size = $this->{size};
+  if (defined $size) {
+    $size .= "em";
+  } else {
+    $size = "element";
   }
-  $html .= "</select>\n";
+  push @htmlData, 'data-width="'.$size.'"';
 
-  return ('', $html);
+  my $field .= "<input ".join(" ", @htmlData)."></input>";
+
+  return ('', $field);
 }
 
-sub readIcons {
-  my $this = shift;
-
-  return if %icons;
-
-  # read fontawesome icons
-  my $iconFile = $Foswiki::cfg{PubDir}.'/'.$Foswiki::cfg{SystemWebName}.'/MoreFormfieldsPlugin/icons.yml';
-
-  my $yml = YAML::LoadFile($iconFile); 
-
-  my $numIcons = 0;
-  foreach my $entry (@{$yml->{icons}}) {
-    $entry->{id} = 'fa-'.$entry->{id};
-    foreach my $cat (@{$entry->{categories}}) {
-      push @{$icons{$cat}}, $entry;
-      if ($entry->{aliases}) {
-        foreach my $alias (@{$entry->{aliases}}) {
-          my %clone = %$entry;
-          $clone{id} = 'fa-'.$alias;
-          $clone{_isAlias} = 1;
-          push @{$icons{$cat}}, \%clone;
-        }
-      }
-      $numIcons += scalar(@{$icons{$cat}});
-    }
-  }
-
-  # read icons from icon path
-  my $iconSearchPath = $Foswiki::cfg{JQueryPlugin}{IconSearchPath}
-    || 'FamFamFamSilkIcons, FamFamFamSilkCompanion1Icons, FamFamFamSilkCompanion2Icons, FamFamFamSilkGeoSilkIcons, FamFamFamFlagIcons, FamFamFamMiniIcons, FamFamFamMintIcons';
-
-  my @iconSearchPath = split( /\s*,\s*/, $iconSearchPath );
-
-  foreach my $item (@iconSearchPath) {
-      my ( $web, $topic ) = Foswiki::Func::normalizeWebTopicName(
-          $Foswiki::cfg{SystemWebName}, $item );
-
-      my $iconDir =
-          $Foswiki::cfg{PubDir} . '/'
-        . $web . '/'
-        . $topic . '/';
-
-      opendir(my $dh, $iconDir) || next;
-      foreach my $icon (grep { /\.(png|gif|jpe?g)$/i } readdir($dh)) {
-        next if $icon =~ /^(SilkCompanion1Thumb|index_abc|igp_.*)\.png$/; # filter some more
-        my $id = $icon;
-        $id =~ s/\.(png|gif|jpe?g)$//i;
-        push @{$icons{$topic}}, {
-          id => $id,
-          name => $id,
-          url => Foswiki::Func::getPubUrlPath() . '/' . $web . '/' . $topic . '/' . $icon,
-          categories => [$topic],
-        };
-      }
-      closedir $dh;
-
-      #print STDERR "no icons at $web.$topic\n" unless $icons{$topic};
-
-      $numIcons += scalar(@{$icons{$topic}}) if $icons{$topic};
-  }
-
-  #print STDERR "num icons found: $numIcons\n";
-}
 
 sub renderForDisplay {
     my ( $this, $format, $value, $attrs ) = @_;

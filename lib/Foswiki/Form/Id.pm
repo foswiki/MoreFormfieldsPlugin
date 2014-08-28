@@ -58,8 +58,11 @@ sub beforeSaveHandler {
   my $topic = $topicObject->topic;
 
   return unless $topic =~ /(\d+)$/;
+  my $number = $1;
   my $size = $this->{size} || 1;
-  my $value = sprintf("%0".$size."d", $1);
+  $size =~ /(\d+)/;
+  $size = $1;
+  my $value = sprintf("%0".$size."d", $number);
 
   my $thisField = $topicObject->get('FIELD', $this->{name});
   $thisField = {

@@ -1,6 +1,10 @@
-%META:TOPICINFO{author="micha" comment="autosave" date="1403544053" format="1.1" version="3"}%
+%META:TOPICINFO{author="ProjectContributor" comment="autosave" date="1403544053" format="1.1" version="3"}%
 ---+!! %TOPIC%
 %SHORTDESCRIPTION%
+
+<div class="foswikiHelp">
+Warning: This is a beta release.
+</div>
 
 %TOC%
 
@@ -17,6 +21,7 @@ These are:
    * =phonenumber=
    * =time=
    * =icon=
+   * =smartbox=: the first value of an attribute list (or the one marked with an '*') is used as "any value" place holder 
 
 ---++ !ExampleForm definition
 
@@ -40,6 +45,7 @@ These are:
 |  Release: | %$RELEASE% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  22 Aug 2014: | added smarbox formfield |
 |  04 Apr 2014: | fixed compatibility with foswiki >= 1.2.0 |
 |  23 Sep 2010: | initial release |
 |  Dependencies: | %$DEPENDENCIES% |
