@@ -1,17 +1,19 @@
 jQuery(function($) {
+"use strict";
+
   var defaults = {
     minimumInputLength: 0,
-    url: foswiki.getPreference('SCRIPTURL')+'/view/'+foswiki.getPreference('SYSTEMWEB')+'/MoreFormfieldsAjaxHelper?section=select2::topic&skin=text&contenttype=application/json%3Bcharset%3Dutf-8',
+    url: null,
     width: 'element',
     multiple: false,
     quietMillis:500
   };
 
-  function formatTopicItem(item) {
+  function formatItem(item) {
     if (item.thumbnail) {
       return "<div class='image-item' style='background-image:url("+item.thumbnail + ")'>"+
-         item.text + 
-         "</div>";
+        item.text + 
+        "</div>";
     } else {
       return item.text;
     }
@@ -69,8 +71,8 @@ jQuery(function($) {
 	}
 	callback(data);
       },
-      formatResult: formatTopicItem,
-      formatSelection: formatTopicItem
+      formatResult: formatItem,
+      formatSelection: formatItem
     });
   });
 

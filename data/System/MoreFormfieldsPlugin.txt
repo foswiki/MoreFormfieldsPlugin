@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="autosave" date="1403544053" format="1.1" version="3"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1418739013" format="1.1" version="1"}%
 ---+!! %TOPIC%
 %SHORTDESCRIPTION%
 
@@ -45,6 +45,7 @@ These are:
 |  Release: | %$RELEASE% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  16 Dec 2014: | fixed thumbnails in user autocompletion; don't inherit from <nop>ListFieldDefinition for performance reasons |
 |  22 Aug 2014: | added smarbox formfield |
 |  04 Apr 2014: | fixed compatibility with foswiki >= 1.2.0 |
 |  23 Sep 2010: | initial release |

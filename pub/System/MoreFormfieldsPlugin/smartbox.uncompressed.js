@@ -1,4 +1,6 @@
 jQuery(function($) {
+"use strict";
+
   $(document).on("change", ".foswikiSmartboxItem", function() {
     var $this = $(this), 
         $container = $this.parents(".foswikiSmartbox").first(),

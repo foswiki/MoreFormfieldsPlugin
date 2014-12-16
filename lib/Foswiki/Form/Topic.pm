@@ -18,25 +18,31 @@ package Foswiki::Form::Topic;
 use strict;
 use warnings;
 use Foswiki::Func ();
-use Foswiki::Form::ListFieldDefinition ();
+use Foswiki::Form::FieldDefinition ();
 use Assert;
-our @ISA = ('Foswiki::Form::ListFieldDefinition');
+our @ISA = ('Foswiki::Form::FieldDefinition');
 
 BEGIN {
-    if ( $Foswiki::cfg{UseLocale} ) {
-        require locale;
-        import locale();
-    }
+  if ($Foswiki::cfg{UseLocale}) {
+    require locale;
+    import locale();
+  }
 }
 
 sub new {
-    my $class = shift;
-    my $this  = $class->SUPER::new(@_);
+  my $class = shift;
+  my $this = $class->SUPER::new(@_);
 
-    $this->{_formfieldClass} = 'foswikiTopicField';
-    $this->{_web} = $this->param("web") || $this->{session}{webName};
+  $this->{_formfieldClass} = 'foswikiTopicField';
+  $this->{_web} = $this->param("web") || $this->{session}{webName};
+  $this->{_url} = Foswiki::Func::getScriptUrl(
+    $Foswiki::cfg{SystemWebName}, 'MoreFormfieldsAjaxHelper', 'view',
+    section => 'select2::topic',
+    skin => 'text',
+    contenttype => 'application/json',
+  );
 
-    return $this;
+  return $this;
 }
 
 sub isMultiValued { return shift->{type} =~ /\+multi/; }
@@ -48,11 +54,12 @@ sub finish {
   my $this = shift;
   $this->SUPER::finish();
   undef $this->{_params};
+  undef $this->{_options};
+  undef $this->{_descriptions};
 }
 
 sub renderForDisplay {
   my ($this, $format, $value, $attrs) = @_;
-
 
   my $displayValue = $this->getDisplayValue($value);
   $format =~ s/\$value\(display\)/$displayValue/g;
@@ -62,37 +69,39 @@ sub renderForDisplay {
 }
 
 sub populateMetaFromQueryData {
-  my ( $this, $query, $meta, $old ) = @_;
+  my ($this, $query, $meta, $old) = @_;
 
-  if ( $this->isMultiValued() ) {
-      my @values = $query->param( $this->{name} );
+  if ($this->isMultiValued()) {
+    my @values = $query->param($this->{name});
 
-      if ( scalar(@values) == 1 && defined $values[0] ) {
-	  @values = split( /,|%2C/, $values[0] );
-      }
-      my %vset = ();
-      foreach my $val (@values) {
-	  $val ||= '';
-	  $val =~ s/^\s*//o;
-	  $val =~ s/\s*$//o;
+    if (scalar(@values) == 1 && defined $values[0]) {
+      @values = split(/,|%2C/, $values[0]);
+    }
+    my %vset = ();
+    foreach my $val (@values) {
+      $val ||= '';
+      $val =~ s/^\s*//o;
+      $val =~ s/\s*$//o;
 
-	  # skip empty values
-	  $vset{$val} = ( defined $val && $val =~ /\S/ );
-      }
+      # skip empty values
+      $vset{$val} = (defined $val && $val =~ /\S/);
+    }
 
-      # populate options first
-      $this->{_options} = [sort keys %vset];
+    # populate options first
+    $this->{_options} = [sort keys %vset];
   }
 
   return $this->SUPER::populateMetaFromQueryData($query, $meta, $old);
+}
+
+sub getOptions {
+  return [];
 }
 
 sub getDisplayValue {
   my ($this, $value) = @_;
 
   return '' unless defined $value && $value ne '';
-
-  $this->getOptions($value);
 
   if ($this->isMultiValued) {
     my @result = ();
@@ -101,7 +110,7 @@ sub getDisplayValue {
       if ($this->isValueMapped) {
         if (defined($this->{valueMap}{$val})) {
           $val = $this->{valueMap}{$val};
-        } 
+        }
       } else {
         $val = $this->getTopicTitle($this->{_web}, $val);
       }
@@ -117,7 +126,7 @@ sub getDisplayValue {
     } else {
       $value = $this->getTopicTitle($this->{_web}, $value);
     }
-    $value = "<a href='%SCRIPTURLPATH{view}%/$this->{_web}/$origVal'>$value</a>"
+    $value = "<a href='%SCRIPTURLPATH{view}%/$this->{_web}/$origVal'>$value</a>";
   }
 
   return $value;
@@ -131,7 +140,7 @@ sub param {
     $this->{_params} = \%params;
   }
 
-  return (defined $key)?$this->{_params}{$key}:$this->{_params};
+  return (defined $key) ? $this->{_params}{$key} : $this->{_params};
 }
 
 sub renderForEdit {
@@ -152,12 +161,12 @@ sub renderForEdit {
 
   my @htmlData = ();
   push @htmlData, 'type="hidden"';
-  push @htmlData, 'class="'.$this->{_formfieldClass}.'"';
-  push @htmlData, 'name="'.$this->{name}.'"';
-  push @htmlData, 'value="'.$value.'"';
+  push @htmlData, 'class="foswikiTopicField' . ((!$this->{_formfieldClass} || $this->{_formfieldClass} eq 'foswikiTopicField') ? "" : " " . $this->{_formfieldClass}) . '"';
+  push @htmlData, 'name="' . $this->{name} . '"';
+  push @htmlData, 'value="' . $value . '"';
 
   my $baseWeb = $this->param("web") || $this->{session}{webName};
-  push @htmlData, 'data-base-web="'.$baseWeb.'"';
+  push @htmlData, 'data-base-web="' . $baseWeb . '"';
 
   my $size = $this->{size};
   if (defined $size) {
@@ -165,23 +174,26 @@ sub renderForEdit {
   } else {
     $size = "element";
   }
-  push @htmlData, 'data-width="'.$size.'"';
+  push @htmlData, 'data-width="' . $size . '"';
 
   if ($this->isMultiValued) {
     my @topicTitles = ();
     foreach my $v (split(/\s*,\s*/, $value)) {
-      push @topicTitles, '"'.$v.'":"'.encode($this->getTopicTitle($baseWeb, $v)).'"';
+      push @topicTitles, '"' . $v . '":"' . encode($this->getTopicTitle($baseWeb, $v)) . '"';
     }
-    push @htmlData, "data-value-text='{".join(', ', @topicTitles)."}'";
+    push @htmlData, "data-value-text='{" . join(', ', @topicTitles) . "}'";
   } else {
     my $topicTitle = encode($this->getTopicTitle($baseWeb, $value));
-    push @htmlData, 'data-value-text="'.$topicTitle.'"';
+    push @htmlData, 'data-value-text="' . $topicTitle . '"';
   }
+
+  push @htmlData, 'data-url="' . $this->{_url} . '"'
+    if defined($this->{_url}) && !defined($this->param("url"));
 
   while (my ($key, $val) = each %{$this->param()}) {
     next if $key =~ /^(web)$/;
     $key = lc(Foswiki::spaceOutWikiWord($key, "-"));
-    push @htmlData, 'data-'.$key.'="'.$val.'"';
+    push @htmlData, 'data-' . $key . '="' . $val . '"';
   }
 
   if ($this->isMultiValued) {
@@ -191,16 +203,14 @@ sub renderForEdit {
   $this->addJavascript();
   $this->addStyles();
 
-  my $field = "<input ".join(" ", @htmlData)." />"; 
+  my $field = "<input " . join(" ", @htmlData) . " />";
 
   return ('', $field);
 }
 
 sub addStyles {
   #my $this = shift;
-  Foswiki::Func::addToZone("head", 
-    "MOREFORMFIELDSPLUGIN::CSS",
-    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />");
+  Foswiki::Func::addToZone("head", "MOREFORMFIELDSPLUGIN::CSS", "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />");
 
 }
 

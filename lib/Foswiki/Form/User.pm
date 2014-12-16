@@ -34,17 +34,13 @@ sub new {
 
     $this->{_formfieldClass} = 'foswikiUserField';
     $this->{_web} = $this->param("web") || $Foswiki::cfg{UsersWebName};
+    $this->{_url} = Foswiki::Func::getScriptUrl($Foswiki::cfg{SystemWebName}, 'MoreFormfieldsAjaxHelper', 'view',
+      section => 'select2::user',
+      skin => 'text',
+      contenttype => 'application/json',
+    );
 
     return $this;
-}
-
-sub addJavascript {
-  my $this = shift;
-
-  Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
-  Foswiki::Func::addToZone("script", "FOSWIKI::USERFIELD", <<"HERE", "JQUERYPLUGIN::SELECT2");
-<script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/userfield.js'></script>
-HERE
 }
 
 1;

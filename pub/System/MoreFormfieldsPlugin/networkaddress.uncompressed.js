@@ -1,4 +1,6 @@
 jQuery(function($) {
+"use strict";
+
   var addressRegex = /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/,
     macRegex = /^([a-f\d]+)[:\.\-]([a-f\d]+)[:\.\-]([a-f\d]+)[:\.\-]([a-f\d]+)[:\.\-]([a-f\d]+)[:\.\-]([a-f\d]+)$/i,
     errorMsgIp = 'Please provide a valid IP address',

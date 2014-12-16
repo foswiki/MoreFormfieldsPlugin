@@ -1,16 +1,22 @@
 jQuery(function($) {
+"use strict";
+
   var defaults = {
     minimumInputLength: 0,
-    url: foswiki.getPreference('SCRIPTURL')+'/view/'+foswiki.getPreference('SYSTEMWEB')+'/MoreFormfieldsAjaxHelper?section=select2::user&skin=text&contenttype=application/json%3Bcharset%3Dutf-8',
+    url: null,
     width: 'element',
+    multiple: false,
     quietMillis:500
   };
 
-  function formatUserItem(item) {
-     return "<div class='image-item' style='background-image:" +
-        (item.thumbnail?"url("+item.thumbnail + ")": "none") + "'>"+
+  function formatItem(item) {
+    if (item.thumbnail) {
+      return "<div class='image-item' style='background-image:url("+item.thumbnail + ")'>"+
         item.text + 
         "</div>";
+    } else {
+      return item.text;
+    }
   }
 
   $(".foswikiUserField:not(.foswikiUserFieldInited)").livequery(function() {
@@ -18,7 +24,6 @@ jQuery(function($) {
         opts = $.extend({}, defaults, $this.data()),
         requestOpts = $.extend({}, opts),
         val = $this.val();
-
 
     delete requestOpts.minimumInputLength;
     delete requestOpts.url;
@@ -35,6 +40,7 @@ jQuery(function($) {
       placeholder: opts.placeholder,
       minimumInputLength: opts.minimumInputLength,
       width: opts.width,
+      multiple: opts.multiple,
       ajax: {
         url: opts.url,
         dataType: 'json',
@@ -53,26 +59,21 @@ jQuery(function($) {
         }
       },
       initSelection: function(elem, callback) {
-        var params;
-        if (val!=='') {
-          params = 
-            $.extend({}, {
-              q: val,
-              limit: 1,
-              property: 'topic'
-            }, requestOpts);
-          $.ajax(opts.url, {
-            data: params,
-            dataType: 'json'
-          }).done(function(data) { 
-            callback(data.results[0]); 
-          });
-        }
+	var data = [], text;
+	if (opts.multiple) {
+	  $(val.split(/\s*,\s*/)).each(function () {
+	    text = decodeURIComponent(opts.valueText[this]||this);
+	    data.push({id: this, text: text});
+	  });
+	} else {
+          text = decodeURIComponent(opts.valueText);
+	  data = {id:val, text:text};
+	}
+	callback(data);
       },
-      formatResult: formatUserItem,
-      formatSelection: formatUserItem
+      formatResult: formatItem,
+      formatSelection: formatItem
     });
   });
 
 });
-

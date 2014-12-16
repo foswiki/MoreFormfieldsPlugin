@@ -1,4 +1,6 @@
 jQuery(function($) {
+"use strict";
+
   var defaults = {
     minimumInputLength: 0,
     url: foswiki.getPreference('SCRIPTURL')+'/rest/MoreFormfieldsPlugin/icon',
