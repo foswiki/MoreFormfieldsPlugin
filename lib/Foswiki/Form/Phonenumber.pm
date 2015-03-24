@@ -54,7 +54,8 @@ sub renderForEdit {
       -class => $this->cssClasses('foswikiInputField foswikiPhoneNumber'),
       -name => $this->{name},
       -size => $this->{size},
-      -value => $value
+      -override => 1,
+      -value => $value,
     )
   );
 }

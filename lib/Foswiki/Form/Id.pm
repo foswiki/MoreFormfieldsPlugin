@@ -44,7 +44,8 @@ sub renderForEdit {
     '',
     CGI::hidden(
       -name => $this->{name},
-      -value => $value
+      -override => 1,
+      -value => $value,
       )
       . CGI::div({-class => $this->{_formfieldClass},}, $renderedValue)
   );

@@ -41,11 +41,17 @@ sub renderForEdit {
   # even though it's not accessible for standard edits. Some contribs
   # may want to override this to make labels editable.
   my $renderedValue = $topicObject->expandMacros($value);
+
+  if ($this->can("decode")) {
+    $value = $this->decode($value);
+  }
+
   return (
     '',
     CGI::hidden(
       -name => $this->{name},
-      -value => $value
+      -override => 1,
+      -value => $value,
       )
       . CGI::div({-class => $this->{_formfieldClass},}, $renderedValue)
   );

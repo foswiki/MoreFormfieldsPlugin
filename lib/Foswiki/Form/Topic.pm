@@ -72,7 +72,7 @@ sub populateMetaFromQueryData {
   my ($this, $query, $meta, $old) = @_;
 
   if ($this->isMultiValued()) {
-    my @values = $query->param($this->{name});
+    my @values = $query->multi_param($this->{name});
 
     if (scalar(@values) == 1 && defined $values[0]) {
       @values = split(/,|%2C/, $values[0]);
@@ -95,7 +95,8 @@ sub populateMetaFromQueryData {
 }
 
 sub getOptions {
-  return [];
+  my $this = shift;
+  return $this->{_options};
 }
 
 sub getDisplayValue {

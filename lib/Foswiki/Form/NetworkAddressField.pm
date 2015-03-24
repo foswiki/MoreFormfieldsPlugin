@@ -81,7 +81,8 @@ sub renderForEdit {
       -class => $this->cssClasses('foswikiInputField', $this->{_class}, $required),
       -name => $this->{name},
       -size => $this->{size},
-      -value => $value
+      -override => 1,
+      -value => $value,
     )
   );
 }
