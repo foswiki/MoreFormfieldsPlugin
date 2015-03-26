@@ -42,10 +42,6 @@ sub renderForEdit {
   # may want to override this to make labels editable.
   my $renderedValue = $topicObject->expandMacros($value);
 
-  if ($this->can("decode")) {
-    $value = $this->decode($value);
-  }
-
   return (
     '',
     CGI::hidden(
@@ -108,7 +104,7 @@ sub beforeSaveHandler {
 __END__
 Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 
-Copyright (C) 2013-2014 Foswiki Contributors. Foswiki Contributors
+Copyright (C) 2013-2015 Foswiki Contributors. Foswiki Contributors
 are listed in the AUTHORS file in the root of this distribution.
 NOTE: Please extend that file, not this notice.
 

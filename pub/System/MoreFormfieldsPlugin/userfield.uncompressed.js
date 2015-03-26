@@ -6,6 +6,7 @@ jQuery(function($) {
     url: null,
     width: 'element',
     multiple: false,
+    allowClear: true,
     quietMillis:500
   };
 

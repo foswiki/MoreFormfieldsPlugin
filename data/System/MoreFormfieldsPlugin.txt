@@ -40,11 +40,12 @@ These are:
 -->
 
 |  Author(s): | Michael Daum|
-|  Copyright: | &copy; 2010-2014 Michael Daum http://michaeldaumconsulting.com |
+|  Copyright: | &copy; 2010-2015 Michael Daum http://michaeldaumconsulting.com |
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
 |  Release: | %$RELEASE% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  26 Mar 2015: | updated list of all fontawesom icons; fixed rendering of Topic formfields values |
 |  16 Dec 2014: | fixed thumbnails in user autocompletion; don't inherit from <nop>ListFieldDefinition for performance reasons |
 |  22 Aug 2014: | added smarbox formfield |
 |  04 Apr 2014: | fixed compatibility with foswiki >= 1.2.0 |

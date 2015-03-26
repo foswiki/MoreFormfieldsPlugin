@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2013-2014 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2013-2015 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -67,8 +67,8 @@ sub handleRest {
   my $index = 0;
 
   foreach my $icon (@{$this->{icons}}) {
-    next if $include && $icon->{text} !~ /$include/;
-    next if $exclude && $icon->{text} =~ /$exclude/;
+    next if $include && $icon->{id} !~ /$include/;
+    next if $exclude && $icon->{id} =~ /$exclude/;
 
     if ($doExactMatch) {
       next unless $icon->{text} eq $search;

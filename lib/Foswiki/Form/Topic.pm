@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2014 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2015 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -115,7 +115,8 @@ sub getDisplayValue {
       } else {
         $val = $this->getTopicTitle($this->{_web}, $val);
       }
-      push @result, "<a href='%SCRIPTURLPATH{view}%/$this->{_web}/$origVal'>$val</a>";
+      my ($web, $topic) = Foswiki::Func::normalizeWebTopicName($this->{_web}, $origVal);
+      push @result, "<a href='%SCRIPTURLPATH{view}%/$web/$topic'>$val</a>";
     }
     $value = join(", ", @result);
   } else {
@@ -127,7 +128,8 @@ sub getDisplayValue {
     } else {
       $value = $this->getTopicTitle($this->{_web}, $value);
     }
-    $value = "<a href='%SCRIPTURLPATH{view}%/$this->{_web}/$origVal'>$value</a>";
+    my ($web, $topic) = Foswiki::Func::normalizeWebTopicName($this->{_web}, $origVal);
+    $value = "<a href='%SCRIPTURLPATH{view}%/$web/$topic'>$value</a>";
   }
 
   return $value;
