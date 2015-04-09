@@ -67,21 +67,17 @@ sub param {
 sub beforeSaveHandler {
   my ($this, $topicObject) = @_;
 
-  #print STDERR "called Foswiki::Form::Autofill::beforeSaveHandler()\n";
-
+  my $header = $this->param("header") || '';
+  my $footer = $this->param("footer") || '';
   my $source = $this->param("source");
   my $sep = $this->param("separator") || '';
   return unless $source;
-
-  #print STDERR "source=$source\n";
 
   my @result = ();
   foreach my $name (split(/\s*,\s*/, $source)) {
     my $field = $topicObject->get('FIELD', $name);
     push @result, $field->{value} if defined $field && defined $field->{value} && $field->{value} ne '';
   }
-
-  return unless @result;
 
   my $thisField = $topicObject->get('FIELD', $this->{name});
   $thisField = {
@@ -93,11 +89,9 @@ sub beforeSaveHandler {
   my $request = Foswiki::Func::getRequestObject();
   $request->delete($this->{name});
 
-  $thisField->{value} = join($sep, @result);
+  $thisField->{value} = @result?$header.join($sep, @result).$footer:"";
 
   $topicObject->putKeyed('FIELD', $thisField);
-
-  #print STDERR "result=$thisField->{value}\n";
 }
 
 1;

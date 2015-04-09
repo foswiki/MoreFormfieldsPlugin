@@ -48,7 +48,7 @@ sub new {
 sub isMultiValued { return shift->{type} =~ /\+multi/; }
 sub isValueMapped { return shift->{type} =~ /\+values/; }
 
-sub getDefaultValue { return ''; }
+#sub getDefaultValue { return ''; }
 
 sub finish {
   my $this = shift;

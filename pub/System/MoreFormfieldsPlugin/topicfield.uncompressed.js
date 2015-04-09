@@ -3,10 +3,10 @@ jQuery(function($) {
 
   var defaults = {
     minimumInputLength: 0,
+    placeholder: 'None',
     url: null,
     width: 'element',
     multiple: false,
-    allowClear: true,
     quietMillis:500
   };
 
@@ -38,6 +38,7 @@ jQuery(function($) {
     $this.addClass("foswikiTopicFieldInited");
 
     $this.select2({
+      allowClear: true,
       placeholder: opts.placeholder,
       minimumInputLength: opts.minimumInputLength,
       width: opts.width,

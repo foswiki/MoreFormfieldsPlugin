@@ -20,6 +20,7 @@ use warnings;
 
 use YAML ();
 use JSON ();
+use constant TRACE => 0;
 
 sub new {
   my $class = shift;
@@ -123,9 +124,12 @@ sub init {
 
   my @icons = ();
 
+  my %cats = ();
+
   foreach my $entry (@{$yml->{icons}}) {
     $entry->{text} = $entry->{id};
     $entry->{id} = 'fa-'.$entry->{id};
+    $cats{$entry->{categories}} = 1 if TRACE;
     push @icons, $entry;
     if ($entry->{aliases}) {
       foreach my $alias (@{$entry->{aliases}}) {
@@ -137,6 +141,7 @@ sub init {
       }
     }
   }
+  print STDERR "cats=".join(", ", sort keys %cats)."\n" if TRACE;
 
   # read icons from icon path
   my $iconSearchPath = $Foswiki::cfg{JQueryPlugin}{IconSearchPath}
@@ -167,9 +172,6 @@ sub init {
         };
       }
       closedir $dh;
-
-      #print STDERR "no icons at $web.$topic\n" unless $icons{$topic};
-
   }
 
   @icons = sort {lc($a->{text}) cmp lc($b->{text})} @icons;

@@ -12,7 +12,7 @@ sub new {
   my $this = bless(
     $class->SUPER::new(
       name => 'Clockpicker',
-      version => '0.06',
+      version => '0.07',
       author => 'Wang Shenwei',
       homepage => 'http://weareoutman.github.io/clockpicker',
       javascript => ['clockpicker.js', 'clockpicker.init.js'],

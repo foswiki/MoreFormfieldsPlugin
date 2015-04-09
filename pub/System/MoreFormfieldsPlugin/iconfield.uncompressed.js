@@ -7,6 +7,7 @@ jQuery(function($) {
     width: 'element',
     multiple: false,
     quietMillis:500,
+    placeholder: 'None',
     pageSize: 20
   };
   
@@ -35,7 +36,7 @@ jQuery(function($) {
 
     $this.select2({
       allowClear: true,
-      placeholder: 'None',
+      placeholder: opts.placeholder,
       minimumInputLength: opts.minimumInputLength,
       width: opts.width,
       multiple: opts.multiple,

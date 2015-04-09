@@ -1,34 +1,175 @@
-%META:TOPICINFO{author="ProjectContributor" comment="" date="1418739013" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1428580029" format="1.1" version="1"}%
 ---+!! %TOPIC%
 %SHORTDESCRIPTION%
 
-<div class="foswikiHelp">
-Warning: This is a beta release.
-</div>
-
 %TOC%
+
+---++ Description
 
 This plugin implements a set of additional special purpose formfields to be used in [[%SYSTEMWEB%.DataForms][DataForm]] definitions.
 
-These are:
+To make use of these formfields use their type identifier in the =Type= column of a !DataForm definition, such as in
 
-   * =ipaddress=: a general purpose IP4 address, consisting of 4 octets, e.g. =10.0.0.1=
-   * =netmask=: a special IP address used for routing, consisting of 4 octets, e.g. =255.255.255.0=
-   * =macaddress=: a hardware address given in 6 hex values, e.g. =00:1a:10:6f:ba:12=
-   * =user=
-   * =topic=
-   * =autofill=
-   * =phonenumber=
-   * =time=
-   * =icon=
-   * =smartbox=: the first value of an attribute list (or the one marked with an '*') is used as "any value" place holder 
-
----++ !ExampleForm definition
-
-| *Name*  | *Type* | *Size* | *Values* | *Tooltip message* | *Attributes* |
-| <nop>IpAddress | ipaddress |  15  | | network address | M |
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
+| <nop>IpAddress | ipaddress |  15  | | network address |  |
 | Netmask | netmask |  15  | | netmask |  |
 | <nop>MacAddress | macaddress |  17  | | hardware-addresse | |
+
+When defining a formfield additional parameters may be used in the =Values= column to further customize the behavior of the element.
+
+---++ Known Formfield types
+
+---+++ =autofill=
+
+A formfield that is filled automatically based on values from one or more other formfields of the same topic. During an edit-save loop, values of fields listed in the =source= parameter
+are extracted and concatenated using the specified =separator=. Values of an =autofill= formfield cannot be edited by the user.
+
+*Parameters*:
+
+   * =header=: add an optional string prefixed to the field value, but only when the source fields are not empty
+   * =source=: comma-separated list of one or more formfields to fetch values from
+   * =separator=: separator used when concatenating all values into a new value for the =autofill= field
+   * =footer=: append an optional string to the field value, but only when the source fields are not empty
+
+A typical use-case for an =autofill= field is the construction of a !TopicTitle based on other form properties:
+
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
+| <nop>TopicTitle | autofill |  1  | header="Project" source="Customer, ID, Year" |  |  |
+| Customer | text | 80 | | | |
+| ID | id | 4 | | | |
+| Year | text | 4 | | | |
+
+---+++ =icon=
+
+A select box to chose an icon supported by Foswiki (famfamfam and fontawesome).
+
+*Parameters*:
+
+   * =cat=: list of icon categories to be included in the selection
+   * =include=: regular expression of icons to include in the selection
+   * =exclude=: regular expression of icons to be excluded from the selection
+
+An icon category can be either a topic on the icon search path as defined in =$Foswiki::cfg{JQueryPlugin}{IconSearchPath}=:
+
+   * =famfamfam= ... to select famfamfam icons only
+   * =silkicons= ... to selec from a silk icon only,
+   * =flagicons= ... to select a flag
+   * ...
+
+Or an icon category as defined in the fontawesome definition:
+
+   * Brand Icons
+   * Chart Icons
+   * Currency Icons
+   * Directional Icons
+   * File Type Icons
+   * Form Control Icons
+   * Medical Icons
+   * Payment Icons
+   * Spinner Icons
+   * Text Editor Icons
+   * Video Player Icons
+   * Web Application Icons
+
+Examples:
+
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* | *Default* |
+| <nop>FamFamFamIcon | icon | 20 | cat="famfamfam" | | | |
+| <nop>SilkIcon | icon | 20 | cat="silkicon" | | | |
+| <nop>MintIcon | icon | 20 | cat="minticons" | | | |
+| <nop>FlagIcon | icon | 20 | cat="flagicons" | | | |
+| <nop>WebApp | icon | 20 | cat="Web App" | | | |
+
+---+++ =id=
+
+Extract the numeric identifier from the topic name. This is most usefull for topics created using the =AUTOINC= feature (see [[TemplateTopics]]).
+The =AUTOINC= feature adds a numeric unique identifier when the topic is created. This identifier can be extracted  using an =id= formfield type 
+and stored into a !DataForm and be available for formatted searches.
+
+The value in the =Size= column will be used to add leading zeros to the id. For example, given a topic !FooBar1 has a !DataForm
+
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
+| ID | id | 4 | | | |
+
+Then upon save the =id= formfield will have a value of =0001=.
+
+*Parameters*: none
+
+---+++ =ipaddress=
+
+A general purpose IP4 address, consisting of 4 octets, e.g. =10.0.0.1= 
+
+*Parameters*: none
+
+---+++ =macaddress=
+
+A hardware address given in 6 hex values, e.g. =00:1a:10:6f:ba:12=
+
+*Parameters*: none
+
+---+++ =netmask=
+
+A special IP address used for routing, consisting of 4 octets, e.g. =255.255.255.0=
+
+---+++ =phonenumber=
+
+A standard telephone number. This formfield uses [[JQueryValidate]] to make sure the formfield value is a valid phone number.
+
+*Parameters*: none
+
+---+++ =select2=
+
+A drop-in replacement for the standard =select= formfield. See [[JQSelect2Contrib]].
+
+*Parameters:* none
+
+---+++ =smartbox=
+
+A somewhat "smarter" checkbox formfield type. It allows to select one of the values as a placeholder representing "any" value in the selection.
+
+So given this !DataForm definition ...
+
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* | *Default* |
+| Business Area | smartbox | 5 | Energy, Maritime, Oil & Gas, Software, Across all Business Areas* | | | |
+
+... then selecting "Accross all Business Areas" will select all other areas with it. Likewise, selecting all 
+business areas indivudually will automatically select "Accross all Business Areas" as well.
+
+Note that the "any value" selection is the one indicated by the "*" asterisk, or if not present the first in the list.
+
+---+++ =time=
+
+A time formfield using the clockpicker widget from http://weareoutman.github.io/clockpicker/
+
+---+++ =topic=
+
+A topic reference using JQSelect2Contrib for autocompletion.
+
+*Parameters*:
+
+   * =web=: the web the user can choose topics from; defaults to current web
+   * =default=: the default value to use if no value exists yet
+   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"view"}%/%SYSTEMWEB%/MoreFormfieldsAjaxHelper?section=select2::topic;skin=text;contenttype=application/json=
+   * =TopicType=: name of a !TopicType to be selected
+
+Custom parameters may be added. These will be appended to the autocompletion url.
+
+There are a couple of parameters that further customize the behavior of the select2 widget. Some of the most useful ones are:
+
+   * =minimumInputLength=: number of characters that have to be entered before the autocompletion url is called to fetch matching selections from the backend; default 0
+   * =quietMillis=: number of milliseconds to wait for input before the backend is called for autocompletion
+   * =limit=: maximum number of values fetched from the autocompletion backend, default 10
+
+These are also available for the =user= and =icon= formfield types.
+
+---+++ =user=
+
+A user reference using JQSelect2Contrib for autocompletion.
+
+*Parameters*:
+
+   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"view"}%/%SYSTEMWEB%/MoreFormfieldsAjaxHelper?section=select2::user;skin=text;contenttype=application/json=
+   * =form=: !DataForm supposed to be attached to user profile pages; this form is used to search for users, default: !UserForm
 
 ---++ Installation Instructions
 
@@ -36,7 +177,7 @@ These are:
 
 ---++ Info
 <!--
-   * Set SHORTDESCRIPTION = Additionall formfield types for !DataForms
+   * Set SHORTDESCRIPTION = Additional formfield types for !DataForms
 -->
 
 |  Author(s): | Michael Daum|
@@ -45,6 +186,7 @@ These are:
 |  Release: | %$RELEASE% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  09 Apr 2015: | documentation; final bugfixing before release; updated to latest clockpicker |
 |  26 Mar 2015: | updated list of all fontawesom icons; fixed rendering of Topic formfields values |
 |  16 Dec 2014: | fixed thumbnails in user autocompletion; don't inherit from <nop>ListFieldDefinition for performance reasons |
 |  22 Aug 2014: | added smarbox formfield |

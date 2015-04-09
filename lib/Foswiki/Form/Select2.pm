@@ -63,20 +63,23 @@ sub renderForEdit {
     $option =~ s/<nop/&lt\;nop/go;
     $choices .= CGI::option(\%params, $option);
   }
-  my $size = scalar(@{$this->getOptions()});
-  if ($size > $this->{maxSize}) {
-    $size = $this->{maxSize};
-  } elsif ($size < $this->{minSize}) {
-    $size = $this->{minSize};
+
+  my $size = $this->{size};
+  if (defined $size) {
+    $size .= "em";
+  } else {
+    $size = "element";
   }
+
   my $params = {
     class => $this->cssClasses('jqSelect2'),
     name => $this->{name},
-    size => $this->{size},
-    'data-placeholder' => $this->param("placeholder") || 'select ...', 
-    'data-width' => $this->param("width") || 'element',
-    'data-allow-clear' => $this->param("allowClear") || 'false',
+    size => 1,
+    'data-width' => $size,
+    'data-allow-clear' => 'true',
+    'data-placeholder' => 'None',
   };
+
   if ($this->isMultiValued()) {
     $params->{'multiple'} = 'multiple';
     $value = CGI::Select($params, $choices);
