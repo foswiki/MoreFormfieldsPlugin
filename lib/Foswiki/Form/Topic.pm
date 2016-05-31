@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2015 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2016 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -48,7 +48,14 @@ sub new {
 sub isMultiValued { return shift->{type} =~ /\+multi/; }
 sub isValueMapped { return shift->{type} =~ /\+values/; }
 
-#sub getDefaultValue { return ''; }
+sub getDefaultValue {
+    my $this = shift;
+
+    my $value = $this->{default};
+    $value = '' unless defined $value;    # allow 0 values
+
+    return $value;
+}
 
 sub finish {
   my $this = shift;
@@ -164,7 +171,7 @@ sub renderForEdit {
 
   my @htmlData = ();
   push @htmlData, 'type="hidden"';
-  push @htmlData, 'class="foswikiTopicField' . ((!$this->{_formfieldClass} || $this->{_formfieldClass} eq 'foswikiTopicField') ? "" : " " . $this->{_formfieldClass}) . '"';
+  push @htmlData, 'class="' . $this->cssClasses("foswikiTopicField", $this->{_formfieldClass}) . '"';
   push @htmlData, 'name="' . $this->{name} . '"';
   push @htmlData, 'value="' . $value . '"';
 
@@ -213,8 +220,10 @@ sub renderForEdit {
 
 sub addStyles {
   #my $this = shift;
-  Foswiki::Func::addToZone("head", "MOREFORMFIELDSPLUGIN::CSS", "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />");
-
+  Foswiki::Func::addToZone("head", 
+    "MOREFORMFIELDSPLUGIN::CSS", 
+    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />",
+    "JQUERYPLUGIN::SELECT2");
 }
 
 sub addJavascript {
@@ -264,6 +273,7 @@ sub getTopicTitle {
 sub encode {
   my $text = shift;
 
+  $text = Encode::encode_utf8($text) if $Foswiki::UNICODE;
   $text =~ s/([^0-9a-zA-Z-_.:~!*\/])/'%'.sprintf('%02x',ord($1))/ge;
 
   return $text;

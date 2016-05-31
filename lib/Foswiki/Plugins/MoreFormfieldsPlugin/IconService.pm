@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2013-2015 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2013-2016 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,7 +18,6 @@ package Foswiki::Plugins::MoreFormfieldsPlugin::IconService;
 use strict;
 use warnings;
 
-use YAML ();
 use JSON ();
 use constant TRACE => 0;
 
@@ -38,9 +37,11 @@ sub handleRest {
   my $request = Foswiki::Func::getRequestObject();
 
   my $search = $request->param("q");
-  $search = "." if !defined $search || $search eq '';
-  $search =~ s/^fa\-//;
-  $search =~ s/ +/.*/g;
+  if (!defined $search || $search eq '') {
+    $search = ".";
+  } else {
+    $search = quotemeta($search);
+  }
 
   my $include = $request->param("include") || '';
   $include = join("|", split(/\s*,\s*/, $include));
@@ -49,8 +50,11 @@ sub handleRest {
   $exclude = join("|", split(/\s*,\s*/, $exclude));
 
   my $catPattern = $request->param("cat");
-  $catPattern = '.' unless defined $catPattern;
-  $catPattern = join("|", split(/\s*,\s*/, $catPattern));
+  if (defined $catPattern) {
+    $catPattern = join("|", map {quotemeta($_)} split(/\s*,\s*/, $catPattern));
+  } else {
+    $catPattern = ".";
+  }
 
   my $limit = $request->param("limit");
   $limit = 20 unless defined $limit;
@@ -71,11 +75,17 @@ sub handleRest {
     next if $include && $icon->{id} !~ /$include/;
     next if $exclude && $icon->{id} =~ /$exclude/;
 
+    my $found = 0;
     if ($doExactMatch) {
-      next unless $icon->{text} eq $search;
+      $found = 1 if 
+        $icon->{id} =~ /^($search)$/ || 
+        ($icon->{filter} && grep(/^($search)$/, @{$icon->{filter}}));
     } else {
-      next unless $icon->{text} =~ /$search/i;
+      $found = 1 if 
+        $icon->{id} =~ /$search/i || 
+        ($icon->{filter} && grep(/$search/i, @{$icon->{filter}}));
     }
+    next unless $found;
 
     my @matchedCats = ();
     foreach my $cat (@{$icon->{categories}}) {
@@ -118,19 +128,19 @@ sub init {
   return if $this->{icons};
 
   # read fontawesome icons
-  my $iconFile = $Foswiki::cfg{PubDir}.'/'.$Foswiki::cfg{SystemWebName}.'/MoreFormfieldsPlugin/icons.yml';
-
-  my $yml = YAML::LoadFile($iconFile); 
+  my $iconFile = $Foswiki::cfg{PubDir}.'/'.$Foswiki::cfg{SystemWebName}.'/MoreFormfieldsPlugin/fontawesome.json';
+  my $text = Foswiki::Func::readFile($iconFile);
+  my $json = JSON::decode_json($text);
 
   my @icons = ();
-
   my %cats = ();
 
-  foreach my $entry (@{$yml->{icons}}) {
+  foreach my $entry (@{$json->{icons}}) {
     $entry->{text} = $entry->{id};
     $entry->{id} = 'fa-'.$entry->{id};
-    $cats{$entry->{categories}} = 1 if TRACE;
+    push @{$entry->{categories}}, "fontawesome";
     push @icons, $entry;
+
     if ($entry->{aliases}) {
       foreach my $alias (@{$entry->{aliases}}) {
         my %clone = %$entry;
@@ -141,7 +151,6 @@ sub init {
       }
     }
   }
-  print STDERR "cats=".join(", ", sort keys %cats)."\n" if TRACE;
 
   # read icons from icon path
   my $iconSearchPath = $Foswiki::cfg{JQueryPlugin}{IconSearchPath}

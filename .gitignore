@@ -1,5 +1,7 @@
 *.gz
 *.swp
+*_new
+*_bak
 pub/System/MoreFormfieldsPlugin/git/
 pub/System/MoreFormfieldsPlugin/phonenumber.js
 pub/System/MoreFormfieldsPlugin/clockpicker.init.js
@@ -9,6 +11,7 @@ pub/System/MoreFormfieldsPlugin/userfield.js
 pub/System/MoreFormfieldsPlugin/networkaddress.js
 pub/System/MoreFormfieldsPlugin/topicfield.js
 pub/System/MoreFormfieldsPlugin/iconfield.js
+pub/System/MoreFormfieldsPlugin/select2.js
 pub/System/MoreFormfieldsPlugin/moreformfields.css
 MoreFormfieldsPlugin.md5
 MoreFormfieldsPlugin.sha1

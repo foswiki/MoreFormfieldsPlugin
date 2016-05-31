@@ -69,15 +69,41 @@ sub beforeSaveHandler {
 
   my $header = $this->param("header") || '';
   my $footer = $this->param("footer") || '';
-  my $source = $this->param("source");
+  my $fields = $this->param("source") || $this->param("fields");
+  my $format = $this->param("format");
   my $sep = $this->param("separator") || '';
-  return unless $source;
 
-  my @result = ();
-  foreach my $name (split(/\s*,\s*/, $source)) {
-    my $field = $topicObject->get('FIELD', $name);
-    push @result, $field->{value} if defined $field && defined $field->{value} && $field->{value} ne '';
+  my @fields;
+  if (defined $fields) {
+    @fields = split(/\s*,\s*/, $fields);
+  } else {
+    @fields = map {$_->{name}} $topicObject->find("FIELD");
   }
+
+  my $result;
+
+  if (defined($format)) {
+    $result = $format;
+
+    foreach my $name (@fields) {
+      my $field = $topicObject->get('FIELD', $name);
+      next unless defined $field;
+      my $value = $field->{value};
+      $value = '' unless defined $value;
+      $result =~ s/\$$name/$value/g;
+    }
+
+  } else {
+
+    my @result = ();
+    foreach my $name (@fields) {
+      my $field = $topicObject->get('FIELD', $name);
+      push @result, $field->{value} if defined $field && defined $field->{value} && $field->{value} ne '';
+    }
+
+    $result = join($sep, @result);
+  }
+  return unless defined $result;
 
   my $thisField = $topicObject->get('FIELD', $this->{name});
   $thisField = {
@@ -89,7 +115,7 @@ sub beforeSaveHandler {
   my $request = Foswiki::Func::getRequestObject();
   $request->delete($this->{name});
 
-  $thisField->{value} = @result?$header.join($sep, @result).$footer:"";
+  $thisField->{value} = $header.$result.$footer;
 
   $topicObject->putKeyed('FIELD', $thisField);
 }
@@ -98,7 +124,7 @@ sub beforeSaveHandler {
 __END__
 Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 
-Copyright (C) 2013-2015 Foswiki Contributors. Foswiki Contributors
+Copyright (C) 2013-2016 Foswiki Contributors. Foswiki Contributors
 are listed in the AUTHORS file in the root of this distribution.
 NOTE: Please extend that file, not this notice.
 

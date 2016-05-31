@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2015 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2016 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -29,6 +29,9 @@ sub addJavascript {
     "<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/networkaddress.js'></script>", 
     "JQUERYPLUGIN::FOSWIKI, JQUERYPLUGIN::LIVEQUERY, JQUERYPLUGIN::VALIDATE");
 
+  Foswiki::Plugins::JQueryPlugin::createPlugin("validate");
+  Foswiki::Plugins::JQueryPlugin::createPlugin("livequery");
+
   if ($Foswiki::cfg{Plugins}{MoreFormfieldsPlugin}{Debug}) {
     Foswiki::Plugins::JQueryPlugin::createPlugin("debug");
   }
@@ -39,7 +42,8 @@ sub addStyles {
   #my $this = shift;
   Foswiki::Func::addToZone("head", 
     "MOREFORMFIELDSPLUGIN::CSS",
-    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />");
+    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />",
+    "JQUERYPLUGIN::SELECT2");
 
 }
 
@@ -104,6 +108,5 @@ sub getDisplayValue {
 
   return "<div class='" . $this->{_class} . "'>$value</div>";
 }
-
 
 1;

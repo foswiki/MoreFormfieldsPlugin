@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="" date="1428580029" format="1.1"  version="1"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1464704972" format="1.1" version="1"}%
 %META:TOPICPARENT{name="MoreFormfieldsPlugin"}%
 ---+!! %TOPIC%
 
@@ -11,7 +11,7 @@
       then="form=~'\b%URLPARAM{"form"}%\b' AND "
     }%%IF{
       "defined topicType" 
-      then="TopicType=~'\b%URLPARAM{"topicType"}%\b' AND "
+      then="(TopicType=~'\b%URLPARAM{"topicType"}%\b' OR @Target.TopicType=~'\b%URLPARAM{"topicType"}%\b') AND "
     }%%FORMATLIST{
       "%IF{
         "'%URLPARAM{"q"}%'=''" 
@@ -38,7 +38,7 @@
     }$percnt
    }"
    separator=",$n"
-   header="{\"results\":[{\"id\":\"\", \"text\":\"- none -\"},$n"
+   header="{\"results\":[$n"
    footer="$n], \"total\":$count}"
 }%</literal>%ENDSECTION{"select2::topic"}%
 </verbatim>
@@ -46,11 +46,11 @@
 ---++ user field backend
 <verbatim class="tml">
 %STARTSECTION{"select2::user"}%<literal>%DBQUERY{
-   "form='\b%IF{
+   "form=~'^(%IF{
       "defined form" 
       then="%URLPARAM{"form"}%"
-      else="UserForm"
-    }%\b' AND %FORMATLIST{
+      else=".*UserForm"
+    }%)$' AND %FORMATLIST{
       "%IF{
         "'%URLPARAM{"q"}%'=''" 
         then="." 

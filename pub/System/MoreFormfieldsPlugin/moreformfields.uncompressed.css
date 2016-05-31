@@ -1,4 +1,6 @@
 .foswikiIpAddress,
+.foswikiIpv4Address,
+.foswikiIpv6Address,
 .foswikiNetmask,
 .foswikiMacAddress {
   font-family:monospace;
@@ -9,7 +11,7 @@
   background-repeat:no-repeat !important;
   background-position:0 0 !important;
   padding-left:35px;
-  position:initial !important;
+  position:static !important;
 }
 .select2-container .image-item {
   line-height:26px;
@@ -17,4 +19,5 @@
 .select2-results .image-item {
   height:32px;
   line-height:32px;
+  overflow:hidden;
 }

@@ -1,6 +1,6 @@
-%META:TOPICINFO{author="ProjectContributor" comment="" date="1428580029" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1464704972" format="1.1"  version="1"}%
 ---+!! %TOPIC%
-%SHORTDESCRIPTION%
+%FORMFIELD{"Description"}%
 
 %TOC%
 
@@ -11,7 +11,8 @@ This plugin implements a set of additional special purpose formfields to be used
 To make use of these formfields use their type identifier in the =Type= column of a !DataForm definition, such as in
 
 | *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
-| <nop>IpAddress | ipaddress |  15  | | network address |  |
+| <nop>IpV4 | ipaddress |  15  | | network address |  |
+| <nop>IpV6 | ipv6address |  40  | | network address |  |
 | Netmask | netmask |  15  | | netmask |  |
 | <nop>MacAddress | macaddress |  17  | | hardware-addresse | |
 
@@ -26,18 +27,32 @@ are extracted and concatenated using the specified =separator=. Values of an =au
 
 *Parameters*:
 
+Either use this approach:
+
+   * =format=: specify a format string to build up the autofill formfield; use =$&lt;field-name>= to reference a formfield (see example below)
+
+... or do it the old way by looping over formfields:
+
    * =header=: add an optional string prefixed to the field value, but only when the source fields are not empty
-   * =source=: comma-separated list of one or more formfields to fetch values from
+   * =fields=: comma-separated list of one or more formfields to fetch values from
    * =separator=: separator used when concatenating all values into a new value for the =autofill= field
    * =footer=: append an optional string to the field value, but only when the source fields are not empty
 
 A typical use-case for an =autofill= field is the construction of a !TopicTitle based on other form properties:
 
 | *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
-| <nop>TopicTitle | autofill |  1  | header="Project" source="Customer, ID, Year" |  |  |
+| <nop>TopicTitle1 | autofill |  1  | header="Project" fields="Customer, ID, Year" |  |  |
+| <nop>TopicTitle2 | autofill |  1  | format="Project-$ID ($Customer, $Year)" |  |  |
 | Customer | text | 80 | | | |
 | ID | id | 4 | | | |
 | Year | text | 4 | | | |
+
+---+++ =date2=
+
+This is an alternative for the core =date= formfield type using the [[JQueryUI][jQuery-ui datepicker widget]] instead of using the [[%SYSTEMWEB%.JSCalendarContrib][Mishoo JSCalendar widget]].
+It will launch a calendar when clicking into a =date2= formfield to select a date from, as well as restricts allowed keys to be entered into the formfield. The format of a =date2= formfield value
+will always be of a =YYYY-MM-DD= pattern and thus not be depending on any locale settings. This is quite important to get consistant data rather than differences based on the user's current browser language.
+While the _value_ stored into a =date2= formfield is locale-independent will it display according to the settings of =$Foswiki::cfg{DefaultDateFormat}= settings.
 
 ---+++ =icon=
 
@@ -97,7 +112,13 @@ Then upon save the =id= formfield will have a value of =0001=.
 
 ---+++ =ipaddress=
 
-A general purpose IP4 address, consisting of 4 octets, e.g. =10.0.0.1= 
+A general purpose IPv4 address, consisting of 4 octets, e.g. =10.0.0.1= 
+
+*Parameters*: none
+
+---+++ =ipv6address=
+
+A general purpose IPv6 address,e.g. =2001:db8:85a3:8d3:1319:8a2e:370:7348=
 
 *Parameters*: none
 
@@ -106,6 +127,11 @@ A general purpose IP4 address, consisting of 4 octets, e.g. =10.0.0.1=
 A hardware address given in 6 hex values, e.g. =00:1a:10:6f:ba:12=
 
 *Parameters*: none
+
+---+++ =natedit=
+
+This renders a textarea using the [[%SYSTEWEB%.NatEditPlugin][NatEditPlugin]]. The size of the imput fields is specified similar to the standard =textarea=
+formfield type. Any additional parameters specific to =natedit= may be specified in the "Values" column.
 
 ---+++ =netmask=
 
@@ -172,26 +198,29 @@ A user reference using JQSelect2Contrib for autocompletion.
    * =form=: !DataForm supposed to be attached to user profile pages; this form is used to search for users, default: !UserForm
 
 ---++ Installation Instructions
-
 %$INSTALL_INSTRUCTIONS%
 
----++ Info
-<!--
-   * Set SHORTDESCRIPTION = Additional formfield types for !DataForms
--->
+---++ Dependencies
+%$DEPENDENCIES%
 
-|  Author(s): | Michael Daum|
-|  Copyright: | &copy; 2010-2015 Michael Daum http://michaeldaumconsulting.com |
-|  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
-|  Release: | %$RELEASE% |
-|  Version: | %$VERSION% |
-|  Change History: | <!-- versions below in reverse order -->&nbsp; |
+---++ Change History
+|  31 May 2016: | added formfield types =date2=, =ipv6address= and =natedit=; removed dependency on YAML; added a =format= parameter to the =autofill= formfield type; added =beforeSaveHandlers= to network address formfield types to normalize their store format on save |
+|  01 Mar 2016: | fixed select2 in jquery-ui modal [[https://github.com/select2/select2/issues/940][not allowing focus]] |
+|  09 Jan 2016: | added ipv6, fixed validation of all network addresses by properly integrating it into jquery.validate |
 |  09 Apr 2015: | documentation; final bugfixing before release; updated to latest clockpicker |
 |  26 Mar 2015: | updated list of all fontawesom icons; fixed rendering of Topic formfields values |
 |  16 Dec 2014: | fixed thumbnails in user autocompletion; don't inherit from <nop>ListFieldDefinition for performance reasons |
 |  22 Aug 2014: | added smarbox formfield |
 |  04 Apr 2014: | fixed compatibility with foswiki >= 1.2.0 |
 |  23 Sep 2010: | initial release |
-|  Dependencies: | %$DEPENDENCIES% |
-|  Home page: | Foswiki:Extensions/%TOPIC% |
-|  Support: | Foswiki:Support/%TOPIC% |
+
+%META:FORM{name="PackageForm"}%
+%META:FIELD{name="Author" title="Author" value="Michael Daum"}%
+%META:FIELD{name="Version" title="Version" value="%25$VERSION%25"}%
+%META:FIELD{name="Release" title="Release" value="%25$RELEASE%25"}%
+%META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
+%META:FIELD{name="Repository" title="Repository" value="https://github.com/foswiki/%25TOPIC%25"}%
+%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2016 Michael Daum http://michaeldaumconsulting.com"}%
+%META:FIELD{name="License" title="License" value="[[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]]"}%
+%META:FIELD{name="Home" title="Home" value="Foswiki:Extensions/%25TOPIC%25"}%
+%META:FIELD{name="Support" title="Support" value="Foswiki:Support/%25TOPIC%25"}%

@@ -1,10 +1,13 @@
 data/System/MoreFormfieldsAjaxHelper.txt 0644
 data/System/MoreFormfieldsPlugin.txt 0644
 lib/Foswiki/Form/Autofill.pm 0644
+lib/Foswiki/Form/Date2.pm 0644
 lib/Foswiki/Form/Icon.pm 0644
 lib/Foswiki/Form/Id.pm 0644
 lib/Foswiki/Form/Ipaddress.pm 0644
+lib/Foswiki/Form/Ipv6address.pm 0644
 lib/Foswiki/Form/Macaddress.pm 0644
+lib/Foswiki/Form/Natedit.pm 0644
 lib/Foswiki/Form/Netmask.pm 0644
 lib/Foswiki/Form/NetworkAddressField.pm 0644
 lib/Foswiki/Form/Phonenumber.pm 0644
@@ -15,6 +18,7 @@ lib/Foswiki/Form/Topic.pm 0644
 lib/Foswiki/Form/User.pm 0644
 lib/Foswiki/Plugins/MoreFormfieldsPlugin/Clockpicker.pm 0644
 lib/Foswiki/Plugins/MoreFormfieldsPlugin/Config.spec 0644
+lib/Foswiki/Plugins/MoreFormfieldsPlugin/DEPENDENCIES 0644
 lib/Foswiki/Plugins/MoreFormfieldsPlugin/IconService.pm 0644
 lib/Foswiki/Plugins/MoreFormfieldsPlugin.pm 0644
 pub/System/MoreFormfieldsPlugin/clockpicker.css 0644
@@ -26,10 +30,10 @@ pub/System/MoreFormfieldsPlugin/clockpicker.js 0644
 pub/System/MoreFormfieldsPlugin/clockpicker.js.gz 0644
 pub/System/MoreFormfieldsPlugin/clockpicker.uncompressed.css 0644
 pub/System/MoreFormfieldsPlugin/clockpicker.uncompressed.js 0644
+pub/System/MoreFormfieldsPlugin/fontawesome.json 0644
 pub/System/MoreFormfieldsPlugin/iconfield.js 0644
 pub/System/MoreFormfieldsPlugin/iconfield.js.gz 0644
 pub/System/MoreFormfieldsPlugin/iconfield.uncompressed.js 0644
-pub/System/MoreFormfieldsPlugin/icons.yml 0644
 pub/System/MoreFormfieldsPlugin/Makefile 0644
 pub/System/MoreFormfieldsPlugin/moreformfields.css 0644
 pub/System/MoreFormfieldsPlugin/moreformfields.css.gz 0644
@@ -41,6 +45,9 @@ pub/System/MoreFormfieldsPlugin/phonenumber.js 0644
 pub/System/MoreFormfieldsPlugin/phonenumber.js.gz 0644
 pub/System/MoreFormfieldsPlugin/phonenumber.uncompressed.js 0644
 pub/System/MoreFormfieldsPlugin/phone.png 0644
+pub/System/MoreFormfieldsPlugin/select2.js 0644
+pub/System/MoreFormfieldsPlugin/select2.js.gz 0644
+pub/System/MoreFormfieldsPlugin/select2.uncompressed.js 0644
 pub/System/MoreFormfieldsPlugin/smartbox.js 0644
 pub/System/MoreFormfieldsPlugin/smartbox.js.gz 0644
 pub/System/MoreFormfieldsPlugin/smartbox.uncompressed.js 0644
@@ -50,3 +57,4 @@ pub/System/MoreFormfieldsPlugin/topicfield.uncompressed.js 0644
 pub/System/MoreFormfieldsPlugin/userfield.js 0644
 pub/System/MoreFormfieldsPlugin/userfield.js.gz 0644
 pub/System/MoreFormfieldsPlugin/userfield.uncompressed.js 0644
+pub/System/MoreFormfieldsPlugin/yaml2json 0644

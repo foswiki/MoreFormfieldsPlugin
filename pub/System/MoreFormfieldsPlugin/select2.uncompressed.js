@@ -10,17 +10,7 @@ jQuery(function($) {
     quietMillis:500
   };
 
-  function formatItem(item) {
-    if (item.thumbnail) {
-      return "<div class='image-item' style='background-image:url("+item.thumbnail + ")'>"+
-        item.text + 
-        "</div>";
-    } else {
-      return item.text;
-    }
-  }
-
-  $(".foswikiTopicField:not(.foswikiTopicFieldInited)").livequery(function() {
+  $(".foswikiSelect2Field:not(.foswikiSelect2FieldInited)").livequery(function() {
     var $this = $(this), 
         opts = $.extend({}, defaults, $this.data()),
         requestOpts = $.extend({}, opts),
@@ -35,11 +25,10 @@ jQuery(function($) {
     //console.log("opts=",opts);
     //console.log("requestOpts=",requestOpts);
 
-    $this.addClass("foswikiTopicFieldInited");
+    $this.addClass("foswikiSelect2FieldInited");
 
     $this.select2({
       allowClear: true,
-      dropdownCssClass: 'ui-dialog', // work around problems with jquery-ui: see https://github.com/select2/select2/issues/940
       placeholder: opts.placeholder,
       minimumInputLength: opts.minimumInputLength,
       width: opts.width,
@@ -73,10 +62,7 @@ jQuery(function($) {
 	  data = {id:val, text:text};
 	}
 	callback(data);
-      },
-      formatResult: formatItem,
-      formatSelection: formatItem
+      }
     });
   });
-
 });

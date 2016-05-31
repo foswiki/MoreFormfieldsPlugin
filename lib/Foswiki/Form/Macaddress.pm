@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2015 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2016 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,6 +26,25 @@ sub new {
   my $this = $class->SUPER::new(@_);
   $this->{_class} = 'foswikiMacAddress';
   return $this;
+}
+
+sub beforeSaveHandler {
+  my ($this, $topicObject) = @_;
+
+  my $field = $topicObject->get('FIELD', $this->{name});
+
+  $field = {
+    name => $this->{name},
+    title => $this->{name},
+  } unless defined $field;
+
+  my @segments = ();
+  foreach my $segment (split(/[\.\-:]/, $field->{value})) {
+    push @segments, sprintf("%02X", hex($segment));
+  }
+  $field->{value} = join(":", @segments);
+
+  $topicObject->putKeyed('FIELD', $field);
 }
 
 1;

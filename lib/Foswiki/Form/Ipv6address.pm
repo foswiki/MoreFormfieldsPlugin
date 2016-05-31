@@ -13,7 +13,7 @@
 # GNU General Public License for more details, published at
 # http://www.gnu.org/copyleft/gpl.html
 
-package Foswiki::Form::Ipaddress;
+package Foswiki::Form::Ipv6address;
 
 use strict;
 use warnings;
@@ -24,28 +24,8 @@ our @ISA = ('Foswiki::Form::NetworkAddressField');
 sub new {
   my $class = shift;
   my $this = $class->SUPER::new(@_);
-  $this->{_class} = 'foswikiIpv4Address';
+  $this->{_class} = 'foswikiIpv6Address';
   return $this;
 }
-
-sub beforeSaveHandler {
-  my ($this, $topicObject) = @_;
-
-  my $field = $topicObject->get('FIELD', $this->{name});
-
-  $field = {
-    name => $this->{name},
-    title => $this->{name},
-  } unless defined $field;
-
-  my @segments = ();
-  foreach my $segment (split(/\./, $field->{value})) {
-    push @segments, sprintf("%03d", $segment);
-  }
-  $field->{value} = join(".", @segments);
-
-  $topicObject->putKeyed('FIELD', $field);
-}
-
 
 1;

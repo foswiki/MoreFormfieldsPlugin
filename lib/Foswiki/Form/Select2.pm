@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2015 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2016 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -40,6 +40,14 @@ sub param {
   }
 
   return (defined $key)?$this->{_params}{$key}:$this->{_params};
+}
+
+sub finish {
+  my $this = shift;
+
+  $this->SUPER::finish();
+
+  undef $this->{_params};
 }
 
 sub renderForEdit {
@@ -103,6 +111,9 @@ sub addJavascript {
   #my $this = shift;
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
+#  Foswiki::Func::addToZone("script", "FOSWIKI::SELECT2FIELD", <<"HERE", "JQUERYPLUGIN::SELECT2");
+#<script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/select2.js'></script>
+#HERE
 }
 
 1;
