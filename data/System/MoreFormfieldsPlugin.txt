@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="" date="1464704972" format="1.1"  version="1"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1467204325" format="1.1"  version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -130,7 +130,7 @@ A hardware address given in 6 hex values, e.g. =00:1a:10:6f:ba:12=
 
 ---+++ =natedit=
 
-This renders a textarea using the [[%SYSTEWEB%.NatEditPlugin][NatEditPlugin]]. The size of the imput fields is specified similar to the standard =textarea=
+This renders a textarea using the [[%SYSTEMWEB%.NatEditPlugin][NatEditPlugin]]. The size of the imput fields is specified similar to the standard =textarea=
 formfield type. Any additional parameters specific to =natedit= may be specified in the "Values" column.
 
 ---+++ =netmask=
@@ -175,7 +175,7 @@ A topic reference using JQSelect2Contrib for autocompletion.
 
    * =web=: the web the user can choose topics from; defaults to current web
    * =default=: the default value to use if no value exists yet
-   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"view"}%/%SYSTEMWEB%/MoreFormfieldsAjaxHelper?section=select2::topic;skin=text;contenttype=application/json=
+   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"rest"}%/RenderPlugin/tempalte?expand=select2::topic;contenttype=application/json=
    * =TopicType=: name of a !TopicType to be selected
 
 Custom parameters may be added. These will be appended to the autocompletion url.
@@ -194,7 +194,7 @@ A user reference using JQSelect2Contrib for autocompletion.
 
 *Parameters*:
 
-   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"view"}%/%SYSTEMWEB%/MoreFormfieldsAjaxHelper?section=select2::user;skin=text;contenttype=application/json=
+   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"rest"}%/RenderPlugin/tempalte?expand=select2::user;contenttype=application/json=
    * =form=: !DataForm supposed to be attached to user profile pages; this form is used to search for users, default: !UserForm
 
 ---++ Installation Instructions
@@ -204,6 +204,13 @@ A user reference using JQSelect2Contrib for autocompletion.
 %$DEPENDENCIES%
 
 ---++ Change History
+%TABLE{columnwidths="7em" tablewidth="100%"}%
+|  16 Jan 2017: | replace <nop>MoreFormfieldsAjaxHelper with a template solution to be able to override it when required; \
+                  fixes in =id= and =autofill= formfields; \
+                  defaulting to YYYY/MM/DD in =date2= formfield now to prevent browsers from interpreting date formfields using their own idea of locales; \
+                  added an =afterSaveHandler= for formfield classes; \
+                  add register of latest fontawesome icons for the =icon= formfield |
+|  29 Jun 2016: | replaced <nop>MoreformfieldAjaxHelper topic with a template approach for higher flexibility |
 |  31 May 2016: | added formfield types =date2=, =ipv6address= and =natedit=; removed dependency on YAML; added a =format= parameter to the =autofill= formfield type; added =beforeSaveHandlers= to network address formfield types to normalize their store format on save |
 |  01 Mar 2016: | fixed select2 in jquery-ui modal [[https://github.com/select2/select2/issues/940][not allowing focus]] |
 |  09 Jan 2016: | added ipv6, fixed validation of all network addresses by properly integrating it into jquery.validate |
@@ -220,7 +227,7 @@ A user reference using JQSelect2Contrib for autocompletion.
 %META:FIELD{name="Release" title="Release" value="%25$RELEASE%25"}%
 %META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
 %META:FIELD{name="Repository" title="Repository" value="https://github.com/foswiki/%25TOPIC%25"}%
-%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2016 Michael Daum http://michaeldaumconsulting.com"}%
+%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2017 Michael Daum http://michaeldaumconsulting.com"}%
 %META:FIELD{name="License" title="License" value="[[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]]"}%
 %META:FIELD{name="Home" title="Home" value="Foswiki:Extensions/%25TOPIC%25"}%
 %META:FIELD{name="Support" title="Support" value="Foswiki:Support/%25TOPIC%25"}%

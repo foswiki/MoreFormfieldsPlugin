@@ -13,6 +13,7 @@ BEGIN {
 
 use Foswiki::Form::FieldDefinition ();
 use Foswiki::Plugins ();
+use Foswiki::Func ();
 our @ISA = ('Foswiki::Form::FieldDefinition');
 
 sub new {
@@ -64,8 +65,10 @@ sub param {
   return (defined $key) ? $this->{_params}{$key} : $this->{_params};
 }
 
-sub beforeSaveHandler {
+sub afterSaveHandler {
   my ($this, $topicObject) = @_;
+
+  #print STDERR "called Foswiki::Form::Autofill::afterSaveHandler()\n";
 
   my $header = $this->param("header") || '';
   my $footer = $this->param("footer") || '';
@@ -73,17 +76,16 @@ sub beforeSaveHandler {
   my $format = $this->param("format");
   my $sep = $this->param("separator") || '';
 
-  my @fields;
-  if (defined $fields) {
-    @fields = split(/\s*,\s*/, $fields);
-  } else {
-    @fields = map {$_->{name}} $topicObject->find("FIELD");
-  }
+  my @fields = ();
+  @fields = split(/\s*,\s*/, $fields) if defined $fields;
 
   my $result;
 
   if (defined($format)) {
     $result = $format;
+    
+    @fields = map {$_->{name}} $topicObject->find("FIELD")
+      unless @fields;
 
     foreach my $name (@fields) {
       my $field = $topicObject->get('FIELD', $name);
@@ -98,7 +100,10 @@ sub beforeSaveHandler {
     my @result = ();
     foreach my $name (@fields) {
       my $field = $topicObject->get('FIELD', $name);
-      push @result, $field->{value} if defined $field && defined $field->{value} && $field->{value} ne '';
+      next unless defined $field;
+      my $value = $field->{value};
+      $value = '' unless defined $value;
+      push @result, $field->{value};
     }
 
     $result = join($sep, @result);
@@ -109,31 +114,33 @@ sub beforeSaveHandler {
   $thisField = {
     name => $this->{name},
     title => $this->{name},
+    value => "",
   } unless defined $thisField;
 
   # remove it from the request so that it doesn't override things here
   my $request = Foswiki::Func::getRequestObject();
   $request->delete($this->{name});
 
-  $thisField->{value} = $header.$result.$footer;
+  my $value = Foswiki::Func::expandCommonVariables(Foswiki::Func::decodeFormatTokens($header . $result . $footer), $topicObject->topic, $topicObject->web, $topicObject);
 
+  return if $thisField->{value} eq $value;
+
+  $thisField->{value} = $value;
   $topicObject->putKeyed('FIELD', $thisField);
+
+  return 1; # trigger mustSave
 }
 
 1;
 __END__
 Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 
-Copyright (C) 2013-2016 Foswiki Contributors. Foswiki Contributors
+Copyright (C) 2013-2017 Foswiki Contributors. Foswiki Contributors
 are listed in the AUTHORS file in the root of this distribution.
 NOTE: Please extend that file, not this notice.
 
 Additional copyrights apply to some or all of the code in this
 file as follows:
-
-Copyright (C) 2001-2007 TWiki Contributors. All Rights Reserved.
-TWiki Contributors are listed in the AUTHORS file in the root
-of this distribution. NOTE: Please extend that file, not this notice.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

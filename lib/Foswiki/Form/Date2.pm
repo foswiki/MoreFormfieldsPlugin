@@ -28,7 +28,7 @@ sub renderForDisplay {
 
     my $epoch = Foswiki::Time::parseTime($value);
     $epoch = 0 unless defined $epoch;
-    $value = Foswiki::Time::formatTime($epoch, $Foswiki::cfg{DefaultDateFormat} || '$year-$mo-$day');
+    $value = Foswiki::Time::formatTime($epoch, $Foswiki::cfg{DefaultDateFormat} || '$year/$mo/$day', 'gmtime');
 
     return $this->SUPER::renderForDisplay($format, $value, $attrs);
 }
@@ -67,7 +67,7 @@ sub renderForEdit {
 1;
 __DATA__
 
-Copyright (C) 2015-2016 Foswiki Contributors. Foswiki Contributors
+Copyright (C) 2015-2017 Foswiki Contributors. Foswiki Contributors
 are listed in the AUTHORS file in the root of this distribution.
 NOTE: Please extend that file, not this notice.
 

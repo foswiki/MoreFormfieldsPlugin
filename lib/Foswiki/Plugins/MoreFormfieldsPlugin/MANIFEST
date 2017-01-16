@@ -1,4 +1,3 @@
-data/System/MoreFormfieldsAjaxHelper.txt 0644
 data/System/MoreFormfieldsPlugin.txt 0644
 lib/Foswiki/Form/Autofill.pm 0644
 lib/Foswiki/Form/Date2.pm 0644
@@ -58,3 +57,4 @@ pub/System/MoreFormfieldsPlugin/userfield.js 0644
 pub/System/MoreFormfieldsPlugin/userfield.js.gz 0644
 pub/System/MoreFormfieldsPlugin/userfield.uncompressed.js 0644
 pub/System/MoreFormfieldsPlugin/yaml2json 0644
+templates/moreformfields.tmpl 0644

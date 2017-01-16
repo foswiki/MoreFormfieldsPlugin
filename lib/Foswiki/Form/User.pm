@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2016 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2017 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,28 +19,24 @@ use strict;
 use warnings;
 
 BEGIN {
-    if ( $Foswiki::cfg{UseLocale} ) {
-        require locale;
-        import locale();
-    }
+  if ($Foswiki::cfg{UseLocale}) {
+    require locale;
+    import locale();
+  }
 }
 
 use Foswiki::Form::Topic ();
 our @ISA = ('Foswiki::Form::Topic');
 
 sub new {
-    my $class = shift;
-    my $this  = $class->SUPER::new(@_);
+  my $class = shift;
+  my $this = $class->SUPER::new(@_);
 
-    $this->{_formfieldClass} = 'foswikiUserField';
-    $this->{_web} = $this->param("web") || $Foswiki::cfg{UsersWebName};
-    $this->{_url} = Foswiki::Func::getScriptUrl($Foswiki::cfg{SystemWebName}, 'MoreFormfieldsAjaxHelper', 'view',
-      section => 'select2::user',
-      skin => 'text',
-      contenttype => 'application/json',
-    );
+  $this->{_formfieldClass} = 'foswikiUserField';
+  $this->{_web} = $this->param("web") || $Foswiki::cfg{UsersWebName};
+  $this->{_url} = Foswiki::Func::expandTemplate("select2::user::url");
 
-    return $this;
+  return $this;
 }
 
 1;

@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2016 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2017 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -33,14 +33,11 @@ sub new {
   my $class = shift;
   my $this = $class->SUPER::new(@_);
 
+  Foswiki::Func::readTemplate("moreformfields");
+
   $this->{_formfieldClass} = 'foswikiTopicField';
   $this->{_web} = $this->param("web") || $this->{session}{webName};
-  $this->{_url} = Foswiki::Func::getScriptUrl(
-    $Foswiki::cfg{SystemWebName}, 'MoreFormfieldsAjaxHelper', 'view',
-    section => 'select2::topic',
-    skin => 'text',
-    contenttype => 'application/json',
-  );
+  $this->{_url} = Foswiki::Func::expandTemplate("select2::topic::url");
 
   return $this;
 }
@@ -169,14 +166,14 @@ sub renderForEdit {
     $value = $param3;
   }
 
+  my $baseWeb = $this->param("web") || $this->{session}{webName};
+  my $baseTopic = $this->{session}{topicName};
+
   my @htmlData = ();
   push @htmlData, 'type="hidden"';
   push @htmlData, 'class="' . $this->cssClasses("foswikiTopicField", $this->{_formfieldClass}) . '"';
   push @htmlData, 'name="' . $this->{name} . '"';
   push @htmlData, 'value="' . $value . '"';
-
-  my $baseWeb = $this->param("web") || $this->{session}{webName};
-  push @htmlData, 'data-base-web="' . $baseWeb . '"';
 
   my $size = $this->{size};
   if (defined $size) {
@@ -197,11 +194,15 @@ sub renderForEdit {
     push @htmlData, 'data-value-text="' . $topicTitle . '"';
   }
 
-  push @htmlData, 'data-url="' . $this->{_url} . '"'
-    if defined($this->{_url}) && !defined($this->param("url"));
+  unless (defined $this->param("url")) {
+    if (defined $this->{_url}) {
+      my $url = Foswiki::Func::expandCommonVariables($this->{_url}, $baseTopic, $baseWeb);
+      push @htmlData, 'data-url="' . $url . '"';
+    }
+    push @htmlData, 'data-topic="' . $baseWeb . '.' . $baseTopic .'"';
+  }
 
   while (my ($key, $val) = each %{$this->param()}) {
-    next if $key =~ /^(web)$/;
     $key = lc(Foswiki::spaceOutWikiWord($key, "-"));
     push @htmlData, 'data-' . $key . '="' . $val . '"';
   }

@@ -1,3 +1,5 @@
+Foswiki::Plugins::DBCachePlugin,>9.00,perl,Required
 Foswiki::Plugins::JQueryPlugin,>5.11,perl,Required
+Foswiki::Plugins::RenderPlugin,>=4.00,perl,Required
 Foswiki::Contrib::JQSelect2Contrib,>1.00,perl,Required
 JSON,>=2.59,cpan,Required
