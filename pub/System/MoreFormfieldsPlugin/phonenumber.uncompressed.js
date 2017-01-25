@@ -1,5 +1,5 @@
-(function($) {
 "use strict";
+(function($) {
 
   $.validator.addMethod('phone', function(value, element) {
     value = value.replace(/\s/g,'');

@@ -1,5 +1,5 @@
-jQuery(function($) {
 "use strict";
+jQuery(function($) {
 
   // methods
   jQuery.validator.addMethod("ipv4_address", function(value, element, param) {

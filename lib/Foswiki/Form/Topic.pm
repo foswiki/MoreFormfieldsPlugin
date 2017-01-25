@@ -111,28 +111,26 @@ sub getDisplayValue {
   if ($this->isMultiValued) {
     my @result = ();
     foreach my $val (split(/\s*,\s*/, $value)) {
-      my $origVal = $val;
+      my ($web, $topic) = Foswiki::Func::normalizeWebTopicName($this->{_web}, $val);
       if ($this->isValueMapped) {
         if (defined($this->{valueMap}{$val})) {
           $val = $this->{valueMap}{$val};
         }
       } else {
-        $val = $this->getTopicTitle($this->{_web}, $val);
+        $val = $this->getTopicTitle($web, $topic);
       }
-      my ($web, $topic) = Foswiki::Func::normalizeWebTopicName($this->{_web}, $origVal);
       push @result, "<a href='%SCRIPTURLPATH{view}%/$web/$topic'>$val</a>";
     }
     $value = join(", ", @result);
   } else {
-    my $origVal = $value;
+    my ($web, $topic) = Foswiki::Func::normalizeWebTopicName($this->{_web}, $value);
     if ($this->isValueMapped) {
       if (defined($this->{valueMap}{$value})) {
         $value = $this->{valueMap}{$value};
       }
     } else {
-      $value = $this->getTopicTitle($this->{_web}, $value);
+      $value = $this->getTopicTitle($web, $topic);
     }
-    my ($web, $topic) = Foswiki::Func::normalizeWebTopicName($this->{_web}, $origVal);
     $value = "<a href='%SCRIPTURLPATH{view}%/$web/$topic'>$value</a>";
   }
 

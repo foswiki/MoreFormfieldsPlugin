@@ -1,5 +1,5 @@
-jQuery(function($) {
 "use strict";
+jQuery(function($) {
 
   var defaults = {
     minimumInputLength: 0,
@@ -51,8 +51,9 @@ jQuery(function($) {
         }
       },
       initSelection: function(elem, callback) {
-	var data = [], text;
+	var data, text;
 	if (opts.multiple) {
+          data = [];
 	  $(val.split(/\s*,\s*/)).each(function () {
 	    text = decodeURIComponent(opts.valueText[this]||this);
 	    data.push({id: this, text: text});

@@ -1,5 +1,5 @@
-jQuery(function($) {
 "use strict";
+jQuery(function($) {
 
   var defaults = {
     minimumInputLength: 0,

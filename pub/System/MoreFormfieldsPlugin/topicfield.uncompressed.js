@@ -1,5 +1,5 @@
-jQuery(function($) {
 "use strict";
+jQuery(function($) {
 
   var defaults = {
     minimumInputLength: 0,
@@ -62,15 +62,26 @@ jQuery(function($) {
         }
       },
       initSelection: function(elem, callback) {
-	var data = [], text;
+	var data, text;
 	if (opts.multiple) {
+          data = [];
 	  $(val.split(/\s*,\s*/)).each(function () {
-	    text = decodeURIComponent(opts.valueText[this]||this);
-	    data.push({id: this, text: text});
+            text = opts.valueText[this]||this;
+            try {
+              text = decodeURIComponent(text);
+              data.push({id: this, text: text});
+            } catch(err) {
+              console && console.error("Error: illegal value in topicfield:",text); 
+            };
 	  });
 	} else {
-          text = decodeURIComponent(opts.valueText);
-	  data = {id:val, text:text};
+          text = opts.valueText;
+          try {
+            text = decodeURIComponent(text);
+            data = {id: this, text: text};
+          } catch(err) {
+            console && console.error("Error: illegal value in topicfield:",text); 
+          };
 	}
 	callback(data);
       },
