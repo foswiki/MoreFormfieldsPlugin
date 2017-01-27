@@ -205,6 +205,7 @@ A user reference using JQSelect2Contrib for autocompletion.
 
 ---++ Change History
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  27 Jan 2017: | render empty =date2= formfields as an empty string, not 01 Jan 1970 |
 |  25 Jan 2017: | fixed =topic= formfield to properly store web dot topic values |
 |  16 Jan 2017: | replace <nop>MoreFormfieldsAjaxHelper with a template solution to be able to override it when required; \
                   fixes in =id= and =autofill= formfields; \

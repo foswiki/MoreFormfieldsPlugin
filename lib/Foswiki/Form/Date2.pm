@@ -28,7 +28,11 @@ sub renderForDisplay {
 
     my $epoch = Foswiki::Time::parseTime($value);
     $epoch = 0 unless defined $epoch;
-    $value = Foswiki::Time::formatTime($epoch, $Foswiki::cfg{DefaultDateFormat} || '$year/$mo/$day', 'gmtime');
+    if ($epoch) {
+      $value = Foswiki::Time::formatTime($epoch, $Foswiki::cfg{DefaultDateFormat} || '$year/$mo/$day', 'gmtime');
+    } else {
+      $value = '';
+    }
 
     return $this->SUPER::renderForDisplay($format, $value, $attrs);
 }
