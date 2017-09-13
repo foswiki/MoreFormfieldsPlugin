@@ -12,6 +12,8 @@ pub/System/MoreFormfieldsPlugin/networkaddress.js
 pub/System/MoreFormfieldsPlugin/topicfield.js
 pub/System/MoreFormfieldsPlugin/iconfield.js
 pub/System/MoreFormfieldsPlugin/select2.js
+pub/System/MoreFormfieldsPlugin/attachmentfield.js
+pub/System/MoreFormfieldsPlugin/smartbox.js
 pub/System/MoreFormfieldsPlugin/moreformfields.css
 /MoreFormfieldsPlugin.md5
 /MoreFormfieldsPlugin.sha1

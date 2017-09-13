@@ -3,7 +3,7 @@ jQuery(function($) {
 
   // methods
   jQuery.validator.addMethod("ipv4_address", function(value, element, param) {
-    return this.optional(element) || /^(25[0-4]|2[0-4]\d|[01]?\d\d?)\.(25[0-4]|2[0-4]\d|[01]?\d\d?)\.(25[0-4]|2[0-4]\d|[01]?\d\d?)\.(25[0-4]|2[0-4]\d|[01]?\d\d?)$/i.test(value);
+    return this.optional(element) || /^(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-4]|2[0-4]\d|[01]?\d\d?)$/i.test(value);
   }, "Please enter a valid IP v4 address.");
 
   jQuery.validator.addMethod("ipv4_netmask", function(value, element, param) {

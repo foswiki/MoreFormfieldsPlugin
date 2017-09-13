@@ -5,6 +5,7 @@ TARGET= \
   networkaddress.js \
   userfield.js \
   topicfield.js \
+  attachmentfield.js \
   phonenumber.js \
   clockpicker.js \
   clockpicker.init.js \

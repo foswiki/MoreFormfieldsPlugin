@@ -1,3 +1,4 @@
+!noci
 data/System/MoreFormfieldsPlugin.txt 0644
 lib/Foswiki/Form/Autofill.pm 0644
 lib/Foswiki/Form/Date2.pm 0644
@@ -15,6 +16,7 @@ lib/Foswiki/Form/Smartbox.pm 0644
 lib/Foswiki/Form/Time.pm 0644
 lib/Foswiki/Form/Topic.pm 0644
 lib/Foswiki/Form/User.pm 0644
+lib/Foswiki/Form/Attachment.pm 0644
 lib/Foswiki/Plugins/MoreFormfieldsPlugin/Clockpicker.pm 0644
 lib/Foswiki/Plugins/MoreFormfieldsPlugin/Config.spec 0644
 lib/Foswiki/Plugins/MoreFormfieldsPlugin/DEPENDENCIES 0644
@@ -56,5 +58,8 @@ pub/System/MoreFormfieldsPlugin/topicfield.uncompressed.js 0644
 pub/System/MoreFormfieldsPlugin/userfield.js 0644
 pub/System/MoreFormfieldsPlugin/userfield.js.gz 0644
 pub/System/MoreFormfieldsPlugin/userfield.uncompressed.js 0644
+pub/System/MoreFormfieldsPlugin/attachmentfield.js 0644
+pub/System/MoreFormfieldsPlugin/attachmentfield.js.gz 0644
+pub/System/MoreFormfieldsPlugin/attachmentfield.uncompressed.js 0644
 pub/System/MoreFormfieldsPlugin/yaml2json 0644
 templates/moreformfields.tmpl 0644

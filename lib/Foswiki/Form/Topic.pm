@@ -12,22 +12,16 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details, published at
 # http://www.gnu.org/copyleft/gpl.html
-
 package Foswiki::Form::Topic;
 
 use strict;
 use warnings;
-use Foswiki::Func ();
+
+use Foswiki::Func();
 use Foswiki::Form::FieldDefinition ();
+use Foswiki::Plugins::JQueryPlugin ();
 use Assert;
 our @ISA = ('Foswiki::Form::FieldDefinition');
-
-BEGIN {
-  if ($Foswiki::cfg{UseLocale}) {
-    require locale;
-    import locale();
-  }
-}
 
 sub new {
   my $class = shift;
@@ -49,7 +43,7 @@ sub getDefaultValue {
     my $this = shift;
 
     my $value = $this->{default};
-    $value = '' unless defined $value;    # allow 0 values
+    $value = '' unless defined $value;
 
     return $value;
 }
@@ -229,7 +223,7 @@ sub addJavascript {
   #my $this = shift;
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
-  Foswiki::Func::addToZone("script", "FOSWIKI::TOPICFIELD", <<"HERE", "JQUERYPLUGIN::SELECT2");
+  Foswiki::Func::addToZone("script", "FOSWIKI::FILEFIELD", <<"HERE", "JQUERYPLUGIN::SELECT2");
 <script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/topicfield.js'></script>
 HERE
 }

@@ -39,6 +39,7 @@ jQuery(function($) {
 
     $this.select2({
       allowClear: true,
+      dropdownCssClass: 'ui-dialog', // work around problems with jquery-ui: see https://github.com/select2/select2/issues/940
       placeholder: opts.placeholder,
       minimumInputLength: opts.minimumInputLength,
       width: opts.width,

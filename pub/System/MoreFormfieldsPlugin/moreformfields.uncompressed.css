@@ -21,3 +21,7 @@
   line-height:32px;
   overflow:hidden;
 }
+.foswikiAttachmentFile .foswikiIcon,
+.foswikiAttachmentFile .imagePlain_left {
+  margin:0 0.5em 0.5em 0;
+}

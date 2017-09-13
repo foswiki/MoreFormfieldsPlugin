@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="" date="1485349736" format="1.1"  version="1"}%
+%META:TOPICINFO{author="micha" comment="reprev" date="1496927925" format="1.1" reprev="9" version="9"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -11,10 +11,18 @@ This plugin implements a set of additional special purpose formfields to be used
 To make use of these formfields use their type identifier in the =Type= column of a !DataForm definition, such as in
 
 | *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
-| <nop>IpV4 | ipaddress |  15  | | network address |  |
-| <nop>IpV6 | ipv6address |  40  | | network address |  |
-| Netmask | netmask |  15  | | netmask |  |
-| <nop>MacAddress | macaddress |  17  | | hardware-addresse | |
+| attachment | attachment | 20 | | | | 
+| date2 | date2 | 30  | | | |
+| icon | icon | 20 | | | | 
+| ipaddress | ipaddress | 15  | | network address |  |
+| ipv6address | ipv6address | 40  | | network address |  |
+| macaddress | macaddress | 17  | | hardware-addresse | |
+| netmask | netmask | 15  | | netmask |  |
+| phonenumber | phonenumber | 20 | | | | 
+| select2 | select2 | 20 | | | |
+| time | time | 20 | | | |
+| topic | topic | 20 | | | |
+| user | user | 20 | | | |
 
 When defining a formfield additional parameters may be used in the =Values= column to further customize the behavior of the element.
 
@@ -205,6 +213,7 @@ A user reference using JQSelect2Contrib for autocompletion.
 
 ---++ Change History
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  13 Sep 2017: | added =attachment= formfield |
 |  27 Jan 2017: | render empty =date2= formfields as an empty string, not 01 Jan 1970 |
 |  25 Jan 2017: | fixed =topic= formfield to properly store web dot topic values |
 |  16 Jan 2017: | replace <nop>MoreFormfieldsAjaxHelper with a template solution to be able to override it when required; \

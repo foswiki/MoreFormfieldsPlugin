@@ -102,8 +102,8 @@ sub afterSaveHandler {
       my $field = $topicObject->get('FIELD', $name);
       next unless defined $field;
       my $value = $field->{value};
-      $value = '' unless defined $value;
-      push @result, $field->{value};
+      next unless defined $value;
+      push @result, $field->{value} unless $value eq '';
     }
 
     $result = join($sep, @result);

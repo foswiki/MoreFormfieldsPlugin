@@ -1,6 +1,47 @@
 %TMPL:DEF{"select2::topic::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields&expand=select2::topic&contenttype=application/json%TMPL:END%
 %TMPL:DEF{"select2::user::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields&expand=select2::user&contenttype=application/json%TMPL:END%
 %TMPL:DEF{"select2::userorgroup::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields&expand=select2::userorgroup&contenttype=application/json%TMPL:END%
+%TMPL:DEF{"select2::attachments::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields&expand=select2::attachments&contenttype=application/json%TMPL:END%
+
+%TMPL:DEF{"imageregex"}%\.(jpe?g|gif|png|svg|webp|mp4|JE?PG|GIF|PNG|SVG|WEBP|MP4)$%TMPL:END%
+
+%TMPL:DEF{"attachments::preview"}%<div class="foswikiAttachmentFile clearfix">%IF{"'$file'=~'%TMPL:P{"imageregex"}%'"
+  then="$percntIMAGE{\"$file\" type=\"plain\" size=\"32x32>\" crop=\"west\" tooltip=\"on\" align=\"left\"}$percnt"
+  else="$percntMIMEICON{\"$file\" size=\"32\"}$percnt"
+}%$file</div>%TMPL:END%
+
+%TMPL:DEF{"select2::attachments"}%<literal>%ATTACHMENTS{
+  include="(?=.*(%URLPARAM{"filter" default=""}%))(?=.*(%FORMATLIST{
+      "%IF{
+        "'%URLPARAM{"q"}%'=''" 
+        then="." 
+        else="%URLPARAM{"q"}%"
+      }%" 
+      split="\s+" 
+      format="$1" 
+      separator="|"
+    }%))"
+  casesensitive="off"
+  warn="off"
+  sort="name"
+  header="{\"results\":[$n"
+  footer="$n], \"total\":$count}"
+  format="  {
+    \"id\": \"$name\",
+    \"text\": \"$name\",
+    \"thumbnail\": \"$percntIF{
+      \"'$name'=~'%TMPL:P{"imageregex"}%'\"
+      then=\"%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=$web.$topic&file=$encode(name)&size=32x32>&crop=west\"
+      else=\"$percntMIMEICON{\"$name\" format=\"$dollarurl\" size=\"32\"}$percnt\"
+    }$percnt\"
+  }"
+  nullheader="{\"results\":[$n"
+  nullformat=""
+  nullfooter="$n], \"total\":0}"
+  separator=",$n"
+  skip="%CALCULATE{"$EVAL(%URLPARAM{"limit" default="10"}%*(%URLPARAM{"page" default="1"}%-1))"}%"
+  limit="%URLPARAM{"limit" default="10"}%"
+}%</literal>%TMPL:END%
 
 %TMPL:DEF{"select2::topic"}%<literal>%DBQUERY{ 
    "%IF{
@@ -25,7 +66,7 @@
     \"id\":\"$topic\", 
     \"text\":\"$expand(topictitle)\"
     $percntATTACHMENTS{\"$web.$topic\"
-         name=\".*\.(jpe?g|gif|png|JE?PG|GIF|PNG)\" 
+         name=\"%TMPL:P{"imageregex"}%\" 
          warn=\"off\" 
          limit=\"1\" 
          sort=\"comment:name\"
@@ -43,7 +84,15 @@
   "defined form" 
   then="%URLPARAM{"form"}%"
   else=".*UserForm"
-}%)$' AND %FORMATLIST{
+}%)$' AND ( %FORMATLIST{
+  "%IF{
+    "'%URLPARAM{"q"}%'=''" 
+    then="." 
+    else="%URLPARAM{"q"}%"
+  }%" 
+  split="\s+" 
+  format="lc(topic)=~lc('$1')" separator=" AND "
+}% OR %FORMATLIST{
   "%IF{
     "'%URLPARAM{"q"}%'=''" 
     then="." 
@@ -51,7 +100,7 @@
   }%" 
   split="\s+" 
   format="lc(%URLPARAM{"property" default="topictitle"}%)=~lc('$1')" separator=" AND "
-}%%TMPL:END%
+}% )%TMPL:END%
 
 %TMPL:DEF{"select2::user::webs"}%%USERSWEB%%TMPL:END%
 
@@ -59,7 +108,7 @@
   \"id\":\"$topic\", 
   \"text\":\"$expand(topictitle)\",
   \"thumbnail\":\"$percntATTACHMENTS{\"$web.$topic\"
-        name=\".*\.(jpe?g|gif|png|JE?PG|GIF|PNG)\" 
+        name=\"%TMPL:P{"imageregex"}%\" 
         warn=\"off\" 
         limit=\"1\" 
         sort=\"comment:name\"
