@@ -12,7 +12,7 @@ jQuery(function($) {
 
   function formatItem(item) {
     if (item.thumbnail) {
-      return "<div class='image-item' style='background-image:url("+item.thumbnail + ")'>"+
+      return "<div class='image-item' style='background-image:url(\""+item.thumbnail + "\")'>"+
         item.text + 
         "</div>";
     } else {
@@ -67,11 +67,17 @@ jQuery(function($) {
           data = [];
 	  $(val.split(/\s*,\s*/)).each(function () {
 	    text = decodeURIComponent(opts.valueText[this]||this);
-	    data.push({id: this, text: text});
+	    data.push({
+              id: this, 
+              text: text
+            });
 	  });
 	} else {
           text = decodeURIComponent(opts.valueText);
-	  data = {id:val, text:text};
+	  data = {
+            id:val, 
+            text:text
+          };
 	}
 	callback(data);
       },

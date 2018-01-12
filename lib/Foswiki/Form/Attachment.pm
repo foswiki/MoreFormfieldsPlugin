@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2017 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2018 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -223,7 +223,7 @@ sub addJavascript {
   Foswiki::Plugins::JQueryPlugin::createPlugin("fontawesome");
   Foswiki::Plugins::JQueryPlugin::createPlugin("uploader");
   Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
-  Foswiki::Func::addToZone("script", "FOSWIKI::TOPICFIELD", <<"HERE", "JQUERYPLUGIN::SELECT2, JQUERYPLUGIN::UPLOADER");
+  Foswiki::Func::addToZone("script", "FOSWIKI::ATTACHMENTFIELD", <<"HERE", "JQUERYPLUGIN::SELECT2, JQUERYPLUGIN::UPLOADER");
 <script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/attachmentfield.js'></script>
 HERE
 }

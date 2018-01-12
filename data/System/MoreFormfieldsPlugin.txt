@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="micha" comment="reprev" date="1496927925" format="1.1" reprev="9" version="9"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1515756256" format="1.1"  version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -11,18 +11,18 @@ This plugin implements a set of additional special purpose formfields to be used
 To make use of these formfields use their type identifier in the =Type= column of a !DataForm definition, such as in
 
 | *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
-| attachment | attachment | 20 | | | | 
-| date2 | date2 | 30  | | | |
-| icon | icon | 20 | | | | 
-| ipaddress | ipaddress | 15  | | network address |  |
-| ipv6address | ipv6address | 40  | | network address |  |
-| macaddress | macaddress | 17  | | hardware-addresse | |
-| netmask | netmask | 15  | | netmask |  |
-| phonenumber | phonenumber | 20 | | | | 
-| select2 | select2 | 20 | | | |
-| time | time | 20 | | | |
-| topic | topic | 20 | | | |
-| user | user | 20 | | | |
+| Attachment | attachment | 20 | | | | 
+| Date2 | date2 | 30  | | | |
+| Icon | icon | 20 | | | | 
+| Ipaddress | ipaddress | 15  | | network address |  |
+| Ipv6address | ipv6address | 40  | | network address |  |
+| Macaddress | macaddress | 17  | | hardware-addresse | |
+| Netmask | netmask | 15  | | netmask |  |
+| Phonenumber | phonenumber | 20 | | | | 
+| Select2 | select2 | 20 | | | |
+| Time | time | 20 | | | |
+| Topic | topic | 20 | | | |
+| User | user | 20 | | | |
 
 When defining a formfield additional parameters may be used in the =Values= column to further customize the behavior of the element.
 
@@ -183,7 +183,7 @@ A topic reference using JQSelect2Contrib for autocompletion.
 
    * =web=: the web the user can choose topics from; defaults to current web
    * =default=: the default value to use if no value exists yet
-   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"rest"}%/RenderPlugin/tempalte?expand=select2::topic;contenttype=application/json=
+   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"rest"}%/RenderPlugin/template?expand=select2::topic;contenttype=application/json=
    * =TopicType=: name of a !TopicType to be selected
 
 Custom parameters may be added. These will be appended to the autocompletion url.
@@ -202,7 +202,7 @@ A user reference using JQSelect2Contrib for autocompletion.
 
 *Parameters*:
 
-   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"rest"}%/RenderPlugin/tempalte?expand=select2::user;contenttype=application/json=
+   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"rest"}%/RenderPlugin/template?expand=select2::user;contenttype=application/json=
    * =form=: !DataForm supposed to be attached to user profile pages; this form is used to search for users, default: !UserForm
 
 ---++ Installation Instructions
@@ -213,6 +213,7 @@ A user reference using JQSelect2Contrib for autocompletion.
 
 ---++ Change History
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  12 Jan 2018: | fixed thumbnails in topic, user and attachment formfields |
 |  13 Sep 2017: | added =attachment= formfield |
 |  27 Jan 2017: | render empty =date2= formfields as an empty string, not 01 Jan 1970 |
 |  25 Jan 2017: | fixed =topic= formfield to properly store web dot topic values |
@@ -238,7 +239,7 @@ A user reference using JQSelect2Contrib for autocompletion.
 %META:FIELD{name="Release" title="Release" value="%25$RELEASE%25"}%
 %META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
 %META:FIELD{name="Repository" title="Repository" value="https://github.com/foswiki/%25TOPIC%25"}%
-%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2017 Michael Daum http://michaeldaumconsulting.com"}%
+%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2018 Michael Daum http://michaeldaumconsulting.com"}%
 %META:FIELD{name="License" title="License" value="[[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]]"}%
 %META:FIELD{name="Home" title="Home" value="Foswiki:Extensions/%25TOPIC%25"}%
 %META:FIELD{name="Support" title="Support" value="Foswiki:Support/%25TOPIC%25"}%

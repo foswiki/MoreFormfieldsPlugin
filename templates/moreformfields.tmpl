@@ -26,15 +26,7 @@
   sort="name"
   header="{\"results\":[$n"
   footer="$n], \"total\":$count}"
-  format="  {
-    \"id\": \"$name\",
-    \"text\": \"$name\",
-    \"thumbnail\": \"$percntIF{
-      \"'$name'=~'%TMPL:P{"imageregex"}%'\"
-      then=\"%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=$web.$topic&file=$encode(name)&size=32x32>&crop=west\"
-      else=\"$percntMIMEICON{\"$name\" format=\"$dollarurl\" size=\"32\"}$percnt\"
-    }$percnt\"
-  }"
+  format="%TMPL:P{"select2::attachments::format"}%"
   nullheader="{\"results\":[$n"
   nullformat=""
   nullfooter="$n], \"total\":0}"
@@ -43,7 +35,17 @@
   limit="%URLPARAM{"limit" default="10"}%"
 }%</literal>%TMPL:END%
 
-%TMPL:DEF{"select2::topic"}%<literal>%DBQUERY{ 
+%TMPL:DEF{"select2::attachments::format"}% {
+  \"id\": \"$name\",
+  \"text\": \"$name\",
+  \"thumbnail\": \"$percntIF{
+    \"'$name'=~'%TMPL:P{"imageregex"}%'\"
+    then=\"%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=$web.$topic&file=$encode(name)&size=32x32>&crop=west\"
+    else=\"$percntMIMEICON{\"$name\" format=\"$dollarurl\" size=\"32\"}$percnt\"
+  }$percnt\"
+}%TMPL:END%
+
+%TMPL:DEF{"select2::topic"}%<literal>%DBQUERY{
    "%IF{
       "defined form" 
       then="form=~'\b%URLPARAM{"form"}%\b' AND "
@@ -59,26 +61,29 @@
       split="\s+" 
       format="lc(%URLPARAM{"property" default="topictitle"}%)=~lc('$1')" separator=" AND "
    }%"
-   web="%WEB%" 
+   webs="%URLPARAM{"web" default="%WEB%"}%" 
    skip="%CALCULATE{"$EVAL(%URLPARAM{"limit" default="10"}%*(%URLPARAM{"page" default="1"}%-1))"}%"
    limit="%URLPARAM{"limit" default="10"}%"
-   format="  {
-    \"id\":\"$topic\", 
-    \"text\":\"$expand(topictitle)\"
-    $percntATTACHMENTS{\"$web.$topic\"
-         name=\"%TMPL:P{"imageregex"}%\" 
-         warn=\"off\" 
-         limit=\"1\" 
-         sort=\"comment:name\"
-         hidenull=\"off\"
-         format=\", \\"thumbnail\\":\\"%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=$web.$topic&file=$dollarname&size=32x32>&crop=west\\"\"
-         DIS_nullformat=\"%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=%SYSTEMWEB%.MetaCommentPlugin&file=nobody.gif&size=32x32>\"
-    }$percnt
-   }"
+   format="%TMPL:P{"select2::topic::format"}%"
    separator=",$n"
    header="{\"results\":[$n"
    footer="$n], \"total\":$count}"
 }%</literal>%TMPL:END%
+
+%TMPL:DEF{"select2::topic::format"}% {
+  \"id\":\"$topic\", 
+  \"text\":\"$expand(topictitle)\",
+  \"thumbnail\": \"$percntTMPL:P{\"select2::topic::thumbnail::url\" web=\"$web\" topic=\"$topic\"}$percnt\"
+} %TMPL:END%
+
+%TMPL:DEF{"select2::topic::thumbnail::url"}%%ATTACHMENTS{"%IF{"'%topic%'=~'^%'" then="%WEB%.%TOPIC%" else="%web%.%topic%"}%"
+  name="%TMPL:P{"imageregex"}%" 
+  warn="off" 
+  limit="1" 
+  %IF{"'%IF{"'%topic%'=~'^%'" then="%WEB%.%TOPIC%" else="%web%.%topic%"}%'/attachments[attr=~'t']" then="attr=\"t\"" else="sort=\"comment:name\""}%
+  hidenull="off"
+  format="%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=$web.$topic&file=$name&size=32x32>&crop=west"
+}%%TMPL:END%
 
 %TMPL:DEF{"select2::user::filter"}%form=~'^(%IF{
   "defined form" 

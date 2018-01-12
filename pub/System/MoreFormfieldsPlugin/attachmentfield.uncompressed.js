@@ -12,7 +12,7 @@ jQuery(function($) {
 
   function formatItem(item) {
     if (item.thumbnail) {
-      return "<div class='image-item' style='background-image:url("+item.thumbnail + ")'>"+
+      return "<div class='image-item' style='background-image:url(\""+item.thumbnail + "\")'>"+
         item.text + 
         "</div>";
     } else {
@@ -20,7 +20,7 @@ jQuery(function($) {
     }
   }
 
-  function getResizeUrl(file) {
+  function getThumbnailUrl(file) {
     if (file.match(/\.(gif|png|jpe?g|svg|mp4)$/)) {
       return foswiki.getScriptUrlPath("rest", "ImagePlugin", "resize", {
         topic: foswiki.getPreference("WEB")+"."+foswiki.getPreference("TOPIC"),
@@ -86,14 +86,14 @@ jQuery(function($) {
 	    data.push({
               id: this, 
               text: decodeURIComponent(this),
-              thumbnail: getResizeUrl(this)
+              thumbnail: getThumbnailUrl(this)
             });
 	  });
 	} else {
 	  data = {
             id:val, 
             text:val,
-            thumbnail: getResizeUrl(val)
+            thumbnail: getThumbnailUrl(val)
           };
 	}
 	callback(data);
@@ -119,13 +119,13 @@ jQuery(function($) {
           data.push({
             id: fileName, 
             text: fileName,
-            thumbnail: getResizeUrl(fileName)
+            thumbnail: getThumbnailUrl(fileName)
           });
         } else {
           data = {
             id: fileName, 
             text: fileName,
-            thumbnail: getResizeUrl(fileName)
+            thumbnail: getThumbnailUrl(fileName)
           };
         }
         $this.select2("data", data);

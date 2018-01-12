@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2017 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2018 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -32,6 +32,7 @@ sub new {
   $this->{_formfieldClass} = 'foswikiTopicField';
   $this->{_web} = $this->param("web") || $this->{session}{webName};
   $this->{_url} = Foswiki::Func::expandTemplate("select2::topic::url");
+  $this->{_thumbnailFormat} = Foswiki::Func::expandTemplate("select2::topic::thumbnail::url");
 
   return $this;
 }
@@ -158,6 +159,8 @@ sub renderForEdit {
     $value = $param3;
   }
 
+  my $thisWeb = $topicObject->web;
+  my $thisTopic = $topicObject->topic;
   my $baseWeb = $this->param("web") || $this->{session}{webName};
   my $baseTopic = $this->{session}{topicName};
 
@@ -176,32 +179,37 @@ sub renderForEdit {
   push @htmlData, 'data-width="' . $size . '"';
 
   if ($this->isMultiValued) {
+    push @htmlData, 'data-multiple="true"';
     my @topicTitles = ();
+    my @thumbnails = ();
     foreach my $v (split(/\s*,\s*/, $value)) {
       push @topicTitles, '"' . $v . '":"' . encode($this->getTopicTitle($baseWeb, $v)) . '"';
+      my $thumb = $this->getThumbnailUrl($baseWeb, $v);
+      push @thumbnails, '"' . $v .'":"'. $thumb . '"';
     }
     push @htmlData, "data-value-text='{" . join(', ', @topicTitles) . "}'";
+    push @htmlData, "data-thumbnail='{" . join(', ', @thumbnails) . "}'";
   } else {
     my $topicTitle = encode($this->getTopicTitle($baseWeb, $value));
     push @htmlData, 'data-value-text="' . $topicTitle . '"';
+    my $thumb = $this->getThumbnailUrl($baseWeb, $value);
+    push @htmlData, 'data-thumbnail="' .$thumb. '"';
   }
 
   unless (defined $this->param("url")) {
     if (defined $this->{_url}) {
-      my $url = Foswiki::Func::expandCommonVariables($this->{_url}, $baseTopic, $baseWeb);
+      my $url = Foswiki::Func::expandCommonVariables($this->{_url}, $thisTopic, $thisWeb, $topicObject);
       push @htmlData, 'data-url="' . $url . '"';
     }
-    push @htmlData, 'data-topic="' . $baseWeb . '.' . $baseTopic .'"';
+    push @htmlData, 'data-topic="' . $thisWeb . '.' . $thisTopic .'"';
   }
 
   while (my ($key, $val) = each %{$this->param()}) {
     $key = lc(Foswiki::spaceOutWikiWord($key, "-"));
+    next if $key eq 'web';
     push @htmlData, 'data-' . $key . '="' . $val . '"';
   }
-
-  if ($this->isMultiValued) {
-    push @htmlData, 'data-multiple="true"';
-  }
+  push @htmlData, 'data-web="' . $baseWeb . '"';
 
   $this->addJavascript();
   $this->addStyles();
@@ -223,7 +231,7 @@ sub addJavascript {
   #my $this = shift;
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
-  Foswiki::Func::addToZone("script", "FOSWIKI::FILEFIELD", <<"HERE", "JQUERYPLUGIN::SELECT2");
+  Foswiki::Func::addToZone("script", "FOSWIKI::TOPICFIELD", <<"HERE", "JQUERYPLUGIN::SELECT2");
 <script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/topicfield.js'></script>
 HERE
 }
@@ -257,11 +265,29 @@ sub getTopicTitle {
   # default to topic name
   $title ||= $topic;
 
-  $title =~ s/\s*$//;
-  $title =~ s/^\s*//;
+  $title =~ s/^\s+|\s+$//g;
 
   return $title;
 }
+
+sub getThumbnailUrl {
+  my ($this, $web, $topic, $size) = @_;
+
+  $size ||= '32x32>';
+
+  return "" unless $topic;
+
+  ($web, $topic) = Foswiki::Func::normalizeWebTopicName($web, $topic);
+
+  my $result = $this->{_thumbnailFormat};
+  $result =~ s/\%web\%/$web/g;
+  $result =~ s/\%topic\%/$topic/g;
+  $result =~ s/\%size\%/$size/g;
+  $result = Foswiki::Func::expandCommonVariables($result);
+
+  return $result;
+}
+
 
 sub encode {
   my $text = shift;

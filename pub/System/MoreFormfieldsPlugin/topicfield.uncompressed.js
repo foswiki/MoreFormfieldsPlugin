@@ -12,7 +12,7 @@ jQuery(function($) {
 
   function formatItem(item) {
     if (item.thumbnail) {
-      return "<div class='image-item' style='background-image:url("+item.thumbnail + ")'>"+
+      return "<div class='image-item' style='background-image:url(\""+item.thumbnail + "\")'>"+
         item.text + 
         "</div>";
     } else {
@@ -65,11 +65,15 @@ jQuery(function($) {
 	var data, text;
 	if (opts.multiple) {
           data = [];
-	  $(val.split(/\s*,\s*/)).each(function () {
+	  $(val.split(/\s*,\s*/)).each(function (index) {
             text = opts.valueText[this]||this;
             try {
               text = decodeURIComponent(text);
-              data.push({id: this, text: text});
+              data.push({
+                id: this, 
+                text: text,
+                thumbnail: opts.thumbnail[this]
+              });
             } catch(err) {
               console && console.error("Error: illegal value in topicfield:",text); 
             };
@@ -78,7 +82,11 @@ jQuery(function($) {
           text = opts.valueText;
           try {
             text = decodeURIComponent(text);
-            data = {id: this, text: text};
+            data = {
+              id: val, 
+              text: text,
+              thumbnail: opts.thumbnail
+            };
           } catch(err) {
             console && console.error("Error: illegal value in topicfield:",text); 
           };
