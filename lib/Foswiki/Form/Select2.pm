@@ -24,13 +24,6 @@ our @ISA = ('Foswiki::Form::Select');
 
 use Assert;
 
-BEGIN {
-  if ($Foswiki::cfg{UseLocale}) {
-    require locale;
-    import locale();
-  }
-}
-
 sub param {
   my ($this, $key) = @_;
 

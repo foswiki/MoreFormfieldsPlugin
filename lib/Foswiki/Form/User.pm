@@ -18,13 +18,6 @@ package Foswiki::Form::User;
 use strict;
 use warnings;
 
-BEGIN {
-  if ($Foswiki::cfg{UseLocale}) {
-    require locale;
-    import locale();
-  }
-}
-
 use Foswiki::Form::Topic ();
 our @ISA = ('Foswiki::Form::Topic');
 

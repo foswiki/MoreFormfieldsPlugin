@@ -112,7 +112,7 @@ sub getDisplayValue {
           $val = $this->{valueMap}{$val};
         }
       } else {
-        $val = $this->getTopicTitle($web, $topic);
+        $val = Foswiki::Func::getTopicTitle($web, $topic);
       }
       push @result, "<a href='%SCRIPTURLPATH{view}%/$web/$topic'>$val</a>";
     }
@@ -124,7 +124,7 @@ sub getDisplayValue {
         $value = $this->{valueMap}{$value};
       }
     } else {
-      $value = $this->getTopicTitle($web, $topic);
+      $value = Foswiki::Func::getTopicTitle($web, $topic);
     }
     $value = "<a href='%SCRIPTURLPATH{view}%/$web/$topic'>$value</a>";
   }
@@ -161,7 +161,7 @@ sub renderForEdit {
 
   my $thisWeb = $topicObject->web;
   my $thisTopic = $topicObject->topic;
-  my $baseWeb = $this->param("web") || $this->{session}{webName};
+  my $baseWeb = $this->{_web};
   my $baseTopic = $this->{session}{topicName};
 
   my @htmlData = ();
@@ -183,14 +183,15 @@ sub renderForEdit {
     my @topicTitles = ();
     my @thumbnails = ();
     foreach my $v (split(/\s*,\s*/, $value)) {
-      push @topicTitles, '"' . $v . '":"' . encode($this->getTopicTitle($baseWeb, $v)) . '"';
+      my $topicTitle = Foswiki::Func::getTopicTitle($baseWeb, $v)||$v;
+      push @topicTitles, '"' . $v . '":"' . encode($topicTitle) . '"';
       my $thumb = $this->getThumbnailUrl($baseWeb, $v);
       push @thumbnails, '"' . $v .'":"'. $thumb . '"';
     }
     push @htmlData, "data-value-text='{" . join(', ', @topicTitles) . "}'";
     push @htmlData, "data-thumbnail='{" . join(', ', @thumbnails) . "}'";
   } else {
-    my $topicTitle = encode($this->getTopicTitle($baseWeb, $value));
+    my $topicTitle = encode(Foswiki::Func::getTopicTitle($baseWeb, $value));
     push @htmlData, 'data-value-text="' . $topicTitle . '"';
     my $thumb = $this->getThumbnailUrl($baseWeb, $value);
     push @htmlData, 'data-thumbnail="' .$thumb. '"';
@@ -234,40 +235,6 @@ sub addJavascript {
   Foswiki::Func::addToZone("script", "FOSWIKI::TOPICFIELD", <<"HERE", "JQUERYPLUGIN::SELECT2");
 <script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/topicfield.js'></script>
 HERE
-}
-
-sub getTopicTitle {
-  my ($this, $web, $topic) = @_;
-
-  my ($meta, undef) = Foswiki::Func::readTopic($web, $topic);
-
-  # read the formfield value
-  my $title = $meta->get('FIELD', 'TopicTitle');
-  if ($title) {
-    $title = $title->{value};
-  }
-
-  # read the topic preference
-  unless ($title) {
-    $title = $meta->get('PREFERENCE', 'TOPICTITLE');
-    if ($title) {
-      $title = $title->{value};
-    }
-  }
-
-  # read the preference
-  unless ($title) {
-    Foswiki::Func::pushTopicContext($web, $topic);
-    $title = Foswiki::Func::getPreferencesValue('TOPICTITLE');
-    Foswiki::Func::popTopicContext();
-  }
-
-  # default to topic name
-  $title ||= $topic;
-
-  $title =~ s/^\s+|\s+$//g;
-
-  return $title;
 }
 
 sub getThumbnailUrl {

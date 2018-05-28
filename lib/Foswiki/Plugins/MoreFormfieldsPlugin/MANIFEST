@@ -1,6 +1,8 @@
 !noci
 data/System/MoreFormfieldsPlugin.txt 0644
+lib/Foswiki/Form/Autoinc.pm 0644
 lib/Foswiki/Form/Autofill.pm 0644
+lib/Foswiki/Form/Bytes.pm 0644
 lib/Foswiki/Form/Date2.pm 0644
 lib/Foswiki/Form/Icon.pm 0644
 lib/Foswiki/Form/Id.pm 0644

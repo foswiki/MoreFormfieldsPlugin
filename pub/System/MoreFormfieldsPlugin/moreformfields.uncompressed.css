@@ -12,6 +12,7 @@
   background-position:0 0 !important;
   padding-left:35px;
   position:static !important;
+  background-size:32px;
 }
 .select2-container .image-item {
   line-height:26px;

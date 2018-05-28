@@ -22,13 +22,6 @@ use Foswiki::Plugins::JQueryPlugin ();
 use Foswiki::Form::FieldDefinition ();
 our @ISA = ('Foswiki::Form::FieldDefinition');
 
-BEGIN {
-  if ($Foswiki::cfg{UseLocale}) {
-    require locale;
-    import locale();
-  }
-}
-
 sub new {
   my $class = shift;
   my $this = $class->SUPER::new(@_);

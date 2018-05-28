@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="" date="1515756256" format="1.1"  version="1"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1527508275" format="1.1"  version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -12,6 +12,7 @@ To make use of these formfields use their type identifier in the =Type= column o
 
 | *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
 | Attachment | attachment | 20 | | | | 
+| Bytes | bytes | 10 | | | |
 | Date2 | date2 | 30  | | | |
 | Icon | icon | 20 | | | | 
 | Ipaddress | ipaddress | 15  | | network address |  |
@@ -27,6 +28,31 @@ To make use of these formfields use their type identifier in the =Type= column o
 When defining a formfield additional parameters may be used in the =Values= column to further customize the behavior of the element.
 
 ---++ Known Formfield types
+
+---+++ =autoinc= 
+
+This is a formfield type that extens Foswiki's core AUTOINC mechanism to enumerate topics when they are created and brings it to 
+formfields. A unique number is assigned to =autoinc= formfields whenever a topic is created will having such a !DataForm attached to it.
+Provisions are taken that these numbers are unique among each other. This feature allow to define number ranges based on the given configuration.
+
+A typical use case would be to have different number ranges based on another formfield, say !ProjectType:
+
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
+| <nop>Type | radio | 3 | new product, experimental, enhancement | specifies the kind of project that is carried out | M |
+| <nop>Number | autoinc | 5 | start="1000" query="Type='$Type'" | unique project number | h |
+
+Whenever a topic with such a !DataForm definition is used will the Number property be calculated given the =start= and =query= parameters.
+That is, a unique number will be assigned for each type of project "new product", "experimental" and "enhancement". All "new product" projects
+receive unique numbers among each other, likewise all "experimental" projects and "enhancement" projects. 
+
+Numbering starts at the value given to the =start= parameter, 1000 in above example. The size column of an =autoinc= formfield specifies the number of digits the number 
+should have similar to the =id= formfield. By default numbering starts at zero. 
+
+By default, number ranges are specified among topics using the same !DataForm by means of a "base query" that filters for topics of the same kind.
+This list is then subdivided by the given =query=. If for some reason you'd like to implement number ranges among different !DataForms you can
+disable this base query using the parameter =basequery="off"=. Not however that you should definitely define a more elaborate query to prevent
+unexpected numbering among other content in the same web (see [[%SYSTEMWEB%.QuerySearch]].)
+
 
 ---+++ =autofill=
 
@@ -54,6 +80,22 @@ A typical use-case for an =autofill= field is the construction of a !TopicTitle 
 | Customer | text | 80 | | | |
 | ID | id | 4 | | | |
 | Year | text | 4 | | | |
+
+---+++ =bytes=
+
+This formfield displays a numeric value in a "humanized" bytes notation, using magnitutes of two:
+B, KB, MB, GB, TB, PB, EB and ZB. 
+
+Example:
+
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
+| File Size | bytes | 10 | max="MB" prec="4" | | |
+
+The =FileSize= formfield will display the value using a maximum magnitude of megabytes using a precision of 4.
+
+For instance a value of =2033189908= will be displayed as 1939.0010 MB given the parameters in above example definition. 
+Without any parameters this value value would be displayed using the simples way, 1.89 GB in this case.
+
 
 ---+++ =date2=
 

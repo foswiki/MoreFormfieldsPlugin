@@ -53,6 +53,60 @@ sub initPlugin {
   return 1;
 }
 
+sub beforeEditHandler {
+  my ($text, $topic, $web, $meta) = @_;
+  
+  my $form = $meta->get("FORM");
+  return unless $form;
+
+  my $formName = $form->{name};
+
+  my $session = $Foswiki::Plugins::SESSION;
+
+  $form = undef;
+  try {
+    $form = new Foswiki::Form($session, $web, $formName);
+  } catch Foswiki::OopsException with {
+    my $error = shift;
+    #print STDERR "Error reading form definition for $formName ... baling out\n";
+  };
+  return unless $form;
+
+  # forward to formfields
+  foreach my $field (@{$form->getFields}) {
+    if ($field->can("beforeEditHandler")) {
+      $field->beforeEditHandler($meta, $form);
+    }
+  }
+}
+
+sub afterEditHandler {
+  my ($text, $topic, $web, $meta) = @_;
+  
+  my $form = $meta->get("FORM");
+  return unless $form;
+
+  my $formName = $form->{name};
+
+  my $session = $Foswiki::Plugins::SESSION;
+
+  $form = undef;
+  try {
+    $form = new Foswiki::Form($session, $web, $formName);
+  } catch Foswiki::OopsException with {
+    my $error = shift;
+    #print STDERR "Error reading form definition for $formName ... baling out\n";
+  };
+  return unless $form;
+
+  # forward to formfields
+  foreach my $field (@{$form->getFields}) {
+    if ($field->can("afterEditHandler")) {
+      $field->afterEditHandler($meta, $form);
+    }
+  }
+}
+
 sub beforeSaveHandler {
   my ($text, $topic, $web, $meta) = @_;
   

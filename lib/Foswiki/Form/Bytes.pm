@@ -13,45 +13,57 @@
 # GNU General Public License for more details, published at
 # http://www.gnu.org/copyleft/gpl.html
 
-package Foswiki::Form::Phonenumber;
+package Foswiki::Form::Bytes;
 
 use strict;
 use warnings;
 
 use Foswiki::Form::Text ();
+use Scalar::Util qw( looks_like_number );
 our @ISA = ('Foswiki::Form::Text');
+our @BYTE_SUFFIX = ('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB');
 
-sub addStyles {
-  #my $this = shift;
-  Foswiki::Func::addToZone("head", 
-    "MOREFORMFIELDSPLUGIN::CSS",
-    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />",
-    "JQUERYPLUGIN::SELECT2");
+sub finish {
+  my $this = shift;
 
+  $this->SUPER::finish();
+
+  undef $this->{_params};
 }
 
-sub addJavascript {
-  #my $this = shift;
-  Foswiki::Func::addToZone("script", 
-    "MOREFORMFIELDSPLUGIN::PHONENUMBER::JS",
-    "<script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/phonenumber.js'></script>", 
-    "JQUERYPLUGIN::FOSWIKI, JQUERYPLUGIN::LIVEQUERY, JQUERYPLUGIN::VALIDATE");
+sub param {
+  my ($this, $key) = @_;
+
+  unless (defined $this->{_params}) {
+    my %params = Foswiki::Func::extractParameters($this->{value});
+    $this->{_params} = \%params;
+  }
+
+  return (defined $key)?$this->{_params}{$key}:$this->{_params};
+}
+
+sub getDefaultValue {
+    my $this = shift;
+
+    my $value =
+      ( exists( $this->{default} ) ? $this->{default} : '' );
+    $value = '' unless defined $value;
+
+    return $value;
 }
 
 sub renderForEdit {
   my ($this, $topicObject, $value) = @_;
 
-  $this->addJavascript();
-  $this->addStyles();
-
   return (
     '',
     CGI::textfield(
-      -class => $this->cssClasses('foswikiInputField foswikiPhoneNumber'),
+      -class => $this->cssClasses('foswikiInputField foswikiBytesField'),
       -name => $this->{name},
       -size => $this->{size},
       -override => 1,
       -value => $value,
+      -data_rule_pattern => '^[+\-]?\d+(\.\d+)?$',
     )
   );
 }
@@ -65,21 +77,36 @@ sub renderForDisplay {
   $format =~ s/\$value\(display\)/$displayValue/g;
   $format =~ s/\$value/$value/g;
 
-  $this->addStyles();
-  $this->addJavascript();
-
   return $this->SUPER::renderForDisplay($format, $value, $attrs);
 }
+
 
 sub getDisplayValue {
   my ($this, $value) = @_;
 
-  my $number = $value;
-  $number =~ s/\s+//g;
-  $number =~ s/\(.*?\)//g;
-  $number =~ s/^\+/00/;
+  return $value unless looks_like_number($value);
+  my $max = $this->param("max") || '';
 
-  return "<a href='sip:$number' class='foswikiPhoneNumber'>$value</a>";
+  my $magnitude = 0;
+  my $suffix;
+  my $orig = $value;
+
+  while ($magnitude < scalar(@BYTE_SUFFIX)) {
+    $suffix = $BYTE_SUFFIX[$magnitude];
+    last if $value < 1024;
+    last if $max eq $suffix;
+    $value = $value/1024;
+    $magnitude++;
+  };
+
+  my $prec = $this->param("prec") // 2;
+
+  my $result = sprintf("%.0".$prec."f", $value);
+  $result =~ s/\.00$//;
+  $result .= ' '. $suffix;
+
+  return $result;
 }
 
 1;
+
