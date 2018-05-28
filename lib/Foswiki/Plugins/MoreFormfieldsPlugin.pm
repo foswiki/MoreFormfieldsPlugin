@@ -25,8 +25,8 @@ use Foswiki::Plugins ();
 
 use Error qw(:try);
 
-our $VERSION = '4.10';
-our $RELEASE = '12 Jan 2018';
+our $VERSION = '5.00';
+our $RELEASE = '28 May 2018';
 our $SHORTDESCRIPTION = 'Additional formfield types for %SYSTEMWEB%.DataForms';
 our $NO_PREFS_IN_TOPIC = 1;
 

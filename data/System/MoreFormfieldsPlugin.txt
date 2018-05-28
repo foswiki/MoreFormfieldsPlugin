@@ -255,6 +255,7 @@ A user reference using JQSelect2Contrib for autocompletion.
 
 ---++ Change History
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  28 May 2018: | new formfields =bytes= and =autoinc= |
 |  12 Jan 2018: | fixed thumbnails in topic, user and attachment formfields |
 |  13 Sep 2017: | added =attachment= formfield |
 |  27 Jan 2017: | render empty =date2= formfields as an empty string, not 01 Jan 1970 |
