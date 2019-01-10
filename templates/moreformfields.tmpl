@@ -1,14 +1,15 @@
-%TMPL:DEF{"select2::topic::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields&expand=select2::topic&contenttype=application/json%TMPL:END%
-%TMPL:DEF{"select2::user::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields&expand=select2::user&contenttype=application/json%TMPL:END%
-%TMPL:DEF{"select2::userorgroup::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields&expand=select2::userorgroup&contenttype=application/json%TMPL:END%
-%TMPL:DEF{"select2::attachments::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields&expand=select2::attachments&contenttype=application/json%TMPL:END%
+%TMPL:DEF{"select2::topic::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields;expand=select2::topic;contenttype=application/json%TMPL:END%
+%TMPL:DEF{"select2::user::url"}%%SCRIPTURLPATH{"rest"}%/MoreFormfieldsPlugin/users%TMPL:END%
+%TMPL:DEF{"select2::group::url"}%%SCRIPTURLPATH{"rest"}%/MoreFormfieldsPlugin/groups%TMPL:END%
+%TMPL:DEF{"select2::userorgroup::url"}%%SCRIPTURLPATH{"rest"}%/MoreFormfieldsPlugin/userorgroup%TMPL:END%
+%TMPL:DEF{"select2::attachments::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields;expand=select2::attachments;contenttype=application/json%TMPL:END%
 
 %TMPL:DEF{"imageregex"}%\.(jpe?g|gif|png|svg|webp|mp4|JE?PG|GIF|PNG|SVG|WEBP|MP4)$%TMPL:END%
 
 %TMPL:DEF{"attachments::preview"}%<div class="foswikiAttachmentFile clearfix">%IF{"'$file'=~'%TMPL:P{"imageregex"}%'"
-  then="$percntIMAGE{\"$file\" type=\"plain\" size=\"32x32>\" crop=\"west\" tooltip=\"on\" align=\"left\"}$percnt"
+  then="$percntIMAGE{\"$file\" type=\"plain\" size=\"32x32>^\" crop=\"northwest\" tooltip=\"on\" align=\"left\"}$percnt"
   else="$percntMIMEICON{\"$file\" size=\"32\"}$percnt"
-}%$file</div>%TMPL:END%
+}%</div>%TMPL:END%
 
 %TMPL:DEF{"select2::attachments"}%<literal>%ATTACHMENTS{
   include="(?=.*(%URLPARAM{"filter" default=""}%))(?=.*(%FORMATLIST{
@@ -40,7 +41,7 @@
   \"text\": \"$name\",
   \"thumbnail\": \"$percntIF{
     \"'$name'=~'%TMPL:P{"imageregex"}%'\"
-    then=\"%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=$web.$topic&file=$encode(name)&size=32x32>&crop=west\"
+    then=\"%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=$web.$topic;file=$encode(name);size=32x32>^;crop=west\"
     else=\"$percntMIMEICON{\"$name\" format=\"$dollarurl\" size=\"32\"}$percnt\"
   }$percnt\"
 }%TMPL:END%
@@ -73,7 +74,7 @@
 }%</literal>%TMPL:END%
 
 %TMPL:DEF{"select2::topic::format"}% {
-  \"id\":\"$topic\", 
+  \"id\":\"$percntIF{\"'%WEB%'!='$web'\" then=\"$web.\"}$percnt$topic\", 
   \"text\":\"$expand(topictitle)\",
   \"thumbnail\": \"$percntTMPL:P{\"select2::topic::thumbnail::url\" web=\"$web\" topic=\"$topic\"}$percnt\"
 } %TMPL:END%
@@ -82,85 +83,29 @@
   name="%TMPL:P{"imageregex"}%" 
   warn="off" 
   limit="1" 
-  %IF{"'%IF{"'%topic%'=~'^%'" then="%WEB%.%TOPIC%" else="%web%.%topic%"}%'/attachments[attr=~'t']" then="attr=\"t\"" else="sort=\"comment:name\""}%
+  %IF{"'%IF{"'%topic%'=~'^%'" 
+          then="%WEB%.%TOPIC%" 
+          else="%web%.%topic%"
+        }%'/attachments[attr=~'t']" 
+    then="attr=\"t\"" 
+    else="sort=\"comment:name\""
+  }%
   hidenull="off"
-  format="%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=$web.$topic&file=$name&size=32x32>&crop=west"
+  format="%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=$web.$topic;file=$name;size=32x32>^;crop=west"
 }%%TMPL:END%
 
-%TMPL:DEF{"select2::user::filter"}%form=~'^(%IF{
-  "defined form" 
-  then="%URLPARAM{"form"}%"
-  else=".*UserForm"
-}%)$' AND ( %FORMATLIST{
-  "%IF{
-    "'%URLPARAM{"q"}%'=''" 
-    then="." 
-    else="%URLPARAM{"q"}%"
-  }%" 
-  split="\s+" 
-  format="lc(topic)=~lc('$1')" separator=" AND "
-}% OR %FORMATLIST{
-  "%IF{
-    "'%URLPARAM{"q"}%'=''" 
-    then="." 
-    else="%URLPARAM{"q"}%"
-  }%" 
-  split="\s+" 
-  format="lc(%URLPARAM{"property" default="topictitle"}%)=~lc('$1')" separator=" AND "
-}% )%TMPL:END%
-
-%TMPL:DEF{"select2::user::webs"}%%USERSWEB%%TMPL:END%
-
-%TMPL:DEF{"select2::user::format"}% {
-  \"id\":\"$topic\", 
-  \"text\":\"$expand(topictitle)\",
-  \"thumbnail\":\"$percntATTACHMENTS{\"$web.$topic\"
-        name=\"%TMPL:P{"imageregex"}%\" 
-        warn=\"off\" 
-        limit=\"1\" 
-        sort=\"comment:name\"
-        hidenull=\"off\"
-        format=\"%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=$web.$topic&file=$dollarname&size=32x32>\"
-        nullformat=\"%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=%SYSTEMWEB%.MetaCommentPlugin&file=nobody.gif&size=32x32>&crop=west\"
-  }$percnt\"
-} %TMPL:END%
-
-%TMPL:DEF{"select2::user"}%<literal>%DBQUERY{
-   "%TMPL:P{"select2::user::filter"}%"
-   webs="%TMPL:P{"select2::user::webs"}%" 
-   skip="%CALCULATE{"$EVAL(%URLPARAM{"limit" default="10"}%*(%URLPARAM{"page" default="1"}%-1))"}%"
-   limit="%URLPARAM{"limit" default="10"}%"
-   format="%TMPL:P{"select2::user::format"}%"
-   exclude="%URLPARAM{"exclude"}%"
-   include="%URLPARAM{"include"}%"
-   separator=",$n"
-   header="{\"results\":[$n"
-   footer="$n], \"total\":$count}"
-}%</literal>%TMPL:END%
-
-%TMPL:DEF{"select2::userorgroup::filter"}%(form=~'^(%IF{
-  "defined form" 
-  then="%URLPARAM{"form"}%"
-  else=".*UserForm"
-}%)$' OR topic=~'.*Group$') AND %FORMATLIST{
-  "%IF{
-    "'%URLPARAM{"q"}%'=''" 
-    then="." 
-    else="%URLPARAM{"q"}%"
-  }%" 
-  split="\s+" 
-  format="lc(%URLPARAM{"property" default="topictitle"}%)=~lc('$1')" separator=" AND "
+%TMPL:DEF{"select2::user::thumbnail::url"}%%ATTACHMENTS{"%IF{"'%topic%'=~'^%'" then="%WEB%.%TOPIC%" else="%web%.%topic%"}%"
+  name="%TMPL:P{"imageregex"}%" 
+  warn="off" 
+  limit="1" 
+  %IF{"'%IF{"'%topic%'=~'^%'" 
+          then="%WEB%.%TOPIC%" 
+          else="%web%.%topic%"
+        }%'/attachments[attr=~'t']" 
+    then="attr=\"t\"" 
+    else="sort=\"comment:name\""
+  }%
+  hidenull="off"
+  format="%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=$web.$topic;file=$name;size=32x32>^;crop=west"
+  nullformat="%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=%SYSTEMWEB%.MoreFormfieldsPlugin;file=nobody.gif;size=32x32>^;crop=west"
 }%%TMPL:END%
-
-%TMPL:DEF{"select2::userorgroup"}%<literal>%DBQUERY{
-   "%TMPL:P{"select2::userorgroup::filter"}%"
-   webs="%TMPL:P{"select2::user::webs"}%" 
-   skip="%CALCULATE{"$EVAL(%URLPARAM{"limit" default="10"}%*(%URLPARAM{"page" default="1"}%-1))"}%"
-   limit="%URLPARAM{"limit" default="10"}%"
-   format="%TMPL:P{"select2::user::format"}%"
-   exclude="%URLPARAM{"exclude"}%"
-   include="%URLPARAM{"include"}%"
-   separator=",$n"
-   header="{\"results\":[$n"
-   footer="$n], \"total\":$count}"
-}%</literal>%TMPL:END%

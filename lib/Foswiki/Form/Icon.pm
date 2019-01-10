@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2018 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -48,12 +48,8 @@ sub param {
 sub renderForEdit {
   my ($this, $topicObject, $value) = @_;
 
-  Foswiki::Plugins::JQueryPlugin::createPlugin("fontawesome");
-  Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
-
-  Foswiki::Func::addToZone("script", "FOSWIKI::ICONFIELD", <<'HERE', "JQUERYPLUGIN::FONTAWESOME, JQUERYPLUGIN::SELECT2");
-<script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/iconfield.js'></script>
-HERE
+  $this->init();
+  Foswiki::Plugins::JQueryPlugin->getIconService()->loadAllIconFonts();
 
   my @htmlData = ();
   push @htmlData, "type='hidden'";
@@ -83,11 +79,22 @@ HERE
   return ('', $field);
 }
 
+sub init {
+  my $this = shift;
+
+  return if $this->{_inited};
+  $this->{_inited} = 1;
+
+  Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
+  Foswiki::Func::addToZone("script", "FOSWIKI::ICONFIELD", <<'HERE', "JQUERYPLUGIN::SELECT2");
+<script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/iconfield.js'></script>
+HERE
+}
 
 sub renderForDisplay {
     my ( $this, $format, $value, $attrs ) = @_;
 
-    Foswiki::Plugins::JQueryPlugin::createPlugin("fontawesome");
+    $this->init();
 
     my $displayValue = $this->getDisplayValue($value);
     $format =~ s/\$value\(display\)/$displayValue/g;
@@ -99,13 +106,7 @@ sub renderForDisplay {
 sub getDisplayValue {
     my ( $this, $value ) = @_;
 
-    my $icon = Foswiki::Plugins::JQueryPlugin::handleJQueryIcon($this->{session}, {
-      _DEFAULT => $value
-    });
-
-    my $text = $value;
-    $text =~ s/^fa\-//;
-    return $icon;
+    return Foswiki::Plugins::JQueryPlugin::getIconService->renderIcon($value);
 }
 
 1;

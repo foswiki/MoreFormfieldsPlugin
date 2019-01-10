@@ -1,6 +1,6 @@
 # Plugin for Foswiki -V The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2013-2018 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2013-2019 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,12 +25,13 @@ use Foswiki::Plugins ();
 
 use Error qw(:try);
 
-our $VERSION = '5.00';
-our $RELEASE = '28 May 2018';
+our $VERSION = '6.00';
+our $RELEASE = '10 Jan 2019';
 our $SHORTDESCRIPTION = 'Additional formfield types for %SYSTEMWEB%.DataForms';
 our $NO_PREFS_IN_TOPIC = 1;
 
 our $iconService;
+our $userService;
 
 sub initPlugin {
 
@@ -44,13 +45,70 @@ sub initPlugin {
     authenticate => 0,
     validate => 0,
     http_allow => 'GET,POST',
+    description => 'Gets a list of icons.'
+  );
+
+  Foswiki::Func::registerRESTHandler("users", sub {
+    unless (defined $userService) {
+      require Foswiki::Plugins::MoreFormfieldsPlugin::UserService;
+      $userService = Foswiki::Plugins::MoreFormfieldsPlugin::UserService->new();
+    }
+    $userService->handleUsers(@_);
+  },
+    authenticate => 1,
+    validate     => 0,
+    http_allow   => 'GET,POST',
+    description => 'Expand the list of users.'
+  );
+
+  Foswiki::Func::registerRESTHandler("groups", sub {
+    unless (defined $userService) {
+      require Foswiki::Plugins::MoreFormfieldsPlugin::UserService;
+      $userService = Foswiki::Plugins::MoreFormfieldsPlugin::UserService->new();
+    }
+    $userService->handleGroups(@_);
+  },
+    authenticate => 1,
+    validate     => 0,
+    http_allow   => 'GET,POST',
+    description => 'Expand the list of groups.'
+  );
+
+  Foswiki::Func::registerRESTHandler("userorgroup", sub {
+    unless (defined $userService) {
+      require Foswiki::Plugins::MoreFormfieldsPlugin::UserService;
+      $userService = Foswiki::Plugins::MoreFormfieldsPlugin::UserService->new();
+    }
+    $userService->handleUserOrGroup(@_);
+  },
+    authenticate => 1,
+    validate     => 0,
+    http_allow   => 'GET,POST',
+    description => 'Expand the list of users and groups.'
   );
 
   if (Foswiki::Func::getContext()->{DBCachePluginEnabled}) {
     require Foswiki::Plugins::DBCachePlugin;
   }
 
+  if (Foswiki::Func::getContext()->{MetaDataPluginEnabled}) {
+    require Foswiki::Plugins::MetaDataPlugin;
+    Foswiki::Plugins::MetaDataPlugin::registerSaveHandler(\&saveMetaDataHandler);
+  }
+
   return 1;
+}
+
+sub finishPlugin {
+  if (defined $iconService) {
+    $iconService->finish();
+    undef $iconService;
+  }
+
+  if (defined $userService) {
+    $userService->finish();
+    undef $userService;
+  }
 }
 
 sub beforeEditHandler {
@@ -103,6 +161,35 @@ sub afterEditHandler {
   foreach my $field (@{$form->getFields}) {
     if ($field->can("afterEditHandler")) {
       $field->afterEditHandler($meta, $form);
+    }
+  }
+}
+
+sub saveMetaDataHandler {
+  my ($web, $topic, $metaDataName, $record) = @_;
+
+  #print STDERR "called saveMetaDataHandler for $web.$topic metadata=$metaDataName\n";
+
+  my $metaDataDef = $Foswiki::Meta::VALIDATE{$metaDataName};
+  return unless defined $metaDataDef;
+  return unless defined $metaDataDef->{form};
+
+  my ($formWeb, $formTopic) = Foswiki::Func::normalizeWebTopicName($web, $metaDataDef->{form});
+  return unless Foswiki::Func::topicExists($formWeb, $formTopic);
+
+  my $formDef;
+  try {
+    my $session = $Foswiki::Plugins::SESSION;
+    $formDef = new Foswiki::Form($session, $formWeb, $formTopic);
+  } catch Foswiki::OopsException with {
+    my $e = shift;
+    print STDERR "ERROR: can't read form definition $formWeb.$formTopic in MoreFormfieldsPlugin::saveMetaDataHandler\n";
+  };
+  return unless defined $formDef;
+
+  foreach my $field (@{$formDef->getFields}) {
+    if ($field->can("saveMetaDataHandler")) {
+      $field->saveMetaDataHandler($record, $formDef);
     }
   }
 }

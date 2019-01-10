@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2018 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,7 +21,6 @@ use warnings;
 use Foswiki::Form::FieldDefinition ();
 use Foswiki::Plugins::JQueryPlugin ();
 use Foswiki::Time ();
-use Time::ParseDate ();
 our @ISA = ('Foswiki::Form::FieldDefinition');
 
 sub new {
@@ -51,48 +50,34 @@ sub param {
     $this->{_params} = \%params;
   }
 
+
   return (defined $key) ? $this->{_params}{$key} : $this->{_params};
 }
 
-sub DIS_beforeSaveHandler {
-  my ($this, $meta) = @_;
+sub getLang {
+  my ($this) = @_;
 
-  my $field = $meta->get('FIELD', $this->{name});
-  return unless $field;
-
-  my $epoch = $this->parseDate($field->{value});
-
-  if (defined $epoch) {
-    $field->{value} = $epoch;
-    $meta->putKeyed('FIELD', $field);
-  }
+  return $this->param("lang")
+    || $this->param("language")
+    || Foswiki::Func::getPreferencesValue("LANGUAGE")
+    || $Foswiki::Plugins::SESSION->i18n->language()
+    || 'en'; 
 }
 
-sub beforeEditHandler {
-  my ($this, $meta) = @_;
+sub getDisplayValue {
+  my ($this, $value) = @_;
 
-  my $field = $meta->get('FIELD', $this->{name});
-  return unless $field;
+  #my ($pkg, undef, $line) = caller;
+  #print STDERR "called getDisplayValue($value) by $pkg, line $line\n";
 
-  my $epoch = $this->parseDate($field->{value});
+  my $epoch = $value;
+  $epoch = $this->parseDate($value) unless $value =~ /^\-?\d+$/;
 
-  if (defined $epoch) {
-    my $val = $this->formatDate($epoch);
-    $field->{value} = $val;
-    $meta->putKeyed('FIELD', $field);
-  }
-}
+  return $value unless $epoch;
+  my $result = $this->formatDate($epoch);
 
-sub renderForDisplay {
-  my ($this, $format, $value, $attrs) = @_;
-
-  my $epoch = $this->parseDate($value);
-
-  if (defined $epoch) {
-    $value = $this->formatDate($epoch);
-  }
-
-  return $this->SUPER::renderForDisplay($format, $value, $attrs);
+  #print STDERR "... result=$result\n";
+  return $result;
 }
 
 sub renderForEdit {
@@ -108,8 +93,13 @@ sub renderForEdit {
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("ui::datepicker");
 
-  my $epoch = $this->parseDate($value);
-  $value = $this->formatDate($epoch) if defined $epoch;
+  my $epoch;
+  if ($value =~ /^\-?\d+$/) {
+    $epoch = $value;
+  } else {
+    $epoch = $this->parseDate($value);
+    $value = $epoch if defined $epoch;
+  }
 
   my $dateFormat = _convertFormatToJQueryUI($this->param("format") || $Foswiki::cfg{DefaultDateFormat} || '$year/$mo/$day');
 
@@ -121,6 +111,7 @@ sub renderForEdit {
       "data-change-month" => "true",
       "data-change-year" => "true",
       "data-date-format" => $dateFormat,
+      "data-lang" => $this->getLang(),
       class => $this->can('cssClasses')
       ? $this->cssClasses('foswikiInputField', 'jqUIDatepicker')
       : 'foswikiInputField jqUIDatepicker'
@@ -130,70 +121,111 @@ sub renderForEdit {
   return ('', $value);
 }
 
+sub DIS_saveMetaDataHandler {
+  my ($this, $record, $formDef) = @_;
+
+  my $fieldName = $this->{name};
+  my $fieldValue = $record->{$fieldName};
+  return unless defined $fieldValue;
+
+  my $epoch = $this->parseDate($fieldValue);
+
+  #print STDERR "saveMetaDataHandler() $fieldName=$fieldValue, epoch=".($epoch//'undef')."\n";
+
+  if (defined $epoch) { 
+    $record->{$fieldName."_origvalue"} = $fieldValue;
+    $record->{$fieldName} = $epoch;
+  } else {
+    Foswiki::Func::writeWarning("ERROR: invalid date string $fieldValue");
+  }
+}
+
+sub createMetaKeyValues {
+  my ($this, $query, $meta, $keyvalues) = @_;
+
+  my $epoch = $this->parseDate($keyvalues->{value});
+
+  #print STDERR "createMetaKeyValues($keyvalues->{value}), epoch=".($epoch//'undef')."\n";
+
+  if (defined $epoch) { 
+    $keyvalues->{origvalue} = $keyvalues->{value};
+    $keyvalues->{value} = $epoch;
+  } else {
+    #Foswiki::Func::writeWarning("ERROR: invalid date string $keyvalues->{value}");
+  }
+
+  return $keyvalues;
+}
+
 # convert to jquery-ui dateformat
+# | *jQuery* | *Foswiki* | *Printf*   | *Description* |
+# | d        |           | %e         | day of month (no leading zero) |
+# | dd       | $day      | %d         | day of month (two digit) |
+# | o        |           |            | day of the year (no leading zeros)
+# | oo       |           | %j         | day of the year (three digit) |
+# | D        | $wday     | %a         | day name short |
+# | DD       |           | %A         | day name long |
+# | m        |           | %f         | month of year (no leading zero) |
+# | mm       | $mo       | %m         | month of year (two digit) |
+# | M        | $month    | %b,%h      | month name short |
+# | MM       |           | %B         | month name long |
+# | y        | $ye       | %y         | year (two digit) |
+# | yy       | $year     | %Y         | year (four digit) |
+# | @        | $epoch    | %s,%o      | Unix timestamp (ms since 01/01/1970) |
+# | yy-mm-dd | $iso      | %Y-%mm-%dd | ISO format |
 sub _convertFormatToJQueryUI {
   my $dateFormat = shift;
 
-  $dateFormat =~ s/\$day/dd/g;
-  $dateFormat =~ s/\$wday/D/g;
-  $dateFormat =~ s/\$mont?h?/M/g;
-  $dateFormat =~ s/\$mo/mm/g;
-  $dateFormat =~ s/\$year/yy/g;
-  $dateFormat =~ s/\$ye/y/g;
-  $dateFormat =~ s/\$iso/yy-mm-dd/g;
-  $dateFormat =~ s/\$epoch/\@/g;
+  my $result = $dateFormat;
 
-  return $dateFormat;
+  # foswiki -> jQuery
+  $result =~ s/\$day/dd/g;
+  $result =~ s/\$wday/D/g;
+  $result =~ s/\$mont?h?s?/M/g;
+  $result =~ s/\$mo/mm/g;
+  $result =~ s/\$year?s?/yy/g;
+  $result =~ s/\$ye/y/g;
+  $result =~ s/\$iso/yy-mm-dd/g;
+  $result =~ s/\$epoch/\@/g;
+
+  # printf -> jQuery
+  $result =~ s/%[eE]/d/g;
+  $result =~ s/%d/dd/g;
+  $result =~ s/%j/oo/g;
+  $result =~ s/%a/D/g;
+  $result =~ s/%A/DD/g;
+  $result =~ s/%f/m/g;
+  $result =~ s/%[bh]/M/g;
+  $result =~ s/%B/MM/g;
+  $result =~ s/%y/y/g;
+  $result =~ s/%Y/yy/g;
+  $result =~ s/%[so]/@/g;
+
+  # clean up unsupported printf tokens
+  $result =~ s/%[a-zA-Z][a-zA-Z]?\b//g;
+
+  return $result;
 }
 
 sub formatDate {
-  my ($this, $epoch) = @_;
+  my ($this, $epoch, $params) = @_;
+
+  $params ||= $this->param();
+  $params->{lang} = $this->getLang();
 
   my $dateFormat = $this->param("format") || $Foswiki::cfg{DefaultDateFormat} || '$year/$mo/$day';
   my $timezone = $this->param("timezone") || $Foswiki::cfg{DisplayTimeValues} || 'servertime';
-  return Foswiki::Time::formatTime($epoch, $dateFormat, $timezone);
+
+  return Foswiki::Time::formatTime($epoch, $dateFormat, $timezone, $params);
 }
 
 sub parseDate {
-  my ($this, $time) = @_;
+  my ($this, $string, $params) = @_;
 
-  return unless defined $time && $time ne "";
+  $params ||= $this->param();
+  $params->{lang} = $this->getLang();
 
-  if (ref($time) eq 'DateTime') {
-    return $time->epoch();
-  }
-
-  $time =~ s/^\s+|\s+$//g;
-
-  # yyyymmdd ... 8 digits
-  if ($time =~ /^(\d\d\d\d)(\d\d)(\d\d)$/) {
-    $time = "$1-$2-$3";
-  } 
-
-  # epoch seconds ... 10 digits
-  elsif ($time =~ /^\d\d\d\d\d\d\d\d\d\d$/) {
-    return $time;
-  }
-
-  # dd.mm.yyyy
-  elsif ($time =~ /^(\d\d)\.(\d\d)\.(\d\d\d\d)$/) {
-    $time = "$3-$2-$1";
-  } 
-  
-  # 20111224T1200000
-  elsif ($time =~ /^(\d\d\d\d)(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)(Z.*?)$/) {
-    $time = "$1-$2-$3T$4:$5:$6$7";
-  }
-
-  my $result = Time::ParseDate::parsedate($time);
-
-  #print STDERR "parseDate($time)=".($result//'undef')."\n";
-  
-  unless (defined $result) {
-    Foswiki::Func::writeWarning("Foswiki::Form::Date2 - cannot parse time '$time'");
-  }
-
-  return $result;
+  return Foswiki::Time::parseTime($string, 1, $params);
 }
 
 1;

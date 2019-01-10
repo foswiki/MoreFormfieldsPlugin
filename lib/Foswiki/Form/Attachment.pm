@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2018 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -113,9 +113,12 @@ sub param {
 }
 
 sub getDisplayValue {
-  my ($this, $value) = @_;
+  my ($this, $value, $web, $topic) = @_;
 
   return '' unless defined $value && $value ne '';
+
+  $web ||= $this->{_web};
+  $topic ||= $this->{_topic};
 
   my @result = ();
   my $format = Foswiki::Func::expandTemplate("attachments::preview");
@@ -131,7 +134,7 @@ sub getDisplayValue {
     push @result, $format;
   }
 
-  return Foswiki::Func::expandCommonVariables(join("", @result), $this->{_topic}, $this->{_web});
+  return Foswiki::Func::expandCommonVariables(join("", @result), $topic, $web);
 }
 
 sub renderForDisplay {

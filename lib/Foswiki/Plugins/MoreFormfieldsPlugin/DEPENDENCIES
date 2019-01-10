@@ -1,11 +1,10 @@
-Foswiki::Plugins::DBCachePlugin,>9.00,perl,Required
-Foswiki::Plugins::JQueryPlugin,>5.11,perl,Required
+Foswiki::Plugins::DBCachePlugin,>=9.00,perl,Required
+Foswiki::Plugins::JQueryPlugin,>=9.00,perl,Required
 Foswiki::Plugins::RenderPlugin,>=4.00,perl,Required
 Foswiki::Plugins::TopicInteractionPlugin,>=6.00,perl,Required
 Foswiki::Plugins::ImagePlugin,>=8.00,perl,Required
 Foswiki::Contrib::JQSelect2Contrib,>1.00,perl,Required
 JSON,>=2.59,cpan,Required
-Time::ParseDate,>=2015.103,cpan,Required
 Scalar::Util,>=0,cpan,Required
 ONLYIF ( $Foswiki::Plugins::VERSION < 2.6)
 Foswiki::Plugins::TopicTitlePlugin,>1.00,perl,Required for Foswiki < 2.2

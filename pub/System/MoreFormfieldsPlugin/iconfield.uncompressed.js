@@ -12,14 +12,14 @@ jQuery(function($) {
   };
   
   function formatIconField(value, container) {
-      var result;
+      var result, regex = /^(\w+)\-/;
 
       if (typeof(value.id) === 'undefined') {
         result = value.text;
-      } else if (value.id.match(/^fa\-/)) {
-        result = '<i class="fa ' + value.id + '"></i> ' + value.text;
       } else if (value.url) {
         result = '<img src="'+value.url+'" class="foswikiIcon" /> ' + value.text;
+      } else if (regex.exec(value.id)) {
+        result = '<i class="'+RegExp.$1+' '+'fa-fw ' + value.id + '"></i> ' + value.text;
       } else {
         result = value.text;
       }

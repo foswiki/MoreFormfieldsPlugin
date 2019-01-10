@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2013-2018 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2013-2019 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -29,6 +29,21 @@ sub new {
   }, $class);
 
   return $this;
+}
+
+sub finish {
+  my $this = shift;
+
+  undef $this->{_delegate};
+}
+
+sub delegate {
+  my $this = shift;
+
+  unless ($this->{_delegate}) {
+    $this->{_delegate} = Foswiki::Plugins::JQueryPlugin::getIconService();
+  }
+  return $this->{_delegate};
 }
 
 sub handleRest {
@@ -61,130 +76,89 @@ sub handleRest {
 
   my $page = $request->param("page") || 1;
   my $skip = $limit*($page-1);
-  $limit += $skip;
 
-  my $doExactMatch = Foswiki::Func::isTrue($request->param("exact"), 0);
 
-  $this->init;
-
-  my @results = ();
-
-  my $index = 0;
-
-  foreach my $icon (@{$this->{icons}}) {
-    next if $include && $icon->{id} !~ /$include/;
-    next if $exclude && $icon->{id} =~ /$exclude/;
-
-    my $found = 0;
-    if ($doExactMatch) {
-      $found = 1 if 
-        $icon->{id} =~ /^($search)$/ || 
-        ($icon->{filter} && grep(/^($search)$/, @{$icon->{filter}}));
-    } else {
-      $found = 1 if 
-        $icon->{id} =~ /$search/i || 
-        ($icon->{filter} && grep(/$search/i, @{$icon->{filter}}));
-    }
-    next unless $found;
-
-    my @matchedCats = ();
-    foreach my $cat (@{$icon->{categories}}) {
-      my $catLabel = $cat;
-      if ($catLabel =~ /$catPattern/i) {
-        $catLabel =~ s/^FamFamFam//; # clean up
-        $catLabel = Foswiki::Func::spaceOutWikiWord($catLabel);
-        push @matchedCats, $catLabel;
-      }
-    }
-    next unless @matchedCats;
-
-    $index++;
-
-    if ($skip < $index && $index <= $limit) {
-      push @results, {
-        id => $icon->{id},
-        text => $icon->{text},
-        url => $icon->{url},
-        categories => \@matchedCats,
-      };
-    }
-  }
+  my $params = {
+    exactMatch => Foswiki::Func::isTrue($request->param("exact"), 0),
+    skip => $skip,
+    limit => $limit,
+    include => $include,
+    exclude => $exclude,
+    category => $catPattern,
+  };
+  my ($results, $total) = $this->findIcon($search, $params);
 
   $response->header(
     -status => 200,
     -content_type => "application/json",
   );
   $response->print(JSON::to_json({
-    total => $index,
-    results => \@results
+    total => $total,
+    results => $results
+  }, {
+    pretty => 1
   }));
 
   return;  
 }
 
-sub init {
-  my $this = shift;
+sub findIcon {
+  my ($this, $search, $params) = @_;
 
-  return if $this->{icons};
+  my $index = 0;
+  my $skip = $params->{skip} || 0;
+  my $limit = $params->{limit} || 0;
+  $limit += $skip;
 
-  # read fontawesome icons
-  my $iconFile = $Foswiki::cfg{PubDir}.'/'.$Foswiki::cfg{SystemWebName}.'/MoreFormfieldsPlugin/fontawesome.json';
-  my $text = Foswiki::Func::readFile($iconFile);
-  my $json = JSON::decode_json($text);
+  my @results = ();
 
-  my @icons = ();
-  my %cats = ();
 
-  foreach my $entry (@{$json->{icons}}) {
-    $entry->{text} = $entry->{id};
-    $entry->{id} = 'fa-'.$entry->{id};
-    push @{$entry->{categories}}, "fontawesome";
-    push @icons, $entry;
+  my $it = $this->delegate->getIconIterator();
+  while ($it->hasNext) {
+    my $icon = $it->next;
 
-    if ($entry->{aliases}) {
-      foreach my $alias (@{$entry->{aliases}}) {
-        my %clone = %$entry;
-        $clone{text} = $alias;
-        $clone{id} = 'fa-'.$alias;
-        $clone{_isAlias} = 1;
-        push @icons, \%clone;
+    next if $params->{include} && $icon->{id} !~ /$params->{include}/;
+    next if $params->{exclude} && $icon->{id} =~ /$params->{exclude}/;
+
+    my $found = 0;
+    if ($params->{exactMatch}) {
+      $found = 1 if 
+        $icon->{id} =~ /^($search)$/ || 
+        $icon->{text} =~ /^($search)$/ || 
+        ($icon->{filter} && grep(/^($search)$/, @{$icon->{filter}}));
+    } else {
+      $found = 1 if 
+        $icon->{id} =~ /$search/i || 
+        $icon->{text} =~ /$search/i || 
+        ($icon->{filter} && grep(/$search/i, @{$icon->{filter}}));
+    }
+    next unless $found;
+
+    my @matchedCats = ();
+    if (defined $params->{category}) {
+      foreach my $cat (@{$icon->{categories}}) {
+        my $catLabel = $cat;
+        if ($catLabel =~ /$params->{category}/i) {
+          $catLabel =~ s/^FamFamFam//; # clean up
+          $catLabel = Foswiki::Func::spaceOutWikiWord($catLabel);
+          push @matchedCats, $catLabel;
+        }
       }
+      next unless @matchedCats;
+    }
+
+    $index++;
+    if ($index > $skip && (!$limit || $index <= $limit)) {
+      push @results, {
+	id => $icon->{id},
+	text => $icon->{text},
+	url => $icon->{url},
+	categories => \@matchedCats,
+      };
     }
   }
 
-  # read icons from icon path
-  my $iconSearchPath = $Foswiki::cfg{JQueryPlugin}{IconSearchPath}
-    || 'FamFamFamSilkIcons, FamFamFamSilkCompanion1Icons, FamFamFamSilkCompanion2Icons, FamFamFamSilkGeoSilkIcons, FamFamFamFlagIcons, FamFamFamMiniIcons, FamFamFamMintIcons';
-
-  my @iconSearchPath = split( /\s*,\s*/, $iconSearchPath );
-
-  foreach my $item (@iconSearchPath) {
-
-      my ( $web, $topic ) = Foswiki::Func::normalizeWebTopicName(
-          $Foswiki::cfg{SystemWebName}, $item );
-
-      my $iconDir =
-          $Foswiki::cfg{PubDir} . '/'
-        . $web . '/'
-        . $topic . '/';
-
-      opendir(my $dh, $iconDir) || next;
-      foreach my $icon (grep { /\.(png|gif|jpe?g)$/i } readdir($dh)) {
-        next if $icon =~ /^(SilkCompanion1Thumb|index_abc|geosilk|silk\-companion\-II|igp_.*)\.png$/; # filter some more
-        my $id = $icon;
-        $id =~ s/\.(png|gif|jpe?g)$//i;
-        push @icons, {
-          id => $id,
-          text => $id,
-          url => Foswiki::Func::getPubUrlPath() . '/' . $web . '/' . $topic . '/' . $icon,
-          categories => [$topic],
-        };
-      }
-      closedir $dh;
-  }
-
-  @icons = sort {lc($a->{text}) cmp lc($b->{text})} @icons;
-  $this->{icons} = \@icons;
+  return wantarray?(\@results, $index):$results[0];
 }
 
 1;

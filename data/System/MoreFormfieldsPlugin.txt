@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="" date="1527508275" format="1.1"  version="1"}%
+%META:TOPICINFO{author="micha" comment="reprev" date="1538487337" format="1.1" reprev="2" version="2"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -24,6 +24,8 @@ To make use of these formfields use their type identifier in the =Type= column o
 | Time | time | 20 | | | |
 | Topic | topic | 20 | | | |
 | User | user | 20 | | | |
+| Group | group | 20 | | | |
+| User Or Group | userorgroup | 20 | | | |
 
 When defining a formfield additional parameters may be used in the =Values= column to further customize the behavior of the element.
 
@@ -52,7 +54,6 @@ By default, number ranges are specified among topics using the same !DataForm by
 This list is then subdivided by the given =query=. If for some reason you'd like to implement number ranges among different !DataForms you can
 disable this base query using the parameter =basequery="off"=. Not however that you should definitely define a more elaborate query to prevent
 unexpected numbering among other content in the same web (see [[%SYSTEMWEB%.QuerySearch]].)
-
 
 ---+++ =autofill=
 
@@ -95,7 +96,6 @@ The =FileSize= formfield will display the value using a maximum magnitude of meg
 
 For instance a value of =2033189908= will be displayed as 1939.0010 MB given the parameters in above example definition. 
 Without any parameters this value value would be displayed using the simples way, 1.89 GB in this case.
-
 
 ---+++ =date2=
 
@@ -219,7 +219,7 @@ A time formfield using the clockpicker widget from http://weareoutman.github.io/
 
 ---+++ =topic=
 
-A topic reference using JQSelect2Contrib for autocompletion.
+A topic reference using !JQSelect2Contrib for autocompletion.
 
 *Parameters*:
 
@@ -227,6 +227,8 @@ A topic reference using JQSelect2Contrib for autocompletion.
    * =default=: the default value to use if no value exists yet
    * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"rest"}%/RenderPlugin/template?expand=select2::topic;contenttype=application/json=
    * =TopicType=: name of a !TopicType to be selected
+   * =include=: regular expression topics must match to be included in the selection
+   * =exclude=: regular expression topics must not match to be included
 
 Custom parameters may be added. These will be appended to the autocompletion url.
 
@@ -240,12 +242,28 @@ These are also available for the =user= and =icon= formfield types.
 
 ---+++ =user=
 
-A user reference using JQSelect2Contrib for autocompletion.
+A user reference using !JQSelect2Contrib for autocompletion.
 
 *Parameters*:
 
-   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"rest"}%/RenderPlugin/template?expand=select2::user;contenttype=application/json=
-   * =form=: !DataForm supposed to be attached to user profile pages; this form is used to search for users, default: !UserForm
+   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"rest"}%/MoreFormfieldsPlugin/users=
+   * =group=: groups that users must be a member of to be included in the selection
+   * =include=: regular expression a user must match to be included in the selection
+   * =exclude=: regular expression a user must not match to be included
+
+---+++ =group=
+
+A group reference using !JQSelect2Contrib for autocompletion.
+
+*Parameters*:
+
+   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"rest"}%/MoreFormfieldsPlugin/users=
+   * =include=: regular expression a group must match to be included in the selection
+   * =exclude=: regular expression a group must not match to be included
+
+---+++ =userorgroup=
+
+This formfield type combines =user= and =group= formfields providing the same parameters.
 
 ---++ Installation Instructions
 %$INSTALL_INSTRUCTIONS%
@@ -255,6 +273,15 @@ A user reference using JQSelect2Contrib for autocompletion.
 
 ---++ Change History
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  10 Jan 2019: | new formfields =group= and =userorgroup=; \
+                  added =include= and =exclude= params to =topic= formfield; \
+                  added =group=, =include= and =exclude= params to =user= formfield; \
+                  multiple improvements to =date2= formfield, i.e. convert format strings to jQuery ui; \
+                  using core's datetime parser now instead of a local one, which in turn brings in !DateManipPlugin's capabilities if installed; \
+                  make use of !JQueryPlugin's new icon service for the =icon= formfield; \
+                  added =protocol= param to =phonenumber= formfield which was hard-coded to =sip= before; \
+                  added =saveMetaDataHandler= integrating into !MetaDataPlugin |  
+|  23 Nov 2018: | added new formfields =group= and =userorgroup= | 
 |  28 May 2018: | new formfields =bytes= and =autoinc= |
 |  12 Jan 2018: | fixed thumbnails in topic, user and attachment formfields |
 |  13 Sep 2017: | added =attachment= formfield |
@@ -282,7 +309,7 @@ A user reference using JQSelect2Contrib for autocompletion.
 %META:FIELD{name="Release" title="Release" value="%25$RELEASE%25"}%
 %META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
 %META:FIELD{name="Repository" title="Repository" value="https://github.com/foswiki/%25TOPIC%25"}%
-%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2018 Michael Daum http://michaeldaumconsulting.com"}%
+%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2019 Michael Daum http://michaeldaumconsulting.com"}%
 %META:FIELD{name="License" title="License" value="[[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]]"}%
 %META:FIELD{name="Home" title="Home" value="Foswiki:Extensions/%25TOPIC%25"}%
 %META:FIELD{name="Support" title="Support" value="Foswiki:Support/%25TOPIC%25"}%

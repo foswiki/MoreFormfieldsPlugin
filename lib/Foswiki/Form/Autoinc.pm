@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2018 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -42,17 +42,17 @@ sub isEditable {
 }
 
 sub renderForEdit {
-    my ( $this, $meta, $value ) = @_;
+  my ($this, $meta, $value) = @_;
 
-    return (
-        '',
-        CGI::hidden(
-            -name     => $this->{name},
-            -override => 1,
-            -value    => $value,
-          )
-          . CGI::div( { -class => $this->{_formfieldClass}, }, $value )
-    );
+  return (
+    '',
+    CGI::hidden(
+      -name => $this->{name},
+      -override => 1,
+      -value => $value,
+      )
+      . CGI::div({-class => $this->{_formfieldClass},}, $value)
+  );
 }
 
 sub param {
@@ -67,12 +67,12 @@ sub param {
 }
 
 sub getDefaultValue {
-    my $this = shift;
+  my $this = shift;
 
-    my $value = $this->{default};
-    $value = '' unless defined $value;
+  my $value = $this->{default};
+  $value = '' unless defined $value;
 
-    return $value;
+  return $value;
 }
 
 sub afterSaveHandler {
@@ -95,15 +95,19 @@ sub afterSaveHandler {
   my $query = $this->param("query") // "";
 
   my $useBaseQuery = Foswiki::Func::isTrue($this->param("basequery"), 1);
-  my $baseQuery = $useBaseQuery ? "(form.name='$formWeb.$formTopic' or form.name='$formTopic') and name!='$topic'": "name!='$topic'";
+  my $regexWeb = "(?:$formWeb.)?";
+  $regexWeb =~ s/[^\\]\./\\./g;
+  $regexWeb =~ s/\//\[\/\\.\]/g;
+
+  my $baseQuery = $useBaseQuery ? "form.name=~'$regexWeb$formTopic' and name!='$topic'" : "name!='$topic'";
 
   if ($query eq '') {
     $query = $baseQuery;
   } else {
-    my @fields = map {$_->{name}} $meta->find("FIELD");
+    my @fields = map { $_->{name} } $meta->find("FIELD");
     foreach my $name (@fields) {
       my $field = $meta->get('FIELD', $name);
-      my $value = defined ($field) ? $field->{value} // "" : "";
+      my $value = defined($field) ? $field->{value} // "" : "";
       $query =~ s/\$$name\b/$value/g;
     }
 
@@ -112,9 +116,14 @@ sub afterSaveHandler {
 
   #print STDERR "query=$query\n";
 
+  # become admin user to bypass any acl filter part of the query algorithm -> we don't want to miss any topic in the set
+  my $adminUser = Foswiki::Func::getCanonicalUserID($Foswiki::cfg{AdminUserLogin});
+  my $tmpUser = $this->{session}{user};
+  $this->{session}{user} = $adminUser;
+
   # get the maximum value already in use
   my $maxValue;
-  my $matches = Foswiki::Func::query($query, undef, { web => $web, casesensitive => 0, files_without_match => 0 } );
+  my $matches = Foswiki::Func::query($query, undef, {web => $web, casesensitive => 0, files_without_match => 0});
   while ($matches->hasNext) {
     my ($itemWeb, $itemTopic) = Foswiki::Func::normalizeWebTopicName('', $matches->next);
     my ($itemMeta) = Foswiki::Func::readTopic($itemWeb, $itemTopic);
@@ -125,13 +134,16 @@ sub afterSaveHandler {
     $maxValue = $itemVal if !(defined $maxValue) || $itemVal > $maxValue;
   }
 
+  # set it back to the real user
+  $this->{session}{user} = $tmpUser;
+
   my $startValue = int($this->param("start") || 0);
   my $value = defined($maxValue) && $maxValue >= $startValue ? $maxValue + 1 : $startValue;
 
   my $size = $this->{size} || 1;
   $size =~ /(\d+)/;
   $size = $1;
-  $value = sprintf("%0".$size."d", $value);
+  $value = sprintf("%0" . $size . "d", $value);
 
   # remove it from the request so that it doesn't override things here
   my $request = Foswiki::Func::getRequestObject();
@@ -142,7 +154,7 @@ sub afterSaveHandler {
   $thisField->{value} = $value;
   $meta->putKeyed('FIELD', $thisField);
 
-  return 1; # trigger mustSave
+  return 1;    # trigger mustSave
 }
 
 1;
