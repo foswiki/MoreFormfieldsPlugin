@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,6 +18,7 @@ package Foswiki::Form::Time;
 use strict;
 use warnings;
 
+use Foswiki::Render();
 use Foswiki::Plugins::JQueryPlugin ();
 use Foswiki::Form::FieldDefinition ();
 our @ISA = ('Foswiki::Form::FieldDefinition');
@@ -34,6 +35,8 @@ sub new {
   return $this;
 }
 
+sub isTextMergeable { return 0; }
+
 sub renderForEdit {
   my ($this, $topicObject, $value) = @_;
 
@@ -41,7 +44,25 @@ sub renderForEdit {
 
   return (
     '',
-    "<input type='text' name='$this->{name}' size='$this->{size}' value='$value' data-autoclose='true' class='" . $this->cssClasses('foswikiInputField', 'foswikiTimeField', 'jqClockPicker') . "' />",
+    Foswiki::Render::html("div", {
+        "class" => "jqClockPicker foswikiTimeField",
+        "data-autoclose" => 'true',
+      }, Foswiki::Render::html( "input", {
+          "type" => 'text',
+          "name" => $this->{name},
+          "size" => $this->{size},
+          "value" => $value,
+          "class" => $this->cssClasses('foswikiInputField')
+        })
+
+        . Foswiki::Render::html("button", {
+          "class" => "input-group-addon ui-clockpicker-trigger",
+          "tabindex" => -1,
+        }, Foswiki::Render::html( "i", {
+            "class" => "fa fa-clock-o",
+          })
+        )
+    )
   );
 }
 

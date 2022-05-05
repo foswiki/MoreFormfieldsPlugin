@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2013-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2013-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -117,8 +117,8 @@ sub findIcon {
   while ($it->hasNext) {
     my $icon = $it->next;
 
-    next if $params->{include} && $icon->{id} !~ /$params->{include}/;
-    next if $params->{exclude} && $icon->{id} =~ /$params->{exclude}/;
+    next if $params->{include} && $icon->{id} !~ /$params->{include}/i;
+    next if $params->{exclude} && $icon->{id} =~ /$params->{exclude}/i;
 
     my $found = 0;
     if ($params->{exactMatch}) {

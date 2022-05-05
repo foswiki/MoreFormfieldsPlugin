@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2013-2022 Michael Daum https://michaeldaumconsulting.com
+ *
+ * Licensed under the GPL license http://www.gnu.org/licenses/gpl.html
+ *
+ */
 "use strict";
 jQuery(function($) {
 
@@ -7,7 +13,9 @@ jQuery(function($) {
     url: null,
     width: 'element',
     multiple: false,
-    quietMillis:500
+    quietMillis:500,
+    limit: 10,
+    sortable: false
   };
 
   function formatItem(item) {
@@ -20,7 +28,7 @@ jQuery(function($) {
     }
   }
 
-  $(".foswikiTopicField:not(.foswikiTopicFieldInited)").livequery(function() {
+  $(".foswikiTopicFieldEditor:not(.inited)").livequery(function() {
     var $this = $(this), 
         opts = $.extend({}, defaults, $this.data()),
         requestOpts = $.extend({}, opts),
@@ -35,9 +43,7 @@ jQuery(function($) {
     //console.log("opts=",opts);
     //console.log("requestOpts=",requestOpts);
 
-    $this.addClass("foswikiTopicFieldInited");
-
-    $this.select2({
+    $this.addClass("inited").select2({
       allowClear: true,
       dropdownCssClass: 'ui-dialog', // work around problems with jquery-ui: see https://github.com/select2/select2/issues/940
       placeholder: opts.placeholder,
@@ -51,13 +57,13 @@ jQuery(function($) {
           var params = 
             $.extend({}, {
               q: term, // search term
-              limit: 10,
+	      limit: opts.limit,
               page: page
             }, requestOpts);
           return params;
         },
         results: function (data, page) {
-           data.more = (page * 10) < data.total;
+           data.more = (page * opts.limit) < data.total;
            return data;
         }
       },
@@ -96,6 +102,15 @@ jQuery(function($) {
       formatResult: formatItem,
       formatSelection: formatItem
     });
+
+    // make it sortable
+    if (opts.sortable) {
+      $this.select2("container").find("ul.select2-choices").sortable({
+	  items: "> .select2-search-choice",
+          start: function() { $this.select2( 'onSortStart' ); },
+          stop: function() { $this.select2( 'onSortEnd' ); }
+      });
+    }
   });
 
 });

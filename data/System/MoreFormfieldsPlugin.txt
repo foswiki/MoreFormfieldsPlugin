@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="micha" comment="reprev" date="1538487337" format="1.1" reprev="2" version="2"}%
+%META:TOPICINFO{author="ProjectContributor" comment="reprev" date="1616150870" format="1.1" version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -8,54 +8,50 @@
 
 This plugin implements a set of additional special purpose formfields to be used in [[%SYSTEMWEB%.DataForms][DataForm]] definitions.
 
-To make use of these formfields use their type identifier in the =Type= column of a !DataForm definition, such as in
+To make use of these formfields use their type identifier in the "Type" column of a !DataForm definition, such as in
 
 | *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
 | Attachment | attachment | 20 | | | | 
 | Bytes | bytes | 10 | | | |
 | Date2 | date2 | 30  | | | |
-| Icon | icon | 20 | | | | 
-| Ipaddress | ipaddress | 15  | | network address |  |
-| Ipv6address | ipv6address | 40  | | network address |  |
-| Macaddress | macaddress | 17  | | hardware-addresse | |
-| Netmask | netmask | 15  | | netmask |  |
-| Phonenumber | phonenumber | 20 | | | | 
-| Select2 | select2 | 20 | | | |
-| Time | time | 20 | | | |
-| Topic | topic | 20 | | | |
-| User | user | 20 | | | |
+| Datetime | datetime | 30  | | | |
 | Group | group | 20 | | | |
-| User Or Group | userorgroup | 20 | | | |
+| Icon | icon | 20 | | | | 
+| Ipaddress | ipaddress | 15  | |  |  |
+| Ipv6address | ipv6address | 40  | |  |  |
+| Macaddress | macaddress | 17  | | | |
+| Natedit | natedit | 80x25 | | | |
+| Multitext | multitext | 80 | | | |
+| Netmask | netmask | 15  | | |  |
+| Phonenumber | phonenumber | 20 | | | | 
+| Random | random | 20 | | | | 
+| Select2 | select2 | 20 | | | |
+| Slider | slider | 20 | | | |
+| Smartbox | smartbox | 5 |  | | |
+| Time | time | 20 | | | |
+| Toggle | toggle | 2 | | | |
+| Topic | topic | 30 | | | |
+| User Or Group | userorgroup | 30 | | | |
+| User | user | 30 | | | |
+| Web | web | 30 | | | |
 
-When defining a formfield additional parameters may be used in the =Values= column to further customize the behavior of the element.
+When defining a formfield additional parameters may be used in the "Values" column to further customize the behavior of the element.
 
 ---++ Known Formfield types
 
----+++ =autoinc= 
+---+++ attachment 
 
-This is a formfield type that extens Foswiki's core AUTOINC mechanism to enumerate topics when they are created and brings it to 
-formfields. A unique number is assigned to =autoinc= formfields whenever a topic is created will having such a !DataForm attached to it.
-Provisions are taken that these numbers are unique among each other. This feature allow to define number ranges based on the given configuration.
+This formfield stores a reference to an attachment. Attachments of the current topic are selectable or any other topic attached to as 
+specified in the =topic= parameter. The formfield lets you upload new attachments right from within the edit dialog.
 
-A typical use case would be to have different number ranges based on another formfield, say !ProjectType:
+*Parameters*:
 
-| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
-| <nop>Type | radio | 3 | new product, experimental, enhancement | specifies the kind of project that is carried out | M |
-| <nop>Number | autoinc | 5 | start="1000" query="Type='$Type'" | unique project number | h |
+   * =web=, =topic=: location where attachments are searched for, defaults to current web.topic
+   * =url=: url for autocompletion, defaults to an internal template =select2::attachment::url=
+   * =filter=: regular expression of files allowed to be uploaded
+   * =sortable=: entries in an =attachment+multi= formfield can be reordered using drag'n'drop if set to =true=
 
-Whenever a topic with such a !DataForm definition is used will the Number property be calculated given the =start= and =query= parameters.
-That is, a unique number will be assigned for each type of project "new product", "experimental" and "enhancement". All "new product" projects
-receive unique numbers among each other, likewise all "experimental" projects and "enhancement" projects. 
-
-Numbering starts at the value given to the =start= parameter, 1000 in above example. The size column of an =autoinc= formfield specifies the number of digits the number 
-should have similar to the =id= formfield. By default numbering starts at zero. 
-
-By default, number ranges are specified among topics using the same !DataForm by means of a "base query" that filters for topics of the same kind.
-This list is then subdivided by the given =query=. If for some reason you'd like to implement number ranges among different !DataForms you can
-disable this base query using the parameter =basequery="off"=. Not however that you should definitely define a more elaborate query to prevent
-unexpected numbering among other content in the same web (see [[%SYSTEMWEB%.QuerySearch]].)
-
----+++ =autofill=
+---+++ autofill
 
 A formfield that is filled automatically based on values from one or more other formfields of the same topic. During an edit-save loop, values of fields listed in the =source= parameter
 are extracted and concatenated using the specified =separator=. Values of an =autofill= formfield cannot be edited by the user.
@@ -82,7 +78,31 @@ A typical use-case for an =autofill= field is the construction of a !TopicTitle 
 | ID | id | 4 | | | |
 | Year | text | 4 | | | |
 
----+++ =bytes=
+---+++ autoinc 
+
+This is a formfield type that extens Foswiki's core AUTOINC mechanism to enumerate topics when they are created and brings it to 
+formfields. A unique number is assigned to =autoinc= formfields whenever a topic is created will having such a !DataForm attached to it.
+Provisions are taken that these numbers are unique among each other. This feature allow to define number ranges based on the given configuration.
+
+A typical use case would be to have different number ranges based on another formfield, say !ProjectType:
+
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
+| <nop>Type | radio | 3 | new product, experimental, enhancement | specifies the kind of project that is carried out | M |
+| <nop>Number | autoinc | 5 | start="1000" query="Type='$Type'" | unique project number | h |
+
+Whenever a topic with such a !DataForm definition is used will the Number property be calculated given the =start= and =query= parameters.
+That is, a unique number will be assigned for each type of project "new product", "experimental" and "enhancement". All "new product" projects
+receive unique numbers among each other, likewise all "experimental" projects and "enhancement" projects. 
+
+Numbering starts at the value given to the =start= parameter, 1000 in above example. The size column of an =autoinc= formfield specifies the number of digits the number 
+should have similar to the =id= formfield. By default numbering starts at zero. 
+
+By default, number ranges are specified among topics using the same !DataForm by means of a "base query" that filters for topics of the same kind.
+This list is then subdivided by the given =query=. If for some reason you'd like to implement number ranges among different !DataForms you can
+disable this base query using the parameter =basequery="off"=. Not however that you should definitely define a more elaborate query to prevent
+unexpected numbering among other content in the same web (see [[%SYSTEMWEB%.QuerySearch]].)
+
+---+++ bytes
 
 This formfield displays a numeric value in a "humanized" bytes notation, using magnitutes of two:
 B, KB, MB, GB, TB, PB, EB and ZB. 
@@ -92,19 +112,30 @@ Example:
 | *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
 | File Size | bytes | 10 | max="MB" prec="4" | | |
 
-The =FileSize= formfield will display the value using a maximum magnitude of megabytes using a precision of 4.
+The "FileSize" formfield will display the value using a maximum magnitude of megabytes using a precision of 4.
 
 For instance a value of =2033189908= will be displayed as 1939.0010 MB given the parameters in above example definition. 
 Without any parameters this value value would be displayed using the simples way, 1.89 GB in this case.
 
----+++ =date2=
+---+++ date2
 
 This is an alternative for the core =date= formfield type using the [[JQueryUI][jQuery-ui datepicker widget]] instead of using the [[%SYSTEMWEB%.JSCalendarContrib][Mishoo JSCalendar widget]].
 It will launch a calendar when clicking into a =date2= formfield to select a date from, as well as restricts allowed keys to be entered into the formfield. The format of a =date2= formfield value
 will always be of a =YYYY-MM-DD= pattern and thus not be depending on any locale settings. This is quite important to get consistant data rather than differences based on the user's current browser language.
 While the _value_ stored into a =date2= formfield is locale-independent will it display according to the settings of =$Foswiki::cfg{DefaultDateFormat}= settings.
 
----+++ =icon=
+---+++ group
+
+A group reference using !JQSelect2Contrib for autocompletion.
+
+*Parameters*:
+
+   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"rest"}%/MoreFormfieldsPlugin/users=
+   * =include=: regular expression a group must match to be included in the selection
+   * =exclude=: regular expression a group must not match to be included
+   * =sortable=: entries in an =group+multi= formfield can be reordered using drag'n'drop if set to =true=
+
+---+++ icon
 
 A select box to chose an icon supported by Foswiki (famfamfam and fontawesome).
 
@@ -145,79 +176,153 @@ Examples:
 | <nop>FlagIcon | icon | 20 | cat="flagicons" | | | |
 | <nop>WebApp | icon | 20 | cat="Web App" | | | |
 
----+++ =id=
+---+++ id
 
-Extract the numeric identifier from the topic name. This is most usefull for topics created using the =AUTOINC= feature (see [[TemplateTopics]]).
+Extract the numeric identifier from the topic (or web) name. This is most usefull for topics created using the =AUTOINC= feature (see [[TemplateTopics]]).
 The =AUTOINC= feature adds a numeric unique identifier when the topic is created. This identifier can be extracted  using an =id= formfield type 
 and stored into a !DataForm and be available for formatted searches.
 
-The value in the =Size= column will be used to add leading zeros to the id. For example, given a topic !FooBar1 has a !DataForm
+The value in the "Size" column will be used to add leading zeros to the id. For example, given a topic !FooBar1 has a !DataForm
 
 | *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
-| ID | id | 4 | | | |
+| ID | id | 4 | from="topic" | | |
 
-Then upon save the =id= formfield will have a value of =0001=.
+Then upon save the =id= formfield will have a value of =0001=. There is an optional "from" parameter that may have values "topic" (default) or "web".
+It defines the source from which to derive the value of the =id= formfield.
 
 *Parameters*: none
 
----+++ =ipaddress=
+---+++ ipaddress
 
 A general purpose IPv4 address, consisting of 4 octets, e.g. =10.0.0.1= 
 
 *Parameters*: none
 
----+++ =ipv6address=
+---+++ ipv6address
 
 A general purpose IPv6 address,e.g. =2001:db8:85a3:8d3:1319:8a2e:370:7348=
 
 *Parameters*: none
 
----+++ =macaddress=
+---+++ macaddress
 
 A hardware address given in 6 hex values, e.g. =00:1a:10:6f:ba:12=
 
 *Parameters*: none
 
----+++ =natedit=
+---+++ multitext
+
+This is a kind of =text+multi= formfield. it stores multiple text formfields in one. 
+
+*Parameters*: 
+
+   * =sortable=: set this to =true= to be able to reorder entries using drag'n'drop
+   * =separator=: separator between individual text entries, defaults to =,=. NOTE that you need to choose a separator string appropriate for the expected input.
+     for instance, by default entries are separated by comma (=,=), so any string holding a comma will be separated in multiple text entries during edit. a good 
+     alternative is =\n= to separate strings by newline, which should be fine for a list of multiple one-line text entries.
+
+---+++ natedit
 
 This renders a textarea using the [[%SYSTEMWEB%.NatEditPlugin][NatEditPlugin]]. The size of the imput fields is specified similar to the standard =textarea=
-formfield type. Any additional parameters specific to =natedit= may be specified in the "Values" column.
+formfield type. 
 
----+++ =netmask=
+*Parameters*: 
+
+  * =showToolbar=: boolean ("true" or "false") to show/hide the edit toolbar, default "true"
+  * =autoResize=: boolean switch to automatically adjust the height of the editor to fit its content, default "false"
+  * =resizable=: boolean to enable/disable manual resizability of the edit area, default "false"
+  * =autoHideToolbar=: boolean to enable/disable the toolbar to be displayed when the editor is focused and hidden when leaving the editor, default "false"
+  * =autoMaxExpand=: boolean to automatically expand the editor to a maximum height, default "false"
+  * =minHeight=: minimum height of the editor
+  * =maxHeight=: maximum height of the editor
+
+---+++ netmask
 
 A special IP address used for routing, consisting of 4 octets, e.g. =255.255.255.0=
 
----+++ =phonenumber=
+---+++ phonenumber
 
 A standard telephone number. This formfield uses [[JQueryValidate]] to make sure the formfield value is a valid phone number.
 
 *Parameters*: none
 
----+++ =select2=
+---+++ random
+
+This formfield type that generates a random value the first time the topic is created. There are a set of different random strings:
+
+   * alpha
+   * upperalpha
+   * loweralpha
+   * numeric
+   * alphanumeric
+   * misc
+   * all (alpha, numeric, misc)
+
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
+| Random | random | 10 | charset="alphanumeric" min="1" max="10" | | |
+
+This will generate a random number of 10 characters of the given charset. If the parameters =min= and =max= are definied will the
+size of the value vary between the given limits.
+
+---+++ select2
 
 A drop-in replacement for the standard =select= formfield. See [[JQSelect2Contrib]].
 
 *Parameters:* none
 
----+++ =smartbox=
+---+++ slider
+
+A slider widget to be used for range values. The Values column may be used to configure the element:
+
+   * =min=: minimum value, defaults to 0
+   * =max=: maximum value, defaults to 100
+   * =step=: iterate between =min= and =max= by a specific value, defaults to 1
+   * =values=: comma separated list of predefined values to chose among, defaults to an integer between =min= and =max=
+   * =range=: may be "on", "off", "min" or "max" to specify the mode of the widget, if =range= is set to "on" two values will be configured separated by comma, defaults to "off"
+   * =format=: format to display the range value(s); this can be any specification understood by sprintf, defaults to "%s" for single values and "%s - %s" for range values
+
+Examples:
+
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* | *Default* |
+| Simple Slider | slider | 20 |  | | | |
+| Formated Slider | slider | 20 | format="%3d%%" | | | 20 |
+| Min | slider | 20 | range="min" | | | 10 |
+| Max | slider | 20 | range="max" | | | 10 |
+| Range | slider | 20 | range="on" | | | 10,90 |
+| Progress | slider | 20 | range="min" step="5" | | | |
+| Priority | slider | 20 | none, low, medium, high, urgend, emergency | | | none |
+| Priority Range | slider | 20 | values="none, low, medium, high, urgend, emergency" range="on" | | | medium, high |
+| Percent | slider | 20 | max="1" step="0.01" format="%.2f" | | | |
+
+---+++ smartbox
 
 A somewhat "smarter" checkbox formfield type. It allows to select one of the values as a placeholder representing "any" value in the selection.
 
-So given this !DataForm definition ...
+So given these !DataForm definitions ...
 
 | *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* | *Default* |
-| Business Area | smartbox | 5 | Energy, Maritime, Oil & Gas, Software, Across all Business Areas* | | | |
+| Business Area | smartbox | 5 | Energy, Maritime, Oil & Gas, Software, All Business Areas* | | | |
+| Countries | smartbox | 5 | Europe, Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden, Europe* | | | |
 
-... then selecting "Accross all Business Areas" will select all other areas with it. Likewise, selecting all 
-business areas indivudually will automatically select "Accross all Business Areas" as well.
+Selecting "All Business Areas" or "Europe" will select/unselect all entries at once. 
+The "any value" selection is the one indicated by the "*" asterisk, or if not present the first in the list.
 
-Note that the "any value" selection is the one indicated by the "*" asterisk, or if not present the first in the list.
-
----+++ =time=
+---+++ time
 
 A time formfield using the clockpicker widget from http://weareoutman.github.io/clockpicker/
 
----+++ =topic=
+---+++ toggle
+
+A toggle formfield may switch between two values, by default between "on" and "off". Alternative values may be specified like this:
+
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* | *Default* |
+| *Toggle*  | toggle | 1 | done | |  | |
+| *Toggle*  | toggle | 2 | on, off | |  | off |
+| *Toggle*  | toggle+values | 2 | enabled=1, disabled=0 | |  | disabled |
+
+Note that the size column has no effect.
+
+---+++ topic
 
 A topic reference using !JQSelect2Contrib for autocompletion.
 
@@ -229,6 +334,8 @@ A topic reference using !JQSelect2Contrib for autocompletion.
    * =TopicType=: name of a !TopicType to be selected
    * =include=: regular expression topics must match to be included in the selection
    * =exclude=: regular expression topics must not match to be included
+   * =format=: format string how to render a topic value while editing, defaults to =$topictitle=
+   * =sortable=: entries in an =topic+multi= formfield can be reordered using drag'n'drop if set to =true=
 
 Custom parameters may be added. These will be appended to the autocompletion url.
 
@@ -240,7 +347,11 @@ There are a couple of parameters that further customize the behavior of the sele
 
 These are also available for the =user= and =icon= formfield types.
 
----+++ =user=
+---+++ userorgroup
+
+This formfield type combines =user= and =group= formfields providing the same parameters.
+
+---+++ user
 
 A user reference using !JQSelect2Contrib for autocompletion.
 
@@ -250,20 +361,19 @@ A user reference using !JQSelect2Contrib for autocompletion.
    * =group=: groups that users must be a member of to be included in the selection
    * =include=: regular expression a user must match to be included in the selection
    * =exclude=: regular expression a user must not match to be included
+   * =sortable=: entries in an =user+multi= formfield can be reordered using drag'n'drop if set to =true=
 
----+++ =group=
+---+++ web
 
-A group reference using !JQSelect2Contrib for autocompletion.
+This formfield stores a reference to  web.
 
 *Parameters*:
 
-   * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"rest"}%/MoreFormfieldsPlugin/users=
-   * =include=: regular expression a group must match to be included in the selection
-   * =exclude=: regular expression a group must not match to be included
-
----+++ =userorgroup=
-
-This formfield type combines =user= and =group= formfields providing the same parameters.
+   * =webs=: a list of webs to be displayed, "public", "user, "template", defaults to "user" to select any web except System, Trash, Applications and all template webs 
+   * =include=: regular expression webs must match to be included in the selection
+   * =exclude=: regular expression webs must match to be excluded; =exclude= has got higher precedence than the =webs= parameter if specified.
+   * =url=: url for autocompletion, defaults to an internal template =select2::wweb::url=
+   * =sortable=: entries in an =web+multi= formfield can be reordered using drag'n'drop if set to =true=
 
 ---++ Installation Instructions
 %$INSTALL_INSTRUCTIONS%
@@ -273,6 +383,13 @@ This formfield type combines =user= and =group= formfields providing the same pa
 
 ---++ Change History
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  05 May 2022: | new major release |
+|  17 Dec 2021: | added =from= parameter to =id= formfield |
+|  02 Nov 2021: | new formfield =random= |
+|  03 Mar 2021: | new formfield =toggle= |
+|  13 Oct 2020: | new parameter =format= for =topic= fields |
+|  08 May 2020: | new formfield =slider= |
+|  22 Aug 2019: | new formfield =multitext= |
 |  10 Jan 2019: | new formfields =group= and =userorgroup=; \
                   added =include= and =exclude= params to =topic= formfield; \
                   added =group=, =include= and =exclude= params to =user= formfield; \
@@ -309,7 +426,7 @@ This formfield type combines =user= and =group= formfields providing the same pa
 %META:FIELD{name="Release" title="Release" value="%25$RELEASE%25"}%
 %META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
 %META:FIELD{name="Repository" title="Repository" value="https://github.com/foswiki/%25TOPIC%25"}%
-%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2019 Michael Daum http://michaeldaumconsulting.com"}%
+%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2022 Michael Daum"}%
 %META:FIELD{name="License" title="License" value="[[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]]"}%
 %META:FIELD{name="Home" title="Home" value="Foswiki:Extensions/%25TOPIC%25"}%
 %META:FIELD{name="Support" title="Support" value="Foswiki:Support/%25TOPIC%25"}%

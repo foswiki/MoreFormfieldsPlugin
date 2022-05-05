@@ -136,7 +136,7 @@
 			//    .on("click", function() {
 			//        self.amOrPm = "AM";
 			//        $('.clockpicker-span-am-pm').empty().append('AM');
-			//    });
+			uOB//    });
 			//    
 			//$('clockpicker-pm-button')
 			//    .on("click", function() {
@@ -178,7 +178,10 @@
 
 		// Show or toggle
 		input.on('focus.clockpicker click.clockpicker', $.proxy(this.show, this));
-		addon.on('click.clockpicker', $.proxy(this.toggle, this));
+		addon.on('click.clockpicker', function() {
+                  self.toggle();
+                  return false;
+                });
 
 		// Build ticks
 		var tickTpl = $('<div class="clockpicker-tick"></div>'),

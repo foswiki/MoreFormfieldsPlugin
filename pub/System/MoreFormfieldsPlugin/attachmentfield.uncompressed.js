@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2013-2022 Michael Daum https://michaeldaumconsulting.com
+ *
+ * Licensed under the GPL license http://www.gnu.org/licenses/gpl.html
+ *
+ */
 "use strict";
 jQuery(function($) {
 
@@ -7,7 +13,8 @@ jQuery(function($) {
     url: null,
     width: 'element',
     multiple: false,
-    quietMillis:500
+    quietMillis:500,
+    sortable: false
   };
 
   function formatItem(item) {
@@ -21,7 +28,7 @@ jQuery(function($) {
   }
 
   function getThumbnailUrl(file) {
-    if (file.match(/\.(gif|png|jpe?g|svg|mp4)$/)) {
+    if (file.match(/\.(gif|png|jpe?g|webp)$/i)) {
       return foswiki.getScriptUrlPath("rest", "ImagePlugin", "resize", {
         topic: foswiki.getPreference("WEB")+"."+foswiki.getPreference("TOPIC"),
         file: encodeURIComponent(file),
@@ -37,7 +44,7 @@ jQuery(function($) {
     }
   }
 
-  $(".foswikiAttachmentField:not(.foswikiAttachmentFieldInited)").livequery(function() {
+  $(".foswikiAttachmentField:not(.inited)").livequery(function() {
     var $this = $(this), 
         opts = $.extend({}, defaults, $this.data()),
         requestOpts = $.extend({}, opts),
@@ -52,9 +59,7 @@ jQuery(function($) {
     //console.log("opts=",opts);
     //console.log("requestOpts=",requestOpts);
 
-    $this.addClass("foswikiAttachmentFieldInited");
-
-    $this.select2({
+    $this.addClass("inited").select2({
       allowClear: true,
       dropdownCssClass: 'ui-dialog', // work around problems with jquery-ui: see https://github.com/select2/select2/issues/940
       placeholder: opts.placeholder,
@@ -100,7 +105,16 @@ jQuery(function($) {
       },
       formatResult: formatItem,
       formatSelection: formatItem
-    });
+    })
+    
+    // make it sortable
+    if (opts.sortable) {
+      $this.select2("container").find("ul.select2-choices").sortable({
+          items: "> .select2-search-choice",
+          start: function() { $this.select2( 'onSortStart' ); },
+          stop: function() { $this.select2( 'onSortEnd' ); }
+      });
+    }
 
     $(document).on("afterUpload", function() {
       var fileName = fileInput.val().replace(/^.*[\/\\]/, ""),

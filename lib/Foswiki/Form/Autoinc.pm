@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,7 +20,10 @@ use warnings;
 
 use Foswiki::Form::FieldDefinition ();
 use Foswiki::Func ();
+use Foswiki::Render ();
 our @ISA = ('Foswiki::Form::FieldDefinition');
+
+#use Data::Dump qw(dump);
 
 sub new {
   my $class = shift;
@@ -37,21 +40,22 @@ sub finish {
   undef $this->{_params};
 }
 
-sub isEditable {
-  return 0;
-}
+sub isEditable { return 0; }
+sub isTextMergeable { return 0; }
 
 sub renderForEdit {
   my ($this, $meta, $value) = @_;
 
   return (
     '',
-    CGI::hidden(
-      -name => $this->{name},
-      -override => 1,
-      -value => $value,
-      )
-      . CGI::div({-class => $this->{_formfieldClass},}, $value)
+    Foswiki::Render::html("input", {
+      "type" => "hidden",
+      "name" => $this->{name},
+      "value" => $value,
+    }) .
+    Foswiki::Render::html("div", {
+      "class" => $this->{_formfieldClass}
+    }, $value)
   );
 }
 
@@ -79,7 +83,9 @@ sub afterSaveHandler {
   my ($this, $meta) = @_;
 
   my $thisField = $meta->get('FIELD', $this->{name});
-  return if defined($thisField) && defined($thisField->{value}) && $thisField->{value} ne "";
+  my $onlyNew = Foswiki::Func::isTrue($this->param("onlynew"), 1);
+
+  return if $onlyNew && defined($thisField) && defined($thisField->{value}) && $thisField->{value} ne "";
 
   $thisField = {
     name => $this->{name},
@@ -99,7 +105,7 @@ sub afterSaveHandler {
   $regexWeb =~ s/[^\\]\./\\./g;
   $regexWeb =~ s/\//\[\/\\.\]/g;
 
-  my $baseQuery = $useBaseQuery ? "form.name=~'$regexWeb$formTopic' and name!='$topic'" : "name!='$topic'";
+  my $baseQuery = $useBaseQuery ? "form.name=~'$regexWeb$formTopic'" : "";
 
   if ($query eq '') {
     $query = $baseQuery;
@@ -121,11 +127,29 @@ sub afterSaveHandler {
   my $tmpUser = $this->{session}{user};
   $this->{session}{user} = $adminUser;
 
+  # query for results
+  my %params = (
+    web => $web, 
+    casesensitive => 0, 
+    files_without_match => 0
+  );
+
+  my $include = $this->param("include");
+  $params{topic} = $include if defined $include;
+  
+  my $exclude = $this->param("exclude");
+  $params{excludetopic} = $exclude if defined $exclude;
+
+  #print STDERR "query=$query\n";
+  #print STDERR "params: ".dump(\%params)."\n";
+
+  my $matches = Foswiki::Func::query($query, undef, \%params);
+
   # get the maximum value already in use
   my $maxValue;
-  my $matches = Foswiki::Func::query($query, undef, {web => $web, casesensitive => 0, files_without_match => 0});
   while ($matches->hasNext) {
     my ($itemWeb, $itemTopic) = Foswiki::Func::normalizeWebTopicName('', $matches->next);
+    next if $itemWeb eq $meta->web && $itemTopic eq $meta->topic;
     my ($itemMeta) = Foswiki::Func::readTopic($itemWeb, $itemTopic);
     my $field = $itemMeta->get("FIELD", $this->{name});
     next unless $field;
@@ -133,12 +157,15 @@ sub afterSaveHandler {
     #print STDERR "item=$itemWeb.$itemTopic, field=$this->{name}, value=$itemVal\n";
     $maxValue = $itemVal if !(defined $maxValue) || $itemVal > $maxValue;
   }
+  #print STDERR "maxValue=".($maxValue//'undef')."\n";
 
   # set it back to the real user
   $this->{session}{user} = $tmpUser;
 
   my $startValue = int($this->param("start") || 0);
   my $value = defined($maxValue) && $maxValue >= $startValue ? $maxValue + 1 : $startValue;
+
+  #print STDERR "value=$value\n";
 
   my $size = $this->{size} || 1;
   $size =~ /(\d+)/;

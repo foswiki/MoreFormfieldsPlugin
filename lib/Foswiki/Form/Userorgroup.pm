@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2016 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -37,6 +37,12 @@ sub new {
   $this->{_url} = Foswiki::Func::expandTemplate("select2::userorgroup::url");
 
   return $this;
+}
+
+sub getDisplayValue {
+  my ($this, $value) = @_;
+
+  return $this->SUPER::getDisplayValue($value, $this->{_web});
 }
 
 1;

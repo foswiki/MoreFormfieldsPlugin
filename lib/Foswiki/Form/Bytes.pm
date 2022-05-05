@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,6 +18,7 @@ package Foswiki::Form::Bytes;
 use strict;
 use warnings;
 
+use Foswiki::Render();
 use Foswiki::Form::Text ();
 use Scalar::Util qw( looks_like_number );
 our @ISA = ('Foswiki::Form::Text');
@@ -30,6 +31,8 @@ sub finish {
 
   undef $this->{_params};
 }
+
+sub isTextMergeable { return 0; }
 
 sub param {
   my ($this, $key) = @_;
@@ -57,14 +60,14 @@ sub renderForEdit {
 
   return (
     '',
-    CGI::textfield(
-      -class => $this->cssClasses('foswikiInputField foswikiBytesField'),
-      -name => $this->{name},
-      -size => $this->{size},
-      -override => 1,
-      -value => $value,
-      -data_rule_pattern => '^[+\-]?\d+(\.\d+)?$',
-    )
+    Foswiki::Render::html("input", {
+      "type" => "text",
+      "class" => $this->cssClasses('foswikiInputField foswikiBytesField'),
+      "name" => $this->{name},
+      "size" => $this->{size},
+      "value" => $value,
+      "data-rule-pattern" => '^[+\-]?\d+(\.\d+)?$'
+    })
   );
 }
 
@@ -79,7 +82,6 @@ sub renderForDisplay {
 
   return $this->SUPER::renderForDisplay($format, $value, $attrs);
 }
-
 
 sub getDisplayValue {
   my ($this, $value) = @_;

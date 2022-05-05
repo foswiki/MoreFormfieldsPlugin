@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -33,6 +33,8 @@ sub new {
 
   return $this;
 }
+
+sub isTextMergeable { return 0; }
 
 sub param {
   my ($this, $key) = @_;
@@ -87,7 +89,7 @@ sub init {
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
   Foswiki::Func::addToZone("script", "FOSWIKI::ICONFIELD", <<'HERE', "JQUERYPLUGIN::SELECT2");
-<script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/iconfield.js'></script>
+<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/iconfield.js'></script>
 HERE
 }
 

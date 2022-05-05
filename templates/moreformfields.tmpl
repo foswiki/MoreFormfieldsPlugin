@@ -1,15 +1,13 @@
 %TMPL:DEF{"select2::topic::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields;expand=select2::topic;contenttype=application/json%TMPL:END%
 %TMPL:DEF{"select2::user::url"}%%SCRIPTURLPATH{"rest"}%/MoreFormfieldsPlugin/users%TMPL:END%
 %TMPL:DEF{"select2::group::url"}%%SCRIPTURLPATH{"rest"}%/MoreFormfieldsPlugin/groups%TMPL:END%
+%TMPL:DEF{"select2::web::url"}%%SCRIPTURLPATH{"rest"}%/MoreFormfieldsPlugin/webs%TMPL:END%
 %TMPL:DEF{"select2::userorgroup::url"}%%SCRIPTURLPATH{"rest"}%/MoreFormfieldsPlugin/userorgroup%TMPL:END%
 %TMPL:DEF{"select2::attachments::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields;expand=select2::attachments;contenttype=application/json%TMPL:END%
 
 %TMPL:DEF{"imageregex"}%\.(jpe?g|gif|png|svg|webp|mp4|JE?PG|GIF|PNG|SVG|WEBP|MP4)$%TMPL:END%
 
-%TMPL:DEF{"attachments::preview"}%<div class="foswikiAttachmentFile clearfix">%IF{"'$file'=~'%TMPL:P{"imageregex"}%'"
-  then="$percntIMAGE{\"$file\" type=\"plain\" size=\"32x32>^\" crop=\"northwest\" tooltip=\"on\" align=\"left\"}$percnt"
-  else="$percntMIMEICON{\"$file\" size=\"32\"}$percnt"
-}%</div>%TMPL:END%
+%TMPL:DEF{"attachments::preview"}%<div class="foswikiAttachmentFile clearfix">%MIMEICON{"$file" size="32"}% <a href='$href' class='$class'>$file</a></div>%TMPL:END%
 
 %TMPL:DEF{"select2::attachments"}%<literal>%ATTACHMENTS{
   include="(?=.*(%URLPARAM{"filter" default=""}%))(?=.*(%FORMATLIST{
@@ -75,7 +73,7 @@
 
 %TMPL:DEF{"select2::topic::format"}% {
   \"id\":\"$percntIF{\"'%WEB%'!='$web'\" then=\"$web.\"}$percnt$topic\", 
-  \"text\":\"$expand(topictitle)\",
+  \"text\":\"$quotes($expand(topictitle))\",
   \"thumbnail\": \"$percntTMPL:P{\"select2::topic::thumbnail::url\" web=\"$web\" topic=\"$topic\"}$percnt\"
 } %TMPL:END%
 
@@ -107,5 +105,5 @@
   }%
   hidenull="off"
   format="%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=$web.$topic;file=$name;size=32x32>^;crop=west"
-  nullformat="%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=%SYSTEMWEB%.MoreFormfieldsPlugin;file=nobody.gif;size=32x32>^;crop=west"
+  nullformat="%SCRIPTURLPATH{"rest"}%/ImagePlugin/resize?topic=%SYSTEMWEB%.MoreFormfieldsPlugin;file=nobody.png;size=32x32>^;crop=west"
 }%%TMPL:END%

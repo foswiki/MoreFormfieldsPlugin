@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,6 +21,8 @@ use warnings;
 use Foswiki::Form::FieldDefinition ();
 use Foswiki::Plugins ();
 use Foswiki::Func ();
+use Foswiki::Form ();
+use Foswiki::Render ();
 our @ISA = ('Foswiki::Form::FieldDefinition');
 
 sub new {
@@ -38,26 +40,22 @@ sub finish {
   undef $this->{_params};
 }
 
-sub isEditable {
-  return 0;
-}
+sub isEditable { return 0; }
+sub isTextMergeable { return 0; }
 
 sub renderForEdit {
   my ($this, $topicObject, $value) = @_;
 
-  # Changing labels through the URL is a feature for Foswiki applications,
-  # even though it's not accessible for standard edits. Some contribs
-  # may want to override this to make labels editable.
-  my $renderedValue = $topicObject->expandMacros($value);
-
   return (
     '',
-    CGI::hidden(
-      -name => $this->{name},
-      -override => 1,
-      -value => $value,
-      )
-      . CGI::div({-class => $this->{_formfieldClass},}, $renderedValue)
+    Foswiki::Render::html("input", {
+      "type" => "hidden",
+      "name" => $this->{name},
+      "value" => $value,
+    }) .
+    Foswiki::Render::html("div", {
+      "class" => $this->{_formfieldClass},
+    }, $value)
   );
 }
 
@@ -72,13 +70,87 @@ sub param {
   return (defined $key) ? $this->{_params}{$key} : $this->{_params};
 }
 
+sub getDisplayValue {
+  my ($this, $value) = @_;
+
+  my $format = $this->param("display");
+
+  return $value unless defined $format;
+
+  $format =~ s/\$value\b/$value/g;
+  $format = Foswiki::Func::decodeFormatTokens($format);
+  $format = Foswiki::Func::expandCommonVariables($format) if $format =~ /%/;
+
+  return $format;
+}
+
 sub getDefaultValue {
-    my $this = shift;
+  my $this = shift;
 
-    my $value = $this->{default};
-    $value = '' unless defined $value;
+  my $value = $this->{default};
+  $value = '' unless defined $value;
 
-    return $value;
+  return $value;
+}
+
+sub saveMetaDataHandler {
+  my ($this, $record, $formDef) = @_;
+
+  my $fieldName = $this->{name};
+  #print STDERR "... saveMetaDataHandler($fieldName)\n";
+  
+  my $fieldValue = $record->{$fieldName} || '';
+
+  my $fields = $this->param("source") || $this->param("fields");
+  my $format = $this->param("format");
+  my $sep = $this->param("separator") || '';
+  my $onlyNew = Foswiki::Func::isTrue($this->param("onlynew"), 0);
+
+  return if $onlyNew && $fieldValue ne "";
+
+  my @fields = ();
+  @fields = split(/\s*,\s*/, $fields) if defined $fields;
+
+  my $result;
+
+  if (defined($format)) {
+    $result = $format;
+
+    @fields = map {$_->{name}} @{$formDef->getFields()};
+
+    foreach my $name (@fields) {
+      my $value = $record->{$name};
+      unless (defined $value) {
+        my $fieldDef = $formDef->getField($name);
+        $value = $fieldDef->getDefaultValue() if $fieldDef->can("getDefaultValue");
+        $value = $fieldDef->{default} unless defined $value;
+      }
+      $result =~ s/\$$name\b/\0$value\0/g;
+    }
+    $result =~ s/\0//g;
+
+  } else {
+
+    my @result = ();
+    foreach my $name (@fields) {
+      my $value = $record->{$name};
+      unless (defined $value) {
+        my $fieldDef = $formDef->getField($name);
+        $value = $fieldDef->getDefaultValue() if $fieldDef->can("getDefaultValue");
+        $value = $fieldDef->{default} unless defined $value;
+      }
+      push @result, $value if defined $value && $value ne "";
+    }
+
+    $result = join($sep, @result);
+  }
+
+  return unless defined $result;
+
+  my $value = $this->formatValue($result);
+  return if $value eq $fieldValue;
+
+  $record->{$fieldName} = $value;
 }
 
 sub afterSaveHandler {
@@ -86,11 +158,20 @@ sub afterSaveHandler {
 
   #print STDERR "called Foswiki::Form::Autofill::afterSaveHandler()\n";
 
-  my $header = $this->param("header") || '';
-  my $footer = $this->param("footer") || '';
   my $fields = $this->param("source") || $this->param("fields");
   my $format = $this->param("format");
   my $sep = $this->param("separator") || '';
+  my $onlyNew = Foswiki::Func::isTrue($this->param("onlynew"), 0);
+
+  my $thisField = $topicObject->get('FIELD', $this->{name});
+  $thisField = {
+    name => $this->{name},
+    title => $this->{name},
+    value => "",
+  } unless defined $thisField;
+
+  #print STDERR "current value of $thisField->{name}: $thisField->{value}\n";
+  return if $onlyNew && $thisField->{value} ne "";
 
   my @fields = ();
   @fields = split(/\s*,\s*/, $fields) if defined $fields;
@@ -100,51 +181,94 @@ sub afterSaveHandler {
   if (defined($format)) {
     $result = $format;
     
-    @fields = map {$_->{name}} $topicObject->find("FIELD")
-      unless @fields;
+    @fields = $this->getFieldNames($topicObject) unless @fields;
 
     foreach my $name (@fields) {
-      my $field = $topicObject->get('FIELD', $name);
-      next unless defined $field;
-      my $value = $field->{value};
-      $value = '' unless defined $value;
-      $result =~ s/\$$name/$value/g;
+      my $value = $this->getFieldValue($topicObject, $name) // '';
+      $result =~ s/\$$name\b/\0$value\0/g;
     }
+    $result =~ s/\0//g;
 
   } else {
 
     my @result = ();
     foreach my $name (@fields) {
-      my $field = $topicObject->get('FIELD', $name);
-      next unless defined $field;
-      my $value = $field->{value};
-      next unless defined $value;
-      push @result, $field->{value} unless $value eq '';
+      my $value = $this->getFieldValue($topicObject, $name);
+      push @result, $value if defined $value && $value ne "";
     }
 
     $result = join($sep, @result);
   }
   return unless defined $result;
 
-  my $thisField = $topicObject->get('FIELD', $this->{name});
-  $thisField = {
-    name => $this->{name},
-    title => $this->{name},
-    value => "",
-  } unless defined $thisField;
-
   # remove it from the request so that it doesn't override things here
   my $request = Foswiki::Func::getRequestObject();
   $request->delete($this->{name});
 
-  my $value = Foswiki::Func::expandCommonVariables(Foswiki::Func::decodeFormatTokens($header . $result . $footer), $topicObject->topic, $topicObject->web, $topicObject);
-
+  my $value = $this->formatValue($result, $topicObject->web, $topicObject->topic, $topicObject);
   return if $thisField->{value} eq $value;
 
   $thisField->{value} = $value;
   $topicObject->putKeyed('FIELD', $thisField);
 
   return 1; # trigger mustSave
+}
+
+sub formatValue {
+  my ($this, $value, $web, $topic, $meta) = @_;
+
+  my $header = $this->param("header") || '';
+  my $footer = $this->param("footer") || '';
+  my $result = Foswiki::Func::decodeFormatTokens($header . $value . $footer);
+  $result = Foswiki::Func::expandCommonVariables($result, $topic, $web, $meta) if $result =~ /%/;
+
+  #print STDERR "formatValue($value, $web, $topic) for $this->{name} = $result\n";
+  return $result;
+}
+
+sub getFieldValue {
+  my ($this, $obj, $name) = @_;
+
+  my $field = $obj->get('FIELD', $name);
+  return "" unless defined $field;
+  my $value = $field->{value};
+
+  if (!defined($value) || $value eq '') {
+    my $request = Foswiki::Func::getRequestObject();
+    $value = $request->param($name);
+  }
+
+  $value = $this->getFieldDefault($obj, $name) unless defined $value;
+
+  return $value;
+}
+
+sub getFieldDefault {
+  my ($this, $obj, $name) = @_;
+
+  my $form = $this->getFormDef($obj);
+  return unless $form;
+
+  my $fieldDef = $form->getField($name);
+  return unless $fieldDef;
+
+  return $fieldDef->getDefaultValue() if $fieldDef->can("getDefaultValue");
+  return $fieldDef->{default};
+}
+
+sub getFieldNames {
+  my ($this, $obj) = @_;
+
+  my $formDef = $this->getFormDef($obj);
+  return unless $formDef;
+  return map {$_->{name}} @{$formDef->getFields()};
+}
+
+sub getFormDef {
+  my ($this, $obj) = @_;
+
+  my ($web, $topic) = Foswiki::Func::normalizeWebTopicName($obj->web, $obj->getFormName());
+  return new Foswiki::Form($this->{session}, $web, $topic);
 }
 
 1;

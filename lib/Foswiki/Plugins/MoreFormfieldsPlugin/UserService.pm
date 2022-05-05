@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2018-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2018-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,6 +19,7 @@ use strict;
 use warnings;
 
 use Foswiki::Func ();
+use Foswiki::AggregateIterator ();
 use JSON ();
 use constant TRACE => 0;
 
@@ -69,6 +70,8 @@ sub getParams {
   $params{include} = $request->param("include");
   $params{exclude} = $request->param("exclude");
 
+  $params{showlogin} = Foswiki::isTrue($request->param("showlogin"), 0);
+
   return \%params;
 }
 
@@ -77,29 +80,56 @@ sub getUsers {
 
   my $results = [];
 
-  my $it = Foswiki::Func::eachUser();
   my $thisUser = Foswiki::Func::getWikiName();
+  my $it;
+
+  if (scalar(@{$params->{groups}}))  {
+    # members mode
+    my @list = ();
+    foreach my $group (@{$params->{groups}}) {
+      push @list, Foswiki::Func::eachGroupMember($group);
+    }
+    $it = Foswiki::AggregateIterator->new(\@list, 1);
+  } else {
+    # users mode
+    $it = Foswiki::Func::eachUser();
+  }
 
   while ($it->hasNext()) {
     my $user = $it->next();
     my $topicTitle = Foswiki::Func::getTopicTitle($Foswiki::cfg{UsersWebName}, $user);
+    my $loginName = Foswiki::Func::wikiToUserName($user) || '';
 
-    next if defined($params->{search}) && $user !~ /$params->{search}/i && $topicTitle !~ /$params->{search}/i;
-    next if defined($params->{include}) && $user !~ /$params->{include}/ && $topicTitle !~ /$params->{include}/;
-    next if defined($params->{exclude}) && ($user =~ /$params->{exclude}/ || $topicTitle =~ /$params->{exclude}/);
+    next if defined($params->{search}) && $user !~ /$params->{search}/i && $topicTitle !~ /$params->{search}/i && $loginName !~ /$params->{search}/i;
+    next if defined($params->{include}) && $user !~ /$params->{include}/i && $topicTitle !~ /$params->{include}/i && $loginName !~ /$params->{include}/i;
+    next if defined($params->{exclude}) && ($user =~ /$params->{exclude}/i || $topicTitle =~ /$params->{exclude}/i || $loginName =~ /$params->{exclude}/i);
 
-    next if Foswiki::Func::topicExists($Foswiki::cfg{UsersWebName}, $user) &&
-            !Foswiki::Func::checkAccessPermission("VIEW", $thisUser, undef, $user, $Foswiki::cfg{UsersWebName});
+    my $topicExists = Foswiki::Func::topicExists($Foswiki::cfg{UsersWebName}, $user);
+    next if $topicExists && !Foswiki::Func::checkAccessPermission("VIEW", $thisUser, undef, $user, $Foswiki::cfg{UsersWebName});
 
-    next if scalar(@{$params->{groups}}) && !_isGroupMember($user, @{$params->{groups}});
+    my $text = $topicTitle;
+
+    if ($loginName && $params->{showlogin}) {
+      $loginName =~ s/[:\(\)\.]/_/g;
+      $text .= " ($loginName)";
+    }
 
     push @$results, {
-      id => $user,
-      text => $topicTitle
+      id => $topicExists ? $Foswiki::cfg{UsersWebName}.'.'.$user : $user,
+      text => $text,
     };
   }
 
   return $results;
+}
+sub _isGroupMember {
+  my ($user, @groups) = @_;
+
+  foreach my $group (@groups) {
+    return 1 if Foswiki::Func::isGroupMember($group, $user, {expand => 1});
+  }
+
+  return 0;
 }
 
 sub getGroups {
@@ -118,11 +148,11 @@ sub getGroups {
     next if defined($params->{include}) && $group !~ /$params->{include}/ && $topicTitle !~ /$params->{include}/;
     next if defined($params->{exclude}) && ($group =~ /$params->{exclude}/ || $topicTitle =~ /$params->{exclude}/);
 
-    next if Foswiki::Func::topicExists($Foswiki::cfg{UsersWebName}, $group) &&
-            !Foswiki::Func::checkAccessPermission("VIEW", $thisUser, undef, $group, $Foswiki::cfg{UsersWebName});
+    my $topicExists = Foswiki::Func::topicExists($Foswiki::cfg{UsersWebName}, $group);
+    next if $topicExists && !Foswiki::Func::checkAccessPermission("VIEW", $thisUser, undef, $group, $Foswiki::cfg{UsersWebName});
 
     push @$results, {
-      id => $group,
+      id => $topicExists ? $Foswiki::cfg{UsersWebName}.'.'.$group : $group,
       isGroup => 1,
       text => $topicTitle
     };
@@ -143,11 +173,14 @@ sub handleUsers {
   @$results = splice(@$results, $params->{skip}, $params->{limit});
 
   foreach my $item (@$results) {
+    my ($web, $topic) = Foswiki::Func::normalizeWebTopicName($Foswiki::cfg{UsersWebName}, $item->{id});
+
     my $thumbnail = $this->{thumbnailFormat};
-    $thumbnail =~ s/%topic%/$item->{id}/g;
-    $thumbnail =~ s/%web%/$Foswiki::cfg{UsersWebName}/g;
+    $thumbnail =~ s/%topic%/$topic/g;
+    $thumbnail =~ s/%web%/$web/g;
     $thumbnail =~ s/%size%/$this->{userPhotoSize}/g;
-    $item->{thumbnail} = Foswiki::Func::expandCommonVariables($thumbnail);
+    $thumbnail = Foswiki::Func::expandCommonVariables($thumbnail) if $thumbnail =~ /%/;
+    $item->{thumbnail} = $thumbnail;
   }
 
   $results = JSON::to_json({
@@ -214,11 +247,13 @@ sub handleUserOrGroup {
   @$results = splice(@$results, $params->{skip}, $params->{limit});
 
   foreach my $item (@$results) {
+    my ($web, $topic) = Foswiki::Func::normalizeWebTopicName($Foswiki::cfg{UsersWebName}, $item->{id});
     my $thumbnail = $this->{thumbnailFormat};
-    $thumbnail =~ s/%topic%/$item->{id}/g;
-    $thumbnail =~ s/%web%/$Foswiki::cfg{UsersWebName}/g;
+    $thumbnail =~ s/%topic%/$topic/g;
+    $thumbnail =~ s/%web%/$web/g;
     $thumbnail =~ s/%size%/$this->{userPhotoSize}/g;
-    $item->{thumbnail} = Foswiki::Func::expandCommonVariables($thumbnail);
+    $thumbnail = Foswiki::Func::expandCommonVariables($thumbnail) if $thumbnail =~ /%/;
+    $item->{thumbnail} = $thumbnail;
   }
 
   $results = JSON::to_json({
@@ -236,16 +271,6 @@ sub handleUserOrGroup {
   $response->print($results);
 
   return "";
-}
-
-sub _isGroupMember {
-  my ($user, @groups) = @_;
-
-  foreach my $group (@groups) {
-    return 1 if Foswiki::Func::isGroupMember($group, $user, {expand => 1});
-  }
-
-  return 0;
 }
 
 1;

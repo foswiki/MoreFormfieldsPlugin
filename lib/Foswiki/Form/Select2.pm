@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,11 +18,24 @@ package Foswiki::Form::Select2;
 use strict;
 use warnings;
 
+use Assert;
+
 use Foswiki::Form::Select ();
 use Foswiki::Plugins::JQueryPlugin ();
-our @ISA = ('Foswiki::Form::Select');
+use Foswiki::Form::ListFieldDefinition ();
+our @ISA = ('Foswiki::Form::ListFieldDefinition');
 
-use Assert;
+sub new {
+    my $class = shift;
+    my $this  = $class->SUPER::new(@_);
+
+    $this->{size} //= 1;
+    $this->{size} =~ s/[^\d]//g;
+
+    return $this;
+}
+
+sub isTextMergeable { return 0; }
 
 sub param {
   my ($this, $key) = @_;
@@ -49,7 +62,14 @@ sub renderForEdit {
   my $choices = '';
 
   $value = '' unless defined $value;
-  my %isSelected = map { $_ => 1 } split(/\s*,\s*/, $value);
+
+  my %isSelected = ();
+  if ($this->isMultiValued) {
+    %isSelected = map { $_ => 1 } split(/\s*,\s*/, $value);
+  } else {
+    $isSelected{$value} = 1;
+  }
+
   foreach my $item (@{$this->getOptions()}) {
     my $option = $item;    # Item9647: make a copy not to modify the original value in the array
     my %params = (class => 'foswikiOption',);
@@ -66,7 +86,7 @@ sub renderForEdit {
   }
 
   my $size = $this->{size};
-  if (defined $size) {
+  if ($size && $size ne "1") {
     $size .= "em";
   } else {
     $size = "element";
@@ -100,12 +120,30 @@ sub renderForEdit {
   return ('', $value);
 }
 
+sub getDisplayValue {
+  my ($this, $value) = @_;
+
+  return $value unless $this->isValueMapped();
+
+  $this->getOptions();
+
+  my @vals = ();
+  foreach my $val (split(/\s*,\s*/, $value)) {
+    if (defined($this->{valueMap}{$val})) {
+      push @vals, $this->{valueMap}{$val};
+    } else {
+      push @vals, $val;
+    }
+  }
+  return join(", ", @vals);
+}
+
 sub addJavascript {
   #my $this = shift;
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
 #  Foswiki::Func::addToZone("script", "FOSWIKI::SELECT2FIELD", <<"HERE", "JQUERYPLUGIN::SELECT2");
-#<script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/select2.js'></script>
+#<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/select2.js'></script>
 #HERE
 }
 

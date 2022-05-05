@@ -22,6 +22,9 @@
   line-height:32px;
   overflow:hidden;
 }
+.foswikiAttachmentFile {
+  display:inline-block;
+}
 .foswikiAttachmentFile .foswikiIcon,
 .foswikiAttachmentFile .imagePlain_left {
   margin:0 0.5em 0.5em 0;
@@ -30,3 +33,46 @@
 .jqDataTablesContainer .foswikiAttachmentFile .imagePlain_left {
   margin:0;
 }
+.jqMultiTextContainer {
+  display:inline-block;
+}
+.jqMultiTextInputWrapper {
+  margin-bottom:0.5em;
+  position:relative;
+}
+.jqMultiTextInputWrapper::after {
+  content:".. .. .. .. .. ..";
+  width:10px;
+  display:inline-block;
+  cursor:move;
+  overflow:hidden;
+  vertical-align:middle;
+  line-height:5px;
+  margin:-2px -1px 0 0;
+  position:absolute;
+  top:0;
+  right:0;  
+  color:#999;
+}
+
+.jqSliderContainer {
+  display:flex;
+  align-items:center;
+}
+.jqSliderContainer .jqSliderElem {
+  flex-grow:1;
+}
+.jqSliderContainer .jqSliderLabel {
+  min-width:10em;
+  white-space:pre;
+  margin-left:0.25em;
+}
+.foswikiToggleOffValue,
+.foswikiToggleButton:checked ~ .foswikiToggleOnValue {
+  display:inline !important;
+}
+.foswikiToggleOnValue,
+.foswikiToggleButton:checked ~ .foswikiToggleOffValue {
+  display:none !important;
+}
+

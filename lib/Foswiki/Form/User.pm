@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -29,10 +29,17 @@ sub new {
 
   $this->{_formfieldClass} = 'foswikiUserField';
   $this->{_web} = $this->param("web") || $Foswiki::cfg{UsersWebName};
+
   $this->{_url} = Foswiki::Func::expandTemplate("select2::user::url");
   $this->{_thumbnailFormat} = Foswiki::Func::expandTemplate("user::photo::thumbnail::url") || $this->{_thumbnailFormat};
 
   return $this;
+}
+
+sub getDisplayValue {
+  my ($this, $value) = @_;
+
+  return $this->SUPER::getDisplayValue($value, $this->{_web});
 }
 
 1;

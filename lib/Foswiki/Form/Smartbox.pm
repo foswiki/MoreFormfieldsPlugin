@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -24,6 +24,7 @@ use Foswiki::Form::Checkbox ();
 our @ISA = ('Foswiki::Form::Checkbox');
 
 sub isValueMapped { return 1; }
+sub isTextMergeable { return 0; }
 
 sub getOptions {
   my $this = shift;
@@ -72,15 +73,12 @@ sub renderForDisplay {
 sub getDisplayValue {
     my ( $this, $value ) = @_;
 
-    return $value unless $this->isValueMapped();
+    return $value unless $this->isValueMapped(); # never
 
     $this->getOptions();
     my @vals = ();
     foreach my $val ( split( /\s*,\s*/, $value ) ) {
-        if ( $val eq $this->{anyValue}) {
-          @vals = $val;
-          last;
-        }
+        next if $val eq $this->{anyValue};
         if ( defined( $this->{valueMap}{$val} ) ) {
             push @vals, $this->{valueMap}{$val};
         }
@@ -95,7 +93,7 @@ sub renderForEdit {
   my ( $this, $topicObject, $value ) = @_;
 
   Foswiki::Func::addToZone("script", "FOSWIKI::SMARTBOX", <<'HERE', "JQUERYPLUGIN");
-<script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/smartbox.js'></script>
+<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/smartbox.js'></script>
 HERE
 
   my %isSelected = map { $_ => 1 } split( /\s*,\s*/, $value );

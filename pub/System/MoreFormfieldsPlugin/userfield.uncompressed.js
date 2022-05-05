@@ -40,7 +40,7 @@ jQuery(function($) {
     }
   }
 
-  $(".foswikiUserField:not(.foswikiUserFieldInited)").livequery(function() {
+  $(".foswikiUserField:not(.inited)").livequery(function() {
     var $this = $(this), 
         opts = $.extend({}, defaults, $this.data()),
         requestOpts = $.extend({}, opts),
@@ -55,9 +55,7 @@ jQuery(function($) {
     //console.log("opts=",opts);
     //console.log("requestOpts=",requestOpts);
 
-    $this.addClass("foswikiUserFieldInited");
-
-    $this.select2({
+    $this.addClass("inited").select2({
       allowClear: true,
       dropdownCssClass: 'ui-dialog', // work around problems with jquery-ui: see https://github.com/select2/select2/issues/940
       placeholder: opts.placeholder,

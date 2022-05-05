@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,8 +18,12 @@ package Foswiki::Form::Phonenumber;
 use strict;
 use warnings;
 
+use Foswiki::Render();
 use Foswiki::Form::Text ();
+use Foswiki::Plugins::JQueryPlugin();
 our @ISA = ('Foswiki::Form::Text');
+
+sub isTextMergeable { return 0; }
 
 sub finish {
   my $this = shift;
@@ -40,10 +44,12 @@ sub addStyles {
 
 sub addJavascript {
   #my $this = shift;
+
+  Foswiki::Plugins::JQueryPlugin::createPlugin("validate");
   Foswiki::Func::addToZone("script", 
     "MOREFORMFIELDSPLUGIN::PHONENUMBER::JS",
-    "<script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/phonenumber.js'></script>", 
-    "JQUERYPLUGIN::FOSWIKI, JQUERYPLUGIN::LIVEQUERY, JQUERYPLUGIN::VALIDATE");
+    "<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/phonenumber.js'></script>", 
+    "JQUERYPLUGIN::FOSWIKI, JQUERYPLUGIN::VALIDATE");
 }
 
 sub renderForEdit {
@@ -54,13 +60,13 @@ sub renderForEdit {
 
   return (
     '',
-    CGI::textfield(
-      -class => $this->cssClasses('foswikiInputField foswikiPhoneNumber'),
-      -name => $this->{name},
-      -size => $this->{size},
-      -override => 1,
-      -value => $value,
-    )
+    Foswiki::Render::html("input", {
+      "type" => "text",
+      "class" => $this->cssClasses('foswikiInputField foswikiPhoneNumber'),
+      "name" => $this->{name},
+      "size" => $this->{size},
+      "value" => $value,
+    })
   );
 }
 
@@ -87,7 +93,7 @@ sub getDisplayValue {
   $number =~ s/\(.*?\)//g;
   $number =~ s/^\+/00/;
 
-  my $prot = $this->param("protocol") || 'sip';
+  my $prot = $this->param("protocol") || 'tel';
 
   return "<a href='$prot:$number' class='foswikiPhoneNumber'>$value</a>";
 }

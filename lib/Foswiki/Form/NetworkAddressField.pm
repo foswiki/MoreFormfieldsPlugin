@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,19 +18,21 @@ package Foswiki::Form::NetworkAddressField;
 use strict;
 use warnings;
 
+use Foswiki::Render();
 use Foswiki::Form::Text ();
 use Foswiki::Plugins::JQueryPlugin ();
 our @ISA = ('Foswiki::Form::Text');
+
+sub isTextMergeable { return 0; }
 
 sub addJavascript {
   #my $this = shift;
   Foswiki::Func::addToZone("script", 
     "MOREFORMFIELDSPLUGIN::IPADDRESS::JS",
-    "<script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/networkaddress.js'></script>", 
-    "JQUERYPLUGIN::FOSWIKI, JQUERYPLUGIN::LIVEQUERY, JQUERYPLUGIN::VALIDATE");
+    "<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/networkaddress.js'></script>", 
+    "JQUERYPLUGIN::FOSWIKI, JQUERYPLUGIN::VALIDATE");
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("validate");
-  Foswiki::Plugins::JQueryPlugin::createPlugin("livequery");
 
   if ($Foswiki::cfg{Plugins}{MoreFormfieldsPlugin}{Debug}) {
     Foswiki::Plugins::JQueryPlugin::createPlugin("debug");
@@ -52,21 +54,8 @@ sub renderForEdit {
 
   # get args in a backwards compatible manor:
   my $metaOrWeb = shift;
-
-  my $meta;
-  my $web;
-  my $topic;
-
-  if (ref($metaOrWeb)) {
-    # new: $this, $meta, $value
-    $meta = $metaOrWeb;
-    $web = $meta->web;
-    $topic = $meta->topic;
-  } else {
-    # old: $this, $web, $topic, $value
-    $web = $metaOrWeb;
-    $topic = shift;
-    ($meta, undef) = Foswiki::Func::readTopic($web, $topic);
+  unless (ref($metaOrWeb)) {
+    shift;
   }
 
   my $value = shift;
@@ -81,13 +70,13 @@ sub renderForEdit {
 
   return (
     '',
-    CGI::textfield(
-      -class => $this->cssClasses('foswikiInputField', $this->{_class}, $required),
-      -name => $this->{name},
-      -size => $this->{size},
-      -override => 1,
-      -value => $value,
-    )
+    Foswiki::Render::html("input", {
+      "type" => "text",
+      "class" => $this->cssClasses('foswikiInputField', $this->{_class}, $required),
+      "name" => $this->{name},
+      "size" => $this->{size},
+      "value" => $value
+    })
   );
 }
 
@@ -106,7 +95,7 @@ sub getDisplayValue {
 
   $this->addStyles();
 
-  return "<div class='" . $this->{_class} . "'>$value</div>";
+  return "<span class='" . $this->{_class} . "'>$value</span>";
 }
 
 1;

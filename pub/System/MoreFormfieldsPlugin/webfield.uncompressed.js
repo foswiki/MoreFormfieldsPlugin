@@ -13,10 +13,15 @@ jQuery(function($) {
     url: null,
     width: 'element',
     multiple: false,
-    quietMillis:500
+    quietMillis:500,
+    sortable: false
   };
 
-  $(".foswikiSelect2Field:not(.inited)").livequery(function() {
+  function formatItem(item) {
+    return item.text;
+  }
+
+  $(".foswikiWebFieldEditor:not(.inited)").livequery(function() {
     var $this = $(this), 
         opts = $.extend({}, defaults, $this.data()),
         requestOpts = $.extend({}, opts),
@@ -33,6 +38,7 @@ jQuery(function($) {
 
     $this.addClass("inited").select2({
       allowClear: true,
+      dropdownCssClass: 'ui-dialog', // work around problems with jquery-ui: see https://github.com/select2/select2/issues/940
       placeholder: opts.placeholder,
       minimumInputLength: opts.minimumInputLength,
       width: opts.width,
@@ -58,16 +64,44 @@ jQuery(function($) {
 	var data, text;
 	if (opts.multiple) {
           data = [];
-	  $(val.split(/\s*,\s*/)).each(function () {
-	    text = decodeURIComponent(opts.valueText[this]||this);
-	    data.push({id: this, text: text});
+	  $(val.split(/\s*,\s*/)).each(function (index) {
+            text = opts.valueText[this]||this;
+            try {
+              text = decodeURIComponent(text);
+              data.push({
+                id: this, 
+                text: text
+              });
+            } catch(err) {
+              console && console.error("Error: illegal value in webfield:",text); 
+            };
 	  });
 	} else {
-          text = decodeURIComponent(opts.valueText);
-	  data = {id:val, text:text};
+          text = opts.valueText;
+          try {
+            text = decodeURIComponent(text);
+            data = {
+              id: val, 
+              text: text
+            };
+          } catch(err) {
+            console && console.error("Error: illegal value in topicfield:",text); 
+          };
 	}
 	callback(data);
-      }
+      },
+      formatResult: formatItem,
+      formatSelection: formatItem
     });
+
+    // make it sortable
+    if (opts.sortable) {
+      $this.select2("container").find("ul.select2-choices").sortable({
+	  items: "> .select2-search-choice",
+          start: function() { $this.select2( 'onSortStart' ); },
+          stop: function() { $this.select2( 'onSortEnd' ); }
+      });
+    }
   });
+
 });

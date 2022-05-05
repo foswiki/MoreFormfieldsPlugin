@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -41,6 +41,8 @@ sub new {
 
 sub isMultiValued { return (shift->{type} =~ m/\+multi/); }
 
+sub isTextMergeable { return 0; }
+
 sub getDefaultValue {
     my $this = shift;
 
@@ -66,18 +68,24 @@ sub populateMetaFromQueryData {
     if (scalar(@values) == 1 && defined $values[0]) {
       @values = split(/,|%2C/, $values[0]);
     }
-    my %vset = ();
+
+    my %seen = ();
+    my @vset = ();
     foreach my $val (@values) {
       $val ||= '';
       $val =~ s/^\s*//o;
       $val =~ s/\s*$//o;
+      next if $seen{$val};
 
       # skip empty values
-      $vset{$val} = (defined $val && $val =~ /\S/);
+      if (defined $val && $val =~ /\S/) {
+        push @vset, $val; # preserve order
+        $seen{$val} = 1;
+      }
     }
 
     # populate options first
-    $this->{_options} = [sort keys %vset];
+    $this->{_options} = \@vset;
   }
 
   return $this->SUPER::populateMetaFromQueryData($query, $meta, $old);
@@ -126,15 +134,47 @@ sub getDisplayValue {
   if ($this->isMultiValued) {
     foreach my $val (split(/\s*,\s*/, $value)) {
       my $line = $format;
-      $line =~ s/\$file/$val/g;
+      my ($href, $cls) = _getHref($web, $topic, $val);
+      $line =~ s/\$file\b/$val/g;
+      $line =~ s/\$href\b/$href/g;
+      $line =~ s/\$class\b/$cls/g;
       push @result, $line;
     }
   } else {
-    $format =~ s/\$file/$value/g;
+    my ($href, $cls) = _getHref($web, $topic, $value);
+    $format =~ s/\$file\b/$value/g;
+    $format =~ s/\$href\b/$href/g;
+    $format =~ s/\$class\b/$cls/g;
     push @result, $format;
   }
 
-  return Foswiki::Func::expandCommonVariables(join("", @result), $topic, $web);
+  my $result = join("", @result);
+  return $result =~ /%/ ? Foswiki::Func::expandCommonVariables($result, $topic, $web) : $result;
+}
+
+sub _getHref {
+  my ($web, $topic, $attachment) = @_;
+
+  my $href = Foswiki::Func::getPubUrlPath($web, $topic, $attachment);
+  my $cls = "";
+  if (Foswiki::Func::getContext()->{TopicInteractionPluginEnabled}) {
+    my $webDAVFilter = $Foswiki::cfg{TopicInteractionPlugin}{WebDAVFilter};
+    my $encName = Foswiki::urlEncode($attachment);
+
+    if (defined($webDAVFilter) && $attachment =~ /\.($webDAVFilter)$/i) {
+      my $webDavUrl = $Foswiki::cfg{TopicInteractionPlugin}{WebDAVUrl} || 'webdav://$host/dav/$web/$topic_files/$attachment';
+      my $host = Foswiki::Func::getUrlHost();
+      $webDavUrl =~ s/\$host/$host/g;
+      $webDavUrl =~ s/\$web/$web/g;
+      $webDavUrl =~ s/\$topic/$topic/g;
+      $webDavUrl =~ s/\$attachment/$encName/g;
+
+      $href = $webDavUrl;
+      $cls = "jqWebDAVLink";
+    }
+  }
+
+  return wantarray ? ($href, $cls) : $href;
 }
 
 sub renderForDisplay {
@@ -150,7 +190,13 @@ sub renderForDisplay {
 sub renderForEdit {
   my ($this, $topicObject, $value) = @_;
 
+  my $default = $this->getDefaultValue();
+  $value = "" if $value eq $default; # don't insert default
+
   $this->getOptions($topicObject);
+
+  my $web = $topicObject->web;
+  my $topic = $topicObject->topic;
 
   my @htmlData = ();
   push @htmlData, 'type="hidden"';
@@ -159,7 +205,7 @@ sub renderForEdit {
   push @htmlData, 'value="' . $value . '"';
 
   my @uploadButtonHtmlData = ();
-  push @uploadButtonHtmlData, "data-topic='%WEB%.%TOPIC%'";
+  push @uploadButtonHtmlData, "data-topic='$web.$topic'";
   push @uploadButtonHtmlData, "data-auto-upload='false'";
 
   my $size = $this->{size};
@@ -172,7 +218,8 @@ sub renderForEdit {
 
   unless (defined $this->param("url")) {
     if (defined $this->{_url}) {
-      my $url = Foswiki::Func::expandCommonVariables($this->{_url}, $this->{_topic}, $this->{_web});
+      my $url = $this->{_url};
+      $url = $url =~ /%/ ? Foswiki::Func::expandCommonVariables($url, $this->{_topic}, $this->{_web}) : $url;
       push @htmlData, 'data-url="' . $url . '"';
     }
     push @htmlData, 'data-topic="' . $this->{_web} . '.' . $this->{_topic} .'"';
@@ -227,7 +274,7 @@ sub addJavascript {
   Foswiki::Plugins::JQueryPlugin::createPlugin("uploader");
   Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
   Foswiki::Func::addToZone("script", "FOSWIKI::ATTACHMENTFIELD", <<"HERE", "JQUERYPLUGIN::SELECT2, JQUERYPLUGIN::UPLOADER");
-<script type='text/javascript' src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/attachmentfield.js'></script>
+<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/attachmentfield.js'></script>
 HERE
 }
 

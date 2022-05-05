@@ -209,6 +209,16 @@
 .clockpicker .input-group-addon {
 	cursor: pointer;
 }
+button.ui-clockpicker-trigger {
+        border-radius: 0 3px 3px 0;
+        border-width: 1px 1px 1px 0;
+}
+.jqClockPicker {
+  display:inline-block;
+}
+.ui-clockpicker-sep {
+  margin:0 0.75em;
+}
 .clockpicker-moving {
 	cursor: move;
 }

@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -61,7 +61,7 @@ sub renderForEdit {
     my $key = $param;
     my $val = $this->param($key);
     $key =~ s/([[:upper:]])/-\l$1/g;
-    $key = 'data-'.$key;
+    $key = 'data-'.$key unless $key eq 'style';
     push @html5Data, $key.'="'.$val.'"';
   }
 

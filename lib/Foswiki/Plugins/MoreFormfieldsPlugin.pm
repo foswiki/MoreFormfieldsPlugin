@@ -1,6 +1,6 @@
 # Plugin for Foswiki -V The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2013-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2013-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,13 +25,14 @@ use Foswiki::Plugins ();
 
 use Error qw(:try);
 
-our $VERSION = '6.00';
-our $RELEASE = '10 Jan 2019';
+our $VERSION = '8.00';
+our $RELEASE = '13 Oct 2020';
 our $SHORTDESCRIPTION = 'Additional formfield types for %SYSTEMWEB%.DataForms';
 our $NO_PREFS_IN_TOPIC = 1;
 
 our $iconService;
 our $userService;
+our $webService;
 
 sub initPlugin {
 
@@ -87,6 +88,19 @@ sub initPlugin {
     description => 'Expand the list of users and groups.'
   );
 
+  Foswiki::Func::registerRESTHandler("webs", sub {
+    unless (defined $webService) {
+      require Foswiki::Plugins::MoreFormfieldsPlugin::WebService;
+      $webService = Foswiki::Plugins::MoreFormfieldsPlugin::WebService->new();
+    }
+    $webService->handleWebs(@_);
+  },
+    authenticate => 1,
+    validate     => 0,
+    http_allow   => 'GET,POST',
+    description => 'Expand the list of webs.'
+  );
+
   if (Foswiki::Func::getContext()->{DBCachePluginEnabled}) {
     require Foswiki::Plugins::DBCachePlugin;
   }
@@ -100,6 +114,7 @@ sub initPlugin {
 }
 
 sub finishPlugin {
+
   if (defined $iconService) {
     $iconService->finish();
     undef $iconService;
@@ -108,6 +123,11 @@ sub finishPlugin {
   if (defined $userService) {
     $userService->finish();
     undef $userService;
+  }
+
+  if (defined $webService) {
+    $webService->finish();
+    undef $webService;
   }
 }
 
@@ -242,34 +262,13 @@ sub afterSaveHandler {
     $form = new Foswiki::Form($session, $web, $formName);
   } catch Foswiki::OopsException with {
     my $error = shift;
-    #print STDERR "Error reading form definition for $formName ... baling out\n";
+    #print STDERR "Error reading form definition for $formName ... bailing out\n";
   };
   return unless $form;
 
   # forward to formfields
-
-  # move all autofill formfields to the end
-  my @fields = @{$form->getFields};
-  @fields = sort {
-    if ($a->isa("Foswiki::Form::Autofill")) {
-      if ($b->isa("Foswiki::Form::Autofill")) {
-        return 0;
-      } else {
-        return 1;
-      }
-    } else {
-      if ($b->isa("Foswiki::Form::Autofill")) {
-        return -1;
-      } else {
-        return 0;
-      }
-    }
-  } @fields;
-
-  #print STDERR "fields: ".join(", ", map {$_->{name}} @fields)."\n";
-
   my $mustSave = 0;
-  foreach my $field (@fields) {
+  foreach my $field (@{$form->getFields}) {
     if ($field->can("afterSaveHandler")) {
       #print STDERR "calling afterSaveHandler for field $field - $field->{name}\n";
       $mustSave = 1 if $field->afterSaveHandler($meta, $form);
@@ -285,6 +284,33 @@ sub afterSaveHandler {
     Foswiki::Plugins::DBCachePlugin::enableSaveHandler(); 
     Foswiki::Plugins::DBCachePlugin::afterSaveHandler($text, $topic, $web, $error, $meta);
   }
+}
+
+# call afterSaveHandler when attachments have been uploaded
+sub afterUploadHandler {
+  my ($attrHashRef, $meta) = @_;
+
+  my $web = $meta->web;
+  my $topic = $meta->topic;
+  #print STDERR "called afterUploadHandler($web, $topic)\n";
+
+  afterSaveHandler($meta->text, $topic, $web, "", $meta);
+}
+
+# call afterSaveHandler when attachments changed
+sub afterRenameHandler {
+  my ($oldWeb, $oldTopic, $oldAttachment, $newWeb, $newTopic, $newAttachment) = @_;
+
+  return unless $oldAttachment && $newAttachment;
+  return if $oldWeb eq $newWeb && $oldTopic eq $newTopic;
+
+  #print STDERR "called afterRenameHandler($oldWeb, $oldTopic, $oldAttachment, $newWeb, $newTopic, $newAttachment)\n";
+
+  my ($meta) = Foswiki::Func::readTopic($oldWeb, $oldTopic);
+  afterSaveHandler($meta->text, $oldTopic, $oldWeb, "", $meta);
+
+  ($meta) = Foswiki::Func::readTopic($newWeb, $newTopic);
+  afterSaveHandler($meta->text, $newTopic, $newWeb, "", $meta);
 }
 
 1;

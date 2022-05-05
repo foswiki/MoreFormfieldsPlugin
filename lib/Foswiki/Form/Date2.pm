@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2019 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,6 +21,7 @@ use warnings;
 use Foswiki::Form::FieldDefinition ();
 use Foswiki::Plugins::JQueryPlugin ();
 use Foswiki::Time ();
+use Foswiki::Render ();
 our @ISA = ('Foswiki::Form::FieldDefinition');
 
 sub new {
@@ -32,6 +33,8 @@ sub new {
   $this->{size} = $size;
   return $this;
 }
+
+sub isTextMergeable { return 0; }
 
 sub getDefaultValue {
   my $this = shift;
@@ -68,12 +71,12 @@ sub getDisplayValue {
   my ($this, $value) = @_;
 
   #my ($pkg, undef, $line) = caller;
-  #print STDERR "called getDisplayValue($value) by $pkg, line $line\n";
+  #print STDERR "called getDisplayValue($value)\n";
 
   my $epoch = $value;
   $epoch = $this->parseDate($value) unless $value =~ /^\-?\d+$/;
 
-  return $value unless $epoch;
+  return "" unless $epoch;
   my $result = $this->formatDate($epoch);
 
   #print STDERR "... result=$result\n";
@@ -101,20 +104,21 @@ sub renderForEdit {
     $value = $epoch if defined $epoch;
   }
 
-  my $dateFormat = _convertFormatToJQueryUI($this->param("format") || $Foswiki::cfg{DefaultDateFormat} || '$year/$mo/$day');
+  my $dateFormat = $this->convertFormatToJQueryUI($this->getDateFormat());
 
-  $value = CGI::textfield({
+  $value = Foswiki::Render::html("input", {
+      type => "text",
       name => $this->{name},
       id => 'id' . $this->{name} . int(rand() * 1000),
       size => $this->{size},
       value => $value,
+      "data-auto-size" => "true",
       "data-change-month" => "true",
       "data-change-year" => "true",
       "data-date-format" => $dateFormat,
       "data-lang" => $this->getLang(),
-      class => $this->can('cssClasses')
-      ? $this->cssClasses('foswikiInputField', 'jqUIDatepicker')
-      : 'foswikiInputField jqUIDatepicker'
+      "data-show-on" => "both",
+      class => $this->cssClasses('foswikiInputField', 'jqUIDatepicker')
     }
   );
 
@@ -173,8 +177,8 @@ sub createMetaKeyValues {
 # | yy       | $year     | %Y         | year (four digit) |
 # | @        | $epoch    | %s,%o      | Unix timestamp (ms since 01/01/1970) |
 # | yy-mm-dd | $iso      | %Y-%mm-%dd | ISO format |
-sub _convertFormatToJQueryUI {
-  my $dateFormat = shift;
+sub convertFormatToJQueryUI {
+  my ($this, $dateFormat) = @_;
 
   my $result = $dateFormat;
 
@@ -207,13 +211,19 @@ sub _convertFormatToJQueryUI {
   return $result;
 }
 
+sub getDateFormat {
+  my $this = shift;
+
+  return $this->param("format") || $Foswiki::cfg{DefaultDateFormat} || '$year/$mo/$day';
+}
+
 sub formatDate {
   my ($this, $epoch, $params) = @_;
 
   $params ||= $this->param();
   $params->{lang} = $this->getLang();
 
-  my $dateFormat = $this->param("format") || $Foswiki::cfg{DefaultDateFormat} || '$year/$mo/$day';
+  my $dateFormat = $this->getDateFormat();
   my $timezone = $this->param("timezone") || $Foswiki::cfg{DisplayTimeValues} || 'servertime';
 
   return Foswiki::Time::formatTime($epoch, $dateFormat, $timezone, $params);

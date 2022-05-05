@@ -2,8 +2,8 @@ FOSWIKI_ROOT?=~/foswiki/core
 TARGET= \
   moreformfields.css \
   networkaddress.js \
-  userfield.js \
   topicfield.js \
+  webfield.js \
   attachmentfield.js \
   phonenumber.js \
   clockpicker.js \
@@ -11,7 +11,9 @@ TARGET= \
   clockpicker.css \
   iconfield.js \
   smartbox.js \
-  select2.js
+  select2.js \
+  multitext.js \
+  slider.js
 
 
 -include $(FOSWIKI_ROOT)/pub/System/JQueryPlugin/Makefile.include
