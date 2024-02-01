@@ -132,7 +132,7 @@ Without any parameters this value value would be displayed using the simples way
 
 ---+++ date2
 
-This is an alternative for the core =date= formfield type using the [[JQueryUI][jQuery-ui datepicker widget]] instead of using the [[%SYSTEMWEB%.JSCalendarContrib][Mishoo JSCalendar widget]].
+This is an alternative for the core =date= formfield type using the jQuery-ui datepicker widget instead of using the [[%SYSTEMWEB%.JSCalendarContrib][Mishoo JSCalendar widget]].
 It will launch a calendar when clicking into a =date2= formfield to select a date from, as well as restricts allowed keys to be entered into the formfield. The format of a =date2= formfield value
 will always be of a =YYYY-MM-DD= pattern and thus not be depending on any locale settings. This is quite important to get consistant data rather than differences based on the user's current browser language.
 While the _value_ stored into a =date2= formfield is locale-independent will it display according to the settings of =$Foswiki::cfg{DefaultDateFormat}= settings.
@@ -244,7 +244,7 @@ A hardware address given in 6 hex values, e.g. =00:1a:10:6f:ba:12=
 
 ---+++ masked
 
-A normal textfield with optional masked input using [[JQueryMaskedInput]]
+A normal textfield with optional masked input using [[JQIMaskContrib]]
 
 *Parameters*:
 
@@ -283,7 +283,7 @@ A special IP address used for routing, consisting of 4 octets, e.g. =255.255.255
 
 ---+++ phonenumber
 
-A standard telephone number. This formfield uses [[JQueryValidate]] to make sure the formfield value is a valid phone number.
+A standard telephone number. This formfield uses <nop>JQueryValidate to make sure the formfield value is a valid phone number.
 
 *Parameters*: none
 
