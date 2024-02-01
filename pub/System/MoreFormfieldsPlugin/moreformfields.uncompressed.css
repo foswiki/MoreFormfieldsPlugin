@@ -3,7 +3,8 @@
 .foswikiIpv6Address,
 .foswikiNetmask,
 .foswikiMacAddress {
-  font-family:monospace;
+  font-family:var(--font-family-monospace, monospace);
+  font-size:var(--font-size-monospace, var(--font-size-smallish, 95%));
 }
 .select2-results .image-item,
 .select2-container .image-item {

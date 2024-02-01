@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2022 Michael Daum https://michaeldaumconsulting.com
+ * Copyright (c) 2013-2024 Michael Daum https://michaeldaumconsulting.com
  *
  * Licensed under the GPL license http://www.gnu.org/licenses/gpl.html
  *
@@ -15,7 +15,9 @@ jQuery(function($) {
     multiple: false,
     quietMillis:500,
     limit: 10,
-    sortable: false
+    sortable: false,
+    templateName: "moreformfields",
+    definitionName: "select2::topic",
   };
 
   function formatItem(item) {
@@ -32,16 +34,27 @@ jQuery(function($) {
     var $this = $(this), 
         opts = $.extend({}, defaults, $this.data()),
         requestOpts = $.extend({}, opts),
-        val = $this.val();
+        val = $this.val(),
+        url = new URL(opts.url, window.location.origin);
 
     delete requestOpts.minimumInputLength;
     delete requestOpts.url;
+    delete requestOpts.templateName;
+    delete requestOpts.definitionName;
     delete requestOpts.width;
     delete requestOpts.quietMillis;
     delete requestOpts.valueText;
 
+    // move get params to post payload
+    url.searchParams.forEach(function(val, key) {
+      requestOpts[key] = val;
+      //console.log("key=",key,"val=",val);
+    });
+
+
     //console.log("opts=",opts);
     //console.log("requestOpts=",requestOpts);
+    //console.log("url=",url.href);
 
     $this.addClass("inited").select2({
       allowClear: true,
@@ -53,9 +66,12 @@ jQuery(function($) {
       ajax: {
         url: opts.url,
         dataType: 'json',
+        type: 'post',
         data: function (term, page) {
           var params = 
             $.extend({}, {
+              name: opts.templateName,
+              expand: opts.definitionName,
               q: term, // search term
 	      limit: opts.limit,
               page: page

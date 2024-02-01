@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@ use warnings;
 use Foswiki::Func ();
 use Foswiki::Plugins::JQueryPlugin ();
 use Foswiki::Form::Text ();
-our @ISA = ('Foswiki::Form::Text');
+our @ISA = ('Foswiki::Form::Text', 'Foswiki::Form::BaseField'); 
 
 sub isMultiValued { return 1; }
 sub isTextMergeable { return 0; }
@@ -158,7 +158,7 @@ sub populateMetaFromQueryData {
   return (1, $bPresent);
 }
 
-sub addJavascript {
+sub addJavaScript {
 
   Foswiki::Func::addToZone("script", 
     "MOREFORMFIELDSPLUGIN::MULTITEXT::JS",
@@ -166,15 +166,6 @@ sub addJavascript {
     "JQUERYPLUGIN::FOSWIKI, JQUERYPLUGIN::UI");
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("ui");
-}
-
-sub addStyles {
-
-  Foswiki::Func::addToZone("head", 
-    "MOREFORMFIELDSPLUGIN::CSS",
-    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />",
-    "JQUERYPLUGIN::SELECT2");
-
 }
 
 sub renderForEdit {
@@ -187,7 +178,7 @@ sub renderForEdit {
   }
 
   my $value = shift;
-  $this->addJavascript();
+  $this->addJavaScript();
   $this->addStyles();
 
   my @html5Data = ();
@@ -196,7 +187,7 @@ sub renderForEdit {
     my $key = $param;
     my $val = $this->param($key);
     $val = Foswiki::expandStandardEscapes($val);
-    $val = encode($val);
+    $val = _encode($val);
 
     $key =~ s/([[:upper:]])/-\l$1/g;
     $key = 'data-'.$key;
@@ -207,13 +198,13 @@ sub renderForEdit {
     . 'class="'.$this->cssClasses('foswikiInputField jqMultiText').'" '
     . 'size="'.$this->{size}.'" '
     . 'name="'.$this->{name}.'" '
-    . 'value="'.encode($value).'" '
+    . 'value="'._encode($value).'" '
     . join(" ", @html5Data).' />';
 
   return ('', $result);
 }
 
-sub encode {
+sub _encode {
   my $text = shift;
 
   $text =~ s/([\r\n<>%'"])/'%'.sprintf('%02x',ord($1))/ge;

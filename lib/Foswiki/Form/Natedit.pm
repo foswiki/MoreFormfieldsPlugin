@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,35 +19,29 @@ use strict;
 use warnings;
 
 use Foswiki::Form::Textarea ();
-our @ISA = ('Foswiki::Form::Textarea');
+use Foswiki::Form::BaseField ();
+our @ISA = ('Foswiki::Form::Textarea', 'Foswiki::Form::BaseField'); 
 
-sub param {
-  my ($this, $key) = @_;
+sub new {
+  my $class = shift;
 
-  unless (defined $this->{_params}) {
-    my %params = Foswiki::Func::extractParameters($this->{value});
-    $this->{_params} = \%params;
+  my $this = $class->SUPER::new(@_);
+
+  if ($this->{size} =~ m/^\s*(\d+)x(\d+)\s*$/) {
+    $this->{cols} = $1;
+    $this->{rows} = $2;
+  } else {
+    $this->{cols} = 50;
+    $this->{rows} = 4;
   }
 
-  return (defined $key)?$this->{_params}{$key}:$this->{_params};
-}
-
-sub finish {
-  my $this = shift;
-
-  $this->SUPER::finish();
-
-  undef $this->{_params};
+  return $this;
 }
 
 sub getDefaultValue {
-    my $this = shift;
+  my $this = shift;
 
-    my $value =
-      ( exists( $this->{default} ) ? $this->{default} : '' );
-    $value = '' unless defined $value;    # allow 0 values
-
-    return $value;
+  return $this->Foswiki::Form::BaseField::getDefaultValue(@_);
 }
 
 sub renderForEdit {
@@ -67,8 +61,9 @@ sub renderForEdit {
 
   $value =~ s/</&lt;/g;
   $value =~ s/>/&gt;/g;
+  my $classes = $this->cssClasses("foswikiTextarea", "natedit");
 
-  my $textarea = '<textarea class="foswikiTextarea natedit" rows="'.$this->{rows}.'" cols="'.$this->{cols}.'" '.join(" ", @html5Data)." name='$this->{name}'>\n$value</textarea>";
+  my $textarea = '<textarea class="'.$classes.'" rows="'.$this->{rows}.'" cols="'.$this->{cols}.'" '.join(" ", @html5Data)." name='$this->{name}'>\n$value</textarea>";
 
   return ('', $textarea);
 }

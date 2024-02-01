@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,8 +19,8 @@ use strict;
 use warnings;
 
 use Foswiki::Plugins::JQueryPlugin ();
-use Foswiki::Form::FieldDefinition ();
-our @ISA = ('Foswiki::Form::FieldDefinition');
+use Foswiki::Form::BaseField ();
+our @ISA = ('Foswiki::Form::BaseField');
 
 sub new {
   my $class = shift;
@@ -36,29 +36,18 @@ sub new {
 
 sub isTextMergeable { return 0; }
 
-sub param {
-  my ($this, $key) = @_;
-
-  unless (defined $this->{_params}) {
-    my %params = Foswiki::Func::extractParameters($this->{value});
-    $this->{_params} = \%params;
-  }
-
-  return (defined $key)?$this->{_params}{$key}:$this->{_params};
-}
-
 sub renderForEdit {
   my ($this, $topicObject, $value) = @_;
 
-  $this->init();
   Foswiki::Plugins::JQueryPlugin->getIconService()->loadAllIconFonts();
+  $this->addJavaScript();
 
   my @htmlData = ();
   push @htmlData, "type='hidden'";
-  push @htmlData, "class='".$this->cssClasses("foswikiIconField")."'";
+  push @htmlData, "class='" . $this->cssClasses("foswikiIconField") . "'";
   push @htmlData, "name='$this->{name}'";
   push @htmlData, "value='$value'";
-  
+
   my $cat = $this->param("cat");
   push @htmlData, "data-cat='$cat'" if $cat;
 
@@ -74,18 +63,15 @@ sub renderForEdit {
   } else {
     $size = "element";
   }
-  push @htmlData, 'data-width="'.$size.'"';
+  push @htmlData, 'data-width="' . $size . '"';
 
-  my $field .= "<input ".join(" ", @htmlData)."></input>";
+  my $field = "<input " . join(" ", @htmlData) . "></input>";
 
   return ('', $field);
 }
 
-sub init {
+sub addJavaScript {
   my $this = shift;
-
-  return if $this->{_inited};
-  $this->{_inited} = 1;
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
   Foswiki::Func::addToZone("script", "FOSWIKI::ICONFIELD", <<'HERE', "JQUERYPLUGIN::SELECT2");
@@ -93,22 +79,10 @@ sub init {
 HERE
 }
 
-sub renderForDisplay {
-    my ( $this, $format, $value, $attrs ) = @_;
-
-    $this->init();
-
-    my $displayValue = $this->getDisplayValue($value);
-    $format =~ s/\$value\(display\)/$displayValue/g;
-    $format =~ s/\$value/$value/g;
-
-    return $this->SUPER::renderForDisplay( $format, $value, $attrs );
-}
-
 sub getDisplayValue {
-    my ( $this, $value ) = @_;
+  my ($this, $value) = @_;
 
-    return Foswiki::Plugins::JQueryPlugin::getIconService->renderIcon($value);
+  return Foswiki::Plugins::JQueryPlugin::getIconService->renderIcon($value);
 }
 
 1;

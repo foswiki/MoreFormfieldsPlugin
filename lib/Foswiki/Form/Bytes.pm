@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,40 +20,32 @@ use warnings;
 
 use Foswiki::Render();
 use Foswiki::Form::Text ();
+use Foswiki::Form::BaseField ();
 use Scalar::Util qw( looks_like_number );
-our @ISA = ('Foswiki::Form::Text');
+
+our @ISA = ('Foswiki::Form::Text', 'Foswiki::Form::BaseField');
 our @BYTE_SUFFIX = ('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB');
 
-sub finish {
-  my $this = shift;
+sub new {
+  my $class = shift;
 
-  $this->SUPER::finish();
+  my $this = $class->SUPER::new(@_);
 
-  undef $this->{_params};
-}
+  my $size = $this->{size} || '';
+  $size =~ s/\D//g;
+  $size = 10 if (!$size || $size < 1);
+  $this->{size} = $size;
 
-sub isTextMergeable { return 0; }
-
-sub param {
-  my ($this, $key) = @_;
-
-  unless (defined $this->{_params}) {
-    my %params = Foswiki::Func::extractParameters($this->{value});
-    $this->{_params} = \%params;
-  }
-
-  return (defined $key)?$this->{_params}{$key}:$this->{_params};
+  return $this;
 }
 
 sub getDefaultValue {
-    my $this = shift;
+  my $this = shift;
 
-    my $value =
-      ( exists( $this->{default} ) ? $this->{default} : '' );
-    $value = '' unless defined $value;
-
-    return $value;
+  return $this->Foswiki::Form::BaseField::getDefaultValue(@_);
 }
+
+sub isTextMergeable { return 0; }
 
 sub renderForEdit {
   my ($this, $topicObject, $value) = @_;
@@ -69,18 +61,6 @@ sub renderForEdit {
       "data-rule-pattern" => '^[+\-]?\d+(\.\d+)?$'
     })
   );
-}
-
-sub renderForDisplay {
-  my ($this, $format, $value, $attrs) = @_;
-
-  return '' unless defined $value && $value ne '';
-
-  my $displayValue = $this->getDisplayValue($value);
-  $format =~ s/\$value\(display\)/$displayValue/g;
-  $format =~ s/\$value/$value/g;
-
-  return $this->SUPER::renderForDisplay($format, $value, $attrs);
 }
 
 sub getDisplayValue {

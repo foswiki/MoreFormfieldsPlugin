@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,10 +18,10 @@ use strict;
 use warnings;
 
 use Foswiki::Func();
-use Foswiki::Form::FieldDefinition ();
+use Foswiki::Form::BaseField ();
 use Foswiki::Plugins::JQueryPlugin ();
 use Assert;
-our @ISA = ('Foswiki::Form::FieldDefinition');
+our @ISA = ('Foswiki::Form::BaseField');
 
 sub new {
   my $class = shift;
@@ -32,6 +32,8 @@ sub new {
   $this->{_formfieldClass} = 'foswikiTopicField';
   $this->{_web} = $this->param("web") || $this->{session}{webName};
   $this->{_url} = Foswiki::Func::expandTemplate("select2::topic::url");
+  $this->{_templateName} = 'moreformfields';
+  $this->{_definitionName} = 'select2::topic';
   $this->{_thumbnailFormat} = Foswiki::Func::expandTemplate("select2::topic::thumbnail::url");
 
   return $this;
@@ -40,48 +42,12 @@ sub new {
 sub finish {
   my $this = shift;
   $this->SUPER::finish();
-  undef $this->{_params};
   undef $this->{_options};
 }
 
 sub isMultiValued { return shift->{type} =~ /\+multi/; }
 sub isValueMapped { return shift->{type} =~ /\+values/; }
 sub isTextMergeable { return 0; }
-
-sub param {
-  my ($this, $key, $val) = @_;
-
-  unless (defined $this->{_params}) {
-    my %params = Foswiki::Func::extractParameters($this->{value});
-    $this->{_params} = \%params;
-  }
-
-  if (defined $key && defined $val) {
-    $this->{_params}{$key} = $val;
-    return $val;
-  }
-
-  return (defined $key) ? $this->{_params}{$key} : $this->{_params};
-}
-
-sub getDefaultValue {
-    my $this = shift;
-
-    my $value = $this->{default};
-    $value = '' unless defined $value;
-
-    return $value;
-}
-
-sub renderForDisplay {
-  my ($this, $format, $value, $attrs) = @_;
-
-  my $displayValue = $this->getDisplayValue($value);
-  $format =~ s/\$value\(display\)/$displayValue/g;
-  $format =~ s/\$value/$value/g;
-
-  return $this->SUPER::renderForDisplay($format, $value, $attrs);
-}
 
 sub populateMetaFromQueryData {
   my ($this, $query, $meta, $old) = @_;
@@ -90,7 +56,7 @@ sub populateMetaFromQueryData {
     my @values = $query->multi_param($this->{name});
 
     if (scalar(@values) == 1 && defined $values[0]) {
-      @values = split(/,|%2C/, $values[0]);
+      @values = grep {$_ ne ""} split(/,|%2C/, $values[0]);
     }
 
     my %seen = ();
@@ -130,6 +96,7 @@ sub getDisplayValue {
   if ($this->isMultiValued) {
     my @result = ();
     foreach my $val (split(/\s*,\s*/, $value)) {
+      next if $val eq "";
       my ($thisWeb, $thisTopic) = Foswiki::Func::normalizeWebTopicName($web, $val);
       if ($this->isValueMapped) {
         if (defined($this->{valueMap}{$val})) {
@@ -139,7 +106,7 @@ sub getDisplayValue {
         $val = Foswiki::Func::getTopicTitle($thisWeb, $thisTopic);
       }
       my $url = Foswiki::Func::getScriptUrl($thisWeb, $thisTopic, "view");
-      push @result, "<a href='$url' class='".$this->{_formfieldClass}."'>$val</a>";
+      push @result, "<a href='$url' class='".$this->{_formfieldClass}."' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$val</noautolink></a>";
     }
     $value = join(", ", @result);
   } else {
@@ -152,7 +119,7 @@ sub getDisplayValue {
       $value = Foswiki::Func::getTopicTitle($thisWeb, $thisTopic);
     }
     my $url = Foswiki::Func::getScriptUrl($thisWeb, $thisTopic, "view");
-    $value = "<a href='$url' class='".$this->{_formfieldClass}."'>$value</a>";
+    $value = "<a href='$url' class='".$this->{_formfieldClass}."' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$value</noautolink></a>";
   }
 
   return $value;
@@ -172,6 +139,10 @@ sub renderForEdit {
     $web = $param1;
     $topic = $param2;
     $value = $param3;
+  }
+
+  if ($this->isMultiValued) {
+    $value = join(", ", grep {$_ ne ""} split(/\s*,\s*/, $value));
   }
 
   my $thisWeb = $topicObject->web;
@@ -201,15 +172,16 @@ sub renderForEdit {
     my @topicTitles = ();
     my @thumbnails = ();
     foreach my $v (split(/\s*,\s*/, $value)) {
+      next if $v eq "";
       my $topicTitle = $this->getTopicTitle($baseWeb, $v);
-      push @topicTitles, '"' . $v . '":"' . encode($topicTitle) . '"';
+      push @topicTitles, '"' . $v . '":"' . $this->encode($topicTitle) . '"';
       my $thumb = $this->getThumbnailUrl($baseWeb, $v);
       push @thumbnails, '"' . $v .'":"'. $thumb . '"';
     }
     push @htmlData, "data-value-text='{" . join(', ', @topicTitles) . "}'";
     push @htmlData, "data-thumbnail='{" . join(', ', @thumbnails) . "}'";
   } else {
-    my $topicTitle = encode($this->getTopicTitle($baseWeb, $value));
+    my $topicTitle = $this->encode($this->getTopicTitle($baseWeb, $value));
     push @htmlData, 'data-value-text="' . $topicTitle . '"';
     my $thumb = $this->getThumbnailUrl($baseWeb, $value);
     push @htmlData, 'data-thumbnail="' .$thumb. '"';
@@ -217,8 +189,14 @@ sub renderForEdit {
 
   unless (defined $this->param("url")) {
     if (defined $this->{_url}) {
-      my $url = Foswiki::Func::expandCommonVariables($this->{_url}, $thisTopic, $thisWeb, $topicObject);
+      my $url = $this->{_url} =~ /%/ ? Foswiki::Func::expandCommonVariables($this->{_url}, $thisTopic, $thisWeb, $topicObject) : $this->{_url};
       push @htmlData, 'data-url="' . $url . '"';
+    }
+    if (defined $this->{_templateName}) {
+      push @htmlData, 'data-template-name="' . $this->{_templateName} . '"';
+    }
+    if (defined $this->{_definitionName}) {
+      push @htmlData, 'data-definition-name="' . $this->{_definitionName} . '"';
     }
     push @htmlData, 'data-topic="' . $thisWeb . '.' . $thisTopic .'"';
   }
@@ -230,7 +208,7 @@ sub renderForEdit {
   }
   push @htmlData, 'data-web="' . $baseWeb . '"';
 
-  $this->addJavascript();
+  $this->addJavaScript();
   $this->addStyles();
 
   my $field = "<input " . join(" ", @htmlData) . " />";
@@ -254,16 +232,7 @@ sub getTopicTitle {
   return $format;
 }
 
-sub addStyles {
-  #my $this = shift;
-  Foswiki::Func::addToZone("head", 
-    "MOREFORMFIELDSPLUGIN::CSS", 
-    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />",
-    "JQUERYPLUGIN::SELECT2");
-}
-
-sub addJavascript {
-  #my $this = shift;
+sub addJavaScript {
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
   Foswiki::Func::addToZone("script", "FOSWIKI::TOPICFIELD", <<"HERE", "JQUERYPLUGIN::SELECT2");
@@ -284,18 +253,9 @@ sub getThumbnailUrl {
   $result =~ s/\%web\%/$web/g;
   $result =~ s/\%topic\%/$topic/g;
   $result =~ s/\%size\%/$size/g;
-  $result = Foswiki::Func::expandCommonVariables($result);
+  $result = Foswiki::Func::expandCommonVariables($result) if $result =~ /%/;
 
   return $result;
-}
-
-sub encode {
-  my $text = shift;
-
-  $text = Encode::encode_utf8($text) if $Foswiki::UNICODE;
-  $text =~ s/([^0-9a-zA-Z-_.:~!*\/])/'%'.sprintf('%02x',ord($1))/ge;
-
-  return $text;
 }
 
 1;

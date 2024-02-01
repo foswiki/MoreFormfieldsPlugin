@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,8 +19,9 @@ use strict;
 use warnings;
 
 use Foswiki::Form::Select ();
+use Foswiki::Form::BaseField ();
 use Foswiki::Plugins::JQueryPlugin ();
-our @ISA = ('Foswiki::Form::FieldDefinition');
+our @ISA = ('Foswiki::Form::BaseField');
 
 use Assert;
 
@@ -31,25 +32,6 @@ sub new {
     return $this;
 }
 
-sub param {
-  my ($this, $key) = @_;
-
-  unless (defined $this->{_params}) {
-    my %params = Foswiki::Func::extractParameters($this->{value});
-    $this->{_params} = \%params;
-  }
-
-  return (defined $key)?$this->{_params}{$key}:$this->{_params};
-}
-
-sub finish {
-  my $this = shift;
-
-  $this->SUPER::finish();
-
-  undef $this->{_params};
-}
-
 sub isValueMapped { return ( shift->{type} =~ m/\+values/ ); }
 sub isTextMergeable { return 0; }
 
@@ -57,7 +39,8 @@ sub getDefaultValue {
   my $this = shift;
 
   my $value = $this->{default};
-  return $value if defined($value) && $value ne '';
+  $value = $this->param("default") unless defined($value) && $value ne "";
+  return $value if defined($value) && $value ne "";
 
   my @values = $this->getValues();
   if (@values) {
@@ -75,16 +58,6 @@ sub renderForEdit {
   $value = $this->getDefaultValue() if !defined($value) || $value eq '';
 
   return ('', $this->_html($value));
-}
-
-sub renderForDisplay {
-  my ($this, $format, $value, $attrs) = @_;
-
-  my $displayValue = $this->getDisplayValue($value);
-  $format =~ s/\$value\(display\)/$displayValue/g;
-  $format =~ s/\$value/$value/g;
-
-  return $this->SUPER::renderForDisplay( $format, $value, $attrs );
 }
 
 sub getValues {
@@ -205,13 +178,13 @@ sub _html {
 
   my $html = "<div class='jqSliderContainer' style='width:${size}em' ".join(" ", @html5Data)."><input type='hidden' name='$this->{name}' value='$value' /></div>";
 
-  $this->addJavascript();
+  $this->addJavaScript();
   $this->addStyles();
 
   return $html;
 }
 
-sub addJavascript {
+sub addJavaScript {
   #my $this = shift;
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("ui::slider");
@@ -220,14 +193,6 @@ sub addJavascript {
   Foswiki::Func::addToZone("script", "MOREFORMFIELDSPLUGIN::SLIDERFIELD", <<"HERE", "JQUERYPLUGIN::UI::SLIDER", "JQUERYPLUGIN::SPRINTF");
 <script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/slider.js'></script>
 HERE
-}
-
-sub addStyles {
-  #my $this = shift;
-  Foswiki::Func::addToZone("head", 
-    "MOREFORMFIELDSPLUGIN::CSS",
-    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />",
-    "JQUERYPLUGIN::SELECT2");
 }
 
 1;

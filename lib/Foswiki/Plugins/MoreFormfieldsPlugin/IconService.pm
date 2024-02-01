@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2013-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2013-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -77,7 +77,6 @@ sub handleRest {
   my $page = $request->param("page") || 1;
   my $skip = $limit*($page-1);
 
-
   my $params = {
     exactMatch => Foswiki::Func::isTrue($request->param("exact"), 0),
     skip => $skip,
@@ -125,12 +124,12 @@ sub findIcon {
       $found = 1 if 
         $icon->{id} =~ /^($search)$/ || 
         $icon->{text} =~ /^($search)$/ || 
-        ($icon->{filter} && grep(/^($search)$/, @{$icon->{filter}}));
+        ($icon->{filter} && grep {/^($search)$/} @{$icon->{filter}});
     } else {
       $found = 1 if 
         $icon->{id} =~ /$search/i || 
         $icon->{text} =~ /$search/i || 
-        ($icon->{filter} && grep(/$search/i, @{$icon->{filter}}));
+        ($icon->{filter} && grep {/$search/i} @{$icon->{filter}});
     }
     next unless $found;
 

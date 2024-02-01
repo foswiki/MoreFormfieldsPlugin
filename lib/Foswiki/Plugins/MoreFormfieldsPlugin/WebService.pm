@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2018-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2018-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -77,7 +77,6 @@ sub handleWebs {
 
   my $total = scalar(@$results);
   @$results = sort {$a->{text} cmp $b->{text}} @$results;
-  @$results = splice(@$results, $params->{skip}, $params->{limit});
 
   $results = JSON::to_json({
     "results" => $results,
@@ -99,20 +98,29 @@ sub handleWebs {
 sub getWebs {
   my ($this, $params) = @_;
 
+  my $limit = $params->{limit} // 10;
+  my $skip = $params->{skip} // 0;
+
   my $results = [];
+  my $index = 0;
   foreach my $web (Foswiki::Func::getListOfWebs(join(", ", @{$params->{webs}}))) {
-    my $topicTitle = Foswiki::Func::getTopicTitle($web, $Foswiki::cfg{HomeTopicName});
 
     $web =~ s/\//./g;
 
-    next if defined($params->{search}) && $web !~ /$params->{search}/i && $topicTitle !~ /$params->{search}/i;
-    next if defined($params->{include}) && $web !~ /$params->{include}/i && $topicTitle !~ /$params->{include}/i;
-    next if defined($params->{exclude}) && ($web =~ /$params->{exclude}/i || $topicTitle =~ /$params->{exclude}/i);
+    next if defined($params->{search}) && $web !~ /$params->{search}/i;# && $topicTitle !~ /$params->{search}/i;
+    next if defined($params->{include}) && $web !~ /$params->{include}/i; # && $topicTitle !~ /$params->{include}/i;
+    next if defined($params->{exclude}) && $web =~ /$params->{exclude}/i; # || $topicTitle =~ /$params->{exclude}/i);
 
+    $index++;
+    next if $index <= $skip;
+    last if $index > ($skip + $limit);
+
+    my $topicTitle = Foswiki::Func::getTopicTitle($web, $Foswiki::cfg{HomeTopicName}); #expensive
     push @$results, {
       id => $web,
       text => $topicTitle,
     };
+
   }
 
   return $results;

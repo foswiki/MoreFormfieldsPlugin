@@ -1,6 +1,6 @@
 # Plugin for Foswiki -V The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2013-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2013-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,9 +25,10 @@ use Foswiki::Plugins ();
 
 use Error qw(:try);
 
-our $VERSION = '8.00';
-our $RELEASE = '13 Oct 2020';
+our $VERSION = '11.20';
+our $RELEASE = '%$RELEASE%';
 our $SHORTDESCRIPTION = 'Additional formfield types for %SYSTEMWEB%.DataForms';
+our $LICENSECODE = '%$LICENSECODE%';
 our $NO_PREFS_IN_TOPIC = 1;
 
 our $iconService;
@@ -226,7 +227,7 @@ sub beforeSaveHandler {
 
   $form = undef;
   try {
-    $form = new Foswiki::Form($session, $web, $formName);
+    $form = Foswiki::Form->new($session, $web, $formName);
   } catch Foswiki::OopsException with {
     my $error = shift;
     #print STDERR "Error reading form definition for $formName ... baling out\n";
@@ -259,7 +260,7 @@ sub afterSaveHandler {
 
   $form = undef;
   try {
-    $form = new Foswiki::Form($session, $web, $formName);
+    $form = Foswiki::Form->new($session, $web, $formName);
   } catch Foswiki::OopsException with {
     my $error = shift;
     #print STDERR "Error reading form definition for $formName ... bailing out\n";

@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,13 +19,13 @@ use strict;
 use warnings;
 use Assert;
 
-use Foswiki::Form::FieldDefinition ();
+use Foswiki::Form::BaseField ();
 use Foswiki::Func ();
 use Foswiki::Sandbox ();
 use Foswiki::Render ();
 use Foswiki::Meta ();
 
-our @ISA = ('Foswiki::Form::FieldDefinition');
+our @ISA = ('Foswiki::Form::BaseField');
 
 sub new {
   my $class = shift;
@@ -110,8 +110,8 @@ sub getOptions {
       }
     }
   }
-  @vals = map { $_ =~ s/^\s*(.*?)\s*$/$1/; $_; } @vals;
-  @vals = map { $_ = HTML::Entities::decode_entities($_); } @vals;
+  @vals = map { my $tmp = $_; $tmp =~ s/^\s*(.*?)\s*$/$1/; $tmp; } @vals;
+  @vals = map { my $tmp = $_; $tmp = HTML::Entities::decode_entities($tmp); $tmp } @vals;
 
   if ($this->isValueMapped()) {
 
@@ -219,11 +219,6 @@ sub renderForEdit {
   $this->addStyles();
 
   return ("", $result);
-}
-
-sub addStyles {
-  #my $this = shift;
-  Foswiki::Func::addToZone("head", "MOREFORMFIELDSPLUGIN::CSS", "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />");
 }
 
 1;

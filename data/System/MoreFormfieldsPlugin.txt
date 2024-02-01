@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="reprev" date="1616150870" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" comment="reprev" date="1692614734" format="1.1" version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -20,6 +20,7 @@ To make use of these formfields use their type identifier in the "Type" column o
 | Ipaddress | ipaddress | 15  | |  |  |
 | Ipv6address | ipv6address | 40  | |  |  |
 | Macaddress | macaddress | 17  | | | |
+| Masked | masked | 17 | | | |
 | Natedit | natedit | 80x25 | | | |
 | Multitext | multitext | 80 | | | |
 | Netmask | netmask | 15  | | |  |
@@ -33,6 +34,7 @@ To make use of these formfields use their type identifier in the "Type" column o
 | Topic | topic | 30 | | | |
 | User Or Group | userorgroup | 30 | | | |
 | User | user | 30 | | | |
+| Uuid | uuid | 30 | | | |
 | Web | web | 30 | | | |
 
 When defining a formfield additional parameters may be used in the "Values" column to further customize the behavior of the element.
@@ -50,6 +52,7 @@ specified in the =topic= parameter. The formfield lets you upload new attachment
    * =url=: url for autocompletion, defaults to an internal template =select2::attachment::url=
    * =filter=: regular expression of files allowed to be uploaded
    * =sortable=: entries in an =attachment+multi= formfield can be reordered using drag'n'drop if set to =true=
+   * =upload=: boolean switch to enable/disable uploading an attachment, defaults to =off=
 
 ---+++ autofill
 
@@ -77,6 +80,16 @@ A typical use-case for an =autofill= field is the construction of a !TopicTitle 
 | Customer | text | 80 | | | |
 | ID | id | 4 | | | |
 | Year | text | 4 | | | |
+
+An =autofill= formfield is either displayed as created by the formating rules. Or the resulting value may be displayed otherwise using
+a =display="..."= wiki app. Another more comfortable way is to cast the value into a different formfield type using the =type="..."= parameter.
+That way the computed value may be displayed using the formfield definition of the given type. The following example will query the date of the most
+recent comment and store it as epoch seconds in a "Last Reply" formfield. It is then displayed using the =Datetime= definition instead of displaying
+the epoch seconds as is:
+
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
+| Last Reply | autofill | 1 | type="datetime" format="$percntFORMATLIST{\"$percntQUERY{\"'$percntBASEWEB$percnt.$percntBASETOPIC$percnt'/META:COMMENT.date\"}$percnt\" sort=\"on\" reverse=\"on\" limit=\"1\"}$percnt" | date of latest reply | | |
+
 
 ---+++ autoinc 
 
@@ -123,6 +136,25 @@ This is an alternative for the core =date= formfield type using the [[JQueryUI][
 It will launch a calendar when clicking into a =date2= formfield to select a date from, as well as restricts allowed keys to be entered into the formfield. The format of a =date2= formfield value
 will always be of a =YYYY-MM-DD= pattern and thus not be depending on any locale settings. This is quite important to get consistant data rather than differences based on the user's current browser language.
 While the _value_ stored into a =date2= formfield is locale-independent will it display according to the settings of =$Foswiki::cfg{DefaultDateFormat}= settings.
+
+Example:
+
+| Date | date2 | 40 | mindate="-7d" maxdate="+7d" weekends="off" | | |
+
+---+++ datetime
+
+This formfield type combines a =date2= formfield with a =time= formfield thus letting you pick a date time with a minute precision.
+
+Example:
+
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
+| Datetime | datetime | 10 | lang="en" timezone="gmtime" | | |
+
+*Parameters*:
+
+   * =lang=: language of the input element, defaults to the current user's interface language
+   * =format=: display format of the field, default to =$Foswiki::cfg{DateManipPlugin}{DefaultDateTimeFormat}= or =%d %b %Y - %H:%M=
+   * =tz=, =timezone=: timezone defaults to the one definied in =LocalSite.cfg= that is gmtime or servertime
 
 ---+++ group
 
@@ -210,6 +242,15 @@ A hardware address given in 6 hex values, e.g. =00:1a:10:6f:ba:12=
 
 *Parameters*: none
 
+---+++ masked
+
+A normal textfield with optional masked input using [[JQueryMaskedInput]]
+
+*Parameters*:
+
+   * =mask=: input mask 
+   * =placeholder=: placeholder character, defaults to underscore
+
 ---+++ multitext
 
 This is a kind of =text+multi= formfield. it stores multiple text formfields in one. 
@@ -248,7 +289,7 @@ A standard telephone number. This formfield uses [[JQueryValidate]] to make sure
 
 ---+++ random
 
-This formfield type that generates a random value the first time the topic is created. There are a set of different random strings:
+This formfield type generates a random value the first time the topic is created. There are a set of different random strings:
 
    * alpha
    * upperalpha
@@ -311,6 +352,11 @@ The "any value" selection is the one indicated by the "*" asterisk, or if not pr
 
 A time formfield using the clockpicker widget from http://weareoutman.github.io/clockpicker/
 
+Example:
+
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
+| Time | time | 10 |  | | |
+
 ---+++ toggle
 
 A toggle formfield may switch between two values, by default between "on" and "off". Alternative values may be specified like this:
@@ -358,10 +404,23 @@ A user reference using !JQSelect2Contrib for autocompletion.
 *Parameters*:
 
    * =url=: url for autocompletion, default: =%<nop>SCRIPTURL{"rest"}%/MoreFormfieldsPlugin/users=
-   * =group=: groups that users must be a member of to be included in the selection
+   * =group=: members of one or more groups to select from
    * =include=: regular expression a user must match to be included in the selection
    * =exclude=: regular expression a user must not match to be included
    * =sortable=: entries in an =user+multi= formfield can be reordered using drag'n'drop if set to =true=
+
+---+++ uuid
+
+This formfield type generates a random UUID code the first time the topic is created.
+
+| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* |
+| Uuid | uuid | 30 | prefix="foobar" charset="upperalpha" | | |
+
+The charset might be: =upperalpha= (default) or =loweralpha=
+
+UUIDs have got the format =XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX= where the X chars are upper or lowercase hex values as specified by 
+the =charset= parameter.
+An optional =prefix= parameter might be specified in which case the code will be =&lt;prefix>-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX=.
 
 ---+++ web
 
@@ -383,6 +442,13 @@ This formfield stores a reference to  web.
 
 ---++ Change History
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  04 Dec 2023: | added =upload= parameter to =attachment= field |
+|  30 Nov 2023: | added =weekend= parameter to =date2= and =datetime= fields |
+|  11 Oct 2023: | added masked input to =time= and =datetime= fields; \
+                  added new formfield type =masked= for masked text input |
+|  29 Aug 2023: | added =mindate= and =maxdate= to =date2= and =datetime= formfields |
+|  21 Jul 2023: | new formfield =uuid= |
+|  21 Oct 2022: | attachment+multi formfields now allow to upload multiple files at once |
 |  05 May 2022: | new major release |
 |  17 Dec 2021: | added =from= parameter to =id= formfield |
 |  02 Nov 2021: | new formfield =random= |
@@ -426,7 +492,7 @@ This formfield stores a reference to  web.
 %META:FIELD{name="Release" title="Release" value="%25$RELEASE%25"}%
 %META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
 %META:FIELD{name="Repository" title="Repository" value="https://github.com/foswiki/%25TOPIC%25"}%
-%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2022 Michael Daum"}%
+%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2024 Michael Daum"}%
 %META:FIELD{name="License" title="License" value="[[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]]"}%
 %META:FIELD{name="Home" title="Home" value="Foswiki:Extensions/%25TOPIC%25"}%
 %META:FIELD{name="Support" title="Support" value="Foswiki:Support/%25TOPIC%25"}%

@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,10 +19,10 @@ use strict;
 use warnings;
 
 use Foswiki::Func();
-use Foswiki::Form::FieldDefinition ();
+use Foswiki::Form::BaseField ();
 use Foswiki::Plugins ();
 use Foswiki::Render ();
-our @ISA = ('Foswiki::Form::FieldDefinition');
+our @ISA = ('Foswiki::Form::BaseField');
 
 sub new {
   my $class = shift;
@@ -33,30 +33,8 @@ sub new {
   return $this;
 }
 
-sub finish {
-  my $this = shift;
-  $this->SUPER::finish();
-  undef $this->{_params};
-}
-
 sub isEditable { return 0; }
 sub isTextMergeable { return 0; }
-
-sub param {
-  my ($this, $key, $val) = @_;
-
-  unless (defined $this->{_params}) {
-    my %params = Foswiki::Func::extractParameters($this->{value});
-    $this->{_params} = \%params;
-  }
-
-  if (defined $key && defined $val) {
-    $this->{_params}{$key} = $val;
-    return $val;
-  }
-
-  return (defined $key) ? $this->{_params}{$key} : $this->{_params};
-}
 
 sub renderForEdit {
   my ($this, $topicObject, $value) = @_;

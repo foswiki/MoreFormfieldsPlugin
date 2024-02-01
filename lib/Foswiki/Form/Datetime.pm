@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2021-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2021-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -130,6 +130,7 @@ sub renderForEdit {
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("ui::datepicker");
   Foswiki::Plugins::JQueryPlugin::createPlugin("clockpicker");
+  Foswiki::Plugins::JQueryPlugin::createPlugin("imask");
 
   my $epoch;
   if ($value =~ /^\-?\d+$/) {
@@ -141,6 +142,9 @@ sub renderForEdit {
 
   my $dateFormat = $this->convertFormatToJQueryUI($this->getDateFormat());
   my $timeValue = $value ? Foswiki::Time::formatTime($value, "%H:%M") : "";
+  my $minDate = $this->param("mindate") // 'null';
+  my $maxDate = $this->param("maxdate") // 'null';
+  my $doWeekends = Foswiki::Func::isTrue($this->param("weekends"), 1) ? "true": "false";
 
   my $html = Foswiki::Render::html("input", {
       type => "text",
@@ -152,8 +156,11 @@ sub renderForEdit {
       "data-change-month" => "true",
       "data-change-year" => "true",
       "data-date-format" => $dateFormat,
+      "data-min-date" => $minDate,
+      "data-max-date" => $maxDate,
       "data-lang" => $this->getLang(),
       "data-show-on" => "both",
+      "data-do-weekends" => $doWeekends,
       "class" => $this->cssClasses('foswikiInputField', 'jqUIDatepicker')
     }) . 
 
@@ -167,9 +174,11 @@ sub renderForEdit {
     }, Foswiki::Render::html( "input", {
         "type" => 'text',
         "name" => $this->{name} . '_time',
-        "size" => 1,
+        "size" => 5,
         "value" => $timeValue,
-        "class" => $this->cssClasses('foswikiInputField')
+        "class" => $this->cssClasses('foswikiInputField imask'),
+        "data-type" => "time",
+        "placeholder" => "hh:mm"
       })
       . Foswiki::Render::html("button", {
         "class" => "input-group-addon ui-clockpicker-trigger",

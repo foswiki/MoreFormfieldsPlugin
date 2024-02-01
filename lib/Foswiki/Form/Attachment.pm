@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,9 +18,9 @@ use strict;
 use warnings;
 
 use Foswiki::Func();
-use Foswiki::Form::FieldDefinition ();
+use Foswiki::Form::BaseField ();
 use Foswiki::Plugins::JQueryPlugin ();
-our @ISA = ('Foswiki::Form::FieldDefinition');
+our @ISA = ('Foswiki::Form::BaseField');
 
 sub new {
   my $class = shift;
@@ -36,6 +36,7 @@ sub new {
   $this->{_web} = $this->param("web") || $this->{session}{webName};
   $this->{_topic} = $this->param("topic") || $this->{session}{topicName};
   $this->{_url} = Foswiki::Func::expandTemplate("select2::attachments::url");
+  $this->{_enableUpload} = Foswiki::Func::isTrue($this->param("upload"));
   return $this;
 }
 
@@ -43,19 +44,9 @@ sub isMultiValued { return (shift->{type} =~ m/\+multi/); }
 
 sub isTextMergeable { return 0; }
 
-sub getDefaultValue {
-    my $this = shift;
-
-    my $value = $this->{default};
-    $value = '' unless defined $value; 
-
-    return $value;
-}
-
 sub finish {
   my $this = shift;
   $this->SUPER::finish();
-  undef $this->{_params};
   undef $this->{_options};
 }
 
@@ -109,17 +100,6 @@ sub getOptions {
   return [];
 }
 
-sub param {
-  my ($this, $key) = @_;
-
-  unless (defined $this->{_params}) {
-    my %params = Foswiki::Func::extractParameters($this->{value});
-    $this->{_params} = \%params;
-  }
-
-  return (defined $key) ? $this->{_params}{$key} : $this->{_params};
-}
-
 sub getDisplayValue {
   my ($this, $value, $web, $topic) = @_;
 
@@ -147,6 +127,8 @@ sub getDisplayValue {
     $format =~ s/\$class\b/$cls/g;
     push @result, $format;
   }
+
+  $this->addStyles();
 
   my $result = join("", @result);
   return $result =~ /%/ ? Foswiki::Func::expandCommonVariables($result, $topic, $web) : $result;
@@ -177,16 +159,6 @@ sub _getHref {
   return wantarray ? ($href, $cls) : $href;
 }
 
-sub renderForDisplay {
-  my ($this, $format, $value, $attrs) = @_;
-
-  my $displayValue = $this->getDisplayValue($value);
-  $format =~ s/\$value\(display\)/$displayValue/g;
-  $format =~ s/\$value/$value/g;
-
-  return $this->SUPER::renderForDisplay($format, $value, $attrs);
-}
-
 sub renderForEdit {
   my ($this, $topicObject, $value) = @_;
 
@@ -203,10 +175,12 @@ sub renderForEdit {
   push @htmlData, 'class="' . $this->cssClasses($this->{_formfieldClass}) . '"';
   push @htmlData, 'name="' . $this->{name} . '"';
   push @htmlData, 'value="' . $value . '"';
+  push @htmlData, 'data-multiple="true"' if $this->isMultiValued;
 
   my @uploadButtonHtmlData = ();
   push @uploadButtonHtmlData, "data-topic='$web.$topic'";
   push @uploadButtonHtmlData, "data-auto-upload='false'";
+  push @uploadButtonHtmlData, "data-multi-file-upload='true'" if $this->isMultiValued;
 
   my $size = $this->{size};
   if (defined $size) {
@@ -237,37 +211,30 @@ sub renderForEdit {
     }
   }
 
-  if ($this->isMultiValued) {
-    push @htmlData, 'data-multiple="true"';
-  }
 
-  $this->addJavascript();
+  $this->addJavaScript();
   $this->addStyles();
 
   my $htmlData = join(" ", @htmlData);
   my $result = "<input $htmlData />";
 
   my $uploadButtonHtmlData = join(" ", @uploadButtonHtmlData);
-  my $name = "_" . $this->{name} . ($this->isMultiValued ? '[]' : '');
-  $result .= <<HERE;
+  my $input = "<input type='file' name='_$this->{name}' / >";
+  $input = "<input type='file' name='_".$this->{name}."[]' multiple / >" if $this->isMultiValued;
+
+  if ($this->{_enableUpload}) {
+    $result .= <<HERE;
  <span class='jqButton jqButtonSimple jqUploadButton' $uploadButtonHtmlData>
   <i class='jqButtonIcon fa-fw fa fa-upload'></i>
-  <input type='file' name='$name' / >
+  $input
 </span>
 HERE
+  }
 
   return ('', $result);
 }
 
-sub addStyles {
-  #my $this = shift;
-  Foswiki::Func::addToZone("head", 
-    "MOREFORMFIELDSPLUGIN::CSS", 
-    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />",
-    "JQUERYPLUGIN::SELECT2");
-}
-
-sub addJavascript {
+sub addJavaScript {
   #my $this = shift;
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("fontawesome");

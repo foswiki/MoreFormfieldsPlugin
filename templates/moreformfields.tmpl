@@ -1,11 +1,13 @@
-%TMPL:DEF{"select2::topic::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields;expand=select2::topic;contenttype=application/json%TMPL:END%
+%TMPL:DEF{"select2::topic::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template%TMPL:END%
 %TMPL:DEF{"select2::user::url"}%%SCRIPTURLPATH{"rest"}%/MoreFormfieldsPlugin/users%TMPL:END%
 %TMPL:DEF{"select2::group::url"}%%SCRIPTURLPATH{"rest"}%/MoreFormfieldsPlugin/groups%TMPL:END%
 %TMPL:DEF{"select2::web::url"}%%SCRIPTURLPATH{"rest"}%/MoreFormfieldsPlugin/webs%TMPL:END%
 %TMPL:DEF{"select2::userorgroup::url"}%%SCRIPTURLPATH{"rest"}%/MoreFormfieldsPlugin/userorgroup%TMPL:END%
-%TMPL:DEF{"select2::attachments::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields;expand=select2::attachments;contenttype=application/json%TMPL:END%
+%TMPL:DEF{"select2::attachments::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields;expand=select2::attachments;contenttype=application/json;t=%NOW%%TMPL:END%
 
-%TMPL:DEF{"imageregex"}%\.(jpe?g|gif|png|svg|webp|mp4|JE?PG|GIF|PNG|SVG|WEBP|MP4)$%TMPL:END%
+%TMPL:DEF{"image::exts"}%avif|jpe?g|gif|png|bmp|webp|svg|ico|tiff?|xcf|psd|heic|heif|AVIF|JE?PG|GIF|PNG|BMP|WEBP|SVG|ICO|TIFF|XCF|PSD?|HEIC|HEIF%TMPL:END%
+%TMPL:DEF{"video::exts"}%mp4|MP4|ogv|OGV|mkv|MKV|avi|AVI|webm|WEBM|mpe?g|MPE?G|ogv|OGV%TMPL:END%
+%TMPL:DEF{"imageregex"}%\.(%TMPL:P{"image::exts"}%|%TMPL:P{"video::exts"}%)$%TMPL:END%
 
 %TMPL:DEF{"attachments::preview"}%<div class="foswikiAttachmentFile clearfix">%MIMEICON{"$file" size="32"}% <a href='$href' class='$class'>$file</a></div>%TMPL:END%
 
@@ -60,6 +62,7 @@
       split="\s+" 
       format="lc(%URLPARAM{"property" default="topictitle"}%)=~lc('$1')" separator=" AND "
    }%"
+   sort="topictitle"
    webs="%URLPARAM{"web" default="%WEB%"}%" 
    skip="%CALCULATE{"$EVAL(%URLPARAM{"limit" default="10"}%*(%URLPARAM{"page" default="1"}%-1))"}%"
    limit="%URLPARAM{"limit" default="10"}%"
@@ -73,7 +76,7 @@
 
 %TMPL:DEF{"select2::topic::format"}% {
   \"id\":\"$percntIF{\"'%WEB%'!='$web'\" then=\"$web.\"}$percnt$topic\", 
-  \"text\":\"$quotes($expand(topictitle))\",
+  \"text\":\"$percntENCODE{\"$expand(topictitle)\" type=\"quote\"}$percnt\",
   \"thumbnail\": \"$percntTMPL:P{\"select2::topic::thumbnail::url\" web=\"$web\" topic=\"$topic\"}$percnt\"
 } %TMPL:END%
 

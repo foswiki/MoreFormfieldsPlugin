@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,42 +18,28 @@ package Foswiki::Form::Select2;
 use strict;
 use warnings;
 
-use Assert;
-
 use Foswiki::Form::Select ();
 use Foswiki::Plugins::JQueryPlugin ();
 use Foswiki::Form::ListFieldDefinition ();
-our @ISA = ('Foswiki::Form::ListFieldDefinition');
+use Foswiki::Form::BaseField ();
+our @ISA = ('Foswiki::Form::ListFieldDefinition', 'Foswiki::Form::BaseField');
 
 sub new {
-    my $class = shift;
-    my $this  = $class->SUPER::new(@_);
+  my $class = shift;
+  my $this = $class->SUPER::new(@_);
 
-    $this->{size} //= 1;
-    $this->{size} =~ s/[^\d]//g;
+  $this->{size} //= 1;
+  $this->{size} =~ s/[^\d]//g;
 
-    return $this;
+  return $this;
 }
 
 sub isTextMergeable { return 0; }
 
-sub param {
-  my ($this, $key) = @_;
-
-  unless (defined $this->{_params}) {
-    my %params = Foswiki::Func::extractParameters($this->{attributes});
-    $this->{_params} = \%params;
-  }
-
-  return (defined $key)?$this->{_params}{$key}:$this->{_params};
-}
-
-sub finish {
+sub getDefaultValue {
   my $this = shift;
 
-  $this->SUPER::finish();
-
-  undef $this->{_params};
+  return $this->Foswiki::Form::BaseField::getDefaultValue(@_);
 }
 
 sub renderForEdit {
@@ -115,7 +101,7 @@ sub renderForEdit {
     $value = CGI::Select($params, $choices);
   }
 
-  $this->addJavascript();
+  $this->addJavaScript();
 
   return ('', $value);
 }
@@ -138,13 +124,8 @@ sub getDisplayValue {
   return join(", ", @vals);
 }
 
-sub addJavascript {
-  #my $this = shift;
-
+sub addJavaScript {
   Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
-#  Foswiki::Func::addToZone("script", "FOSWIKI::SELECT2FIELD", <<"HERE", "JQUERYPLUGIN::SELECT2");
-#<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/select2.js'></script>
-#HERE
 }
 
 1;

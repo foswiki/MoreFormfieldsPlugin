@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,43 +19,36 @@ use strict;
 use warnings;
 
 use Foswiki::Render();
+use Foswiki::Form::BaseField ();
 use Foswiki::Form::Text ();
 use Foswiki::Plugins::JQueryPlugin();
-our @ISA = ('Foswiki::Form::Text');
+our @ISA = ('Foswiki::Form::Text', 'Foswiki::Form::BaseField');
 
-sub isTextMergeable { return 0; }
+sub new {
+  my $class = shift;
 
-sub finish {
+  my $this = $class->SUPER::new(@_);
+
+  my $size = $this->{size} || '';
+  $size =~ s/\D//g;
+  $size = 10 if (!$size || $size < 1);
+  $this->{size} = $size;
+
+  return $this;
+}
+
+sub getDefaultValue {
   my $this = shift;
 
-  $this->SUPER::finish();
-
-  undef $this->{_params};
+  return $this->Foswiki::Form::BaseField::getDefaultValue(@_);
 }
 
-sub addStyles {
-  #my $this = shift;
-  Foswiki::Func::addToZone("head", 
-    "MOREFORMFIELDSPLUGIN::CSS",
-    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />",
-    "JQUERYPLUGIN::SELECT2");
-
-}
-
-sub addJavascript {
-  #my $this = shift;
-
-  Foswiki::Plugins::JQueryPlugin::createPlugin("validate");
-  Foswiki::Func::addToZone("script", 
-    "MOREFORMFIELDSPLUGIN::PHONENUMBER::JS",
-    "<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/phonenumber.js'></script>", 
-    "JQUERYPLUGIN::FOSWIKI, JQUERYPLUGIN::VALIDATE");
-}
+sub isTextMergeable { return 0; }
 
 sub renderForEdit {
   my ($this, $topicObject, $value) = @_;
 
-  $this->addJavascript();
+  $this->addJavaScript();
   $this->addStyles();
 
   return (
@@ -68,21 +61,6 @@ sub renderForEdit {
       "value" => $value,
     })
   );
-}
-
-sub renderForDisplay {
-  my ($this, $format, $value, $attrs) = @_;
-
-  return '' unless defined $value && $value ne '';
-
-  my $displayValue = $this->getDisplayValue($value);
-  $format =~ s/\$value\(display\)/$displayValue/g;
-  $format =~ s/\$value/$value/g;
-
-  $this->addStyles();
-  $this->addJavascript();
-
-  return $this->SUPER::renderForDisplay($format, $value, $attrs);
 }
 
 sub getDisplayValue {
@@ -98,24 +76,14 @@ sub getDisplayValue {
   return "<a href='$prot:$number' class='foswikiPhoneNumber'>$value</a>";
 }
 
-sub getDefaultValue {
-  my $this = shift;
+sub addJavaScript {
+  #my $this = shift;
 
-  my $value = $this->{default};
-  $value = '' unless defined $value;
-
-  return $value;
-}
-
-sub param {
-  my ($this, $key) = @_;
-
-  unless (defined $this->{_params}) {
-    my %params = Foswiki::Func::extractParameters($this->{value});
-    $this->{_params} = \%params;
-  }
-
-  return (defined $key) ? $this->{_params}{$key} : $this->{_params};
+  Foswiki::Plugins::JQueryPlugin::createPlugin("validate");
+  Foswiki::Func::addToZone("script", 
+    "MOREFORMFIELDSPLUGIN::PHONENUMBER::JS",
+    "<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/phonenumber.js'></script>", 
+    "JQUERYPLUGIN::FOSWIKI, JQUERYPLUGIN::VALIDATE");
 }
 
 1;

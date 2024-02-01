@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,12 +18,13 @@ package Foswiki::Form::Autofill;
 use strict;
 use warnings;
 
-use Foswiki::Form::FieldDefinition ();
+use Foswiki::Form::BaseField ();
 use Foswiki::Plugins ();
 use Foswiki::Func ();
+use Foswiki::Sandbox ();
 use Foswiki::Form ();
 use Foswiki::Render ();
-our @ISA = ('Foswiki::Form::FieldDefinition');
+our @ISA = ('Foswiki::Form::BaseField');
 
 sub new {
   my $class = shift;
@@ -32,12 +33,6 @@ sub new {
   $this->{_formfieldClass} = 'foswikiAutoFillField';
 
   return $this;
-}
-
-sub finish {
-  my $this = shift;
-  $this->SUPER::finish();
-  undef $this->{_params};
 }
 
 sub isEditable { return 0; }
@@ -59,38 +54,49 @@ sub renderForEdit {
   );
 }
 
-sub param {
-  my ($this, $key) = @_;
-
-  unless (defined $this->{_params}) {
-    my %params = Foswiki::Func::extractParameters($this->{value});
-    $this->{_params} = \%params;
-  }
-
-  return (defined $key) ? $this->{_params}{$key} : $this->{_params};
-}
-
 sub getDisplayValue {
   my ($this, $value) = @_;
 
   my $format = $this->param("display");
+  if ($format) {
+    $format =~ s/\$value\b/$value/g;
+    $format = Foswiki::Func::decodeFormatTokens($format);
+    $format = Foswiki::Func::expandCommonVariables($format) if $format =~ /%/;
+
+    return $format;
+  }
+
+  my $type = $this->param("type");
+  if ($type) {
+    my $fieldDef = $this->createField($type);
+    return $fieldDef->getDisplayValue($value) if $fieldDef;
+  }
 
   return $value unless defined $format;
-
-  $format =~ s/\$value\b/$value/g;
-  $format = Foswiki::Func::decodeFormatTokens($format);
-  $format = Foswiki::Func::expandCommonVariables($format) if $format =~ /%/;
-
-  return $format;
 }
 
-sub getDefaultValue {
-  my $this = shift;
+sub createField {
+  my ($this, $type) = @_;
 
-  my $value = $this->{default};
-  $value = '' unless defined $value;
+  my $class = "Foswiki::Form::".ucfirst($type);
 
-  return $value;
+  eval 'require ' . $class;
+
+  if ($@) {
+    print STDERR "error in typecast: $@\n";
+    return;
+  }
+
+  return $class->new( 
+    session => $this->{session}, 
+    type => $type,
+    name => $this->{name},
+    attributes => $this->{attributes},
+    description => $this->{description},
+    type => $type,
+    size => $this->{size},
+    validModifiers => $this->{validModifiers},
+  );
 }
 
 sub saveMetaDataHandler {
@@ -156,7 +162,8 @@ sub saveMetaDataHandler {
 sub afterSaveHandler {
   my ($this, $topicObject) = @_;
 
-  #print STDERR "called Foswiki::Form::Autofill::afterSaveHandler()\n";
+  #print STDERR "called Foswiki::Form::Autofill::afterSaveHandler(".$topicObject->web.".".$topicObject->topic.")\n";
+  #print STDERR "webName=$this->{session}{webName}, topicName=$this->{session}{topicName}\n";
 
   my $fields = $this->param("source") || $this->param("fields");
   my $format = $this->param("format");

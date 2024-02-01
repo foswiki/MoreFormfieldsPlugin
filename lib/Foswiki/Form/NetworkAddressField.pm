@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,11 +21,12 @@ use warnings;
 use Foswiki::Render();
 use Foswiki::Form::Text ();
 use Foswiki::Plugins::JQueryPlugin ();
-our @ISA = ('Foswiki::Form::Text');
+
+our @ISA = ('Foswiki::Form::Text', 'Foswiki::Form::BaseField'); 
 
 sub isTextMergeable { return 0; }
 
-sub addJavascript {
+sub addJavaScript {
   #my $this = shift;
   Foswiki::Func::addToZone("script", 
     "MOREFORMFIELDSPLUGIN::IPADDRESS::JS",
@@ -40,15 +41,6 @@ sub addJavascript {
 
 }
 
-sub addStyles {
-  #my $this = shift;
-  Foswiki::Func::addToZone("head", 
-    "MOREFORMFIELDSPLUGIN::CSS",
-    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />",
-    "JQUERYPLUGIN::SELECT2");
-
-}
-
 sub renderForEdit {
   my $this = shift;
 
@@ -60,7 +52,7 @@ sub renderForEdit {
 
   my $value = shift;
 
-  $this->addJavascript();
+  $this->addJavaScript();
   $this->addStyles();
 
   my $required = '';
@@ -72,7 +64,7 @@ sub renderForEdit {
     '',
     Foswiki::Render::html("input", {
       "type" => "text",
-      "class" => $this->cssClasses('foswikiInputField', $this->{_class}, $required),
+      "class" => $this->cssClasses('foswikiInputField', $this->{_formfieldClass}, $required),
       "name" => $this->{name},
       "size" => $this->{size},
       "value" => $value
@@ -80,22 +72,12 @@ sub renderForEdit {
   );
 }
 
-sub renderForDisplay {
-  my ($this, $format, $value, $attrs) = @_;
-
-  my $displayValue = $this->getDisplayValue($value);
-  $format =~ s/\$value\(display\)/$displayValue/g;
-  $format =~ s/\$value/$value/g;
-
-  return $this->SUPER::renderForDisplay($format, $value, $attrs);
-}
-
 sub getDisplayValue {
   my ($this, $value) = @_;
 
   $this->addStyles();
 
-  return "<span class='" . $this->{_class} . "'>$value</span>";
+  return "<span class='" . $this->{_formfieldClass} . "'>$value</span>";
 }
 
 1;

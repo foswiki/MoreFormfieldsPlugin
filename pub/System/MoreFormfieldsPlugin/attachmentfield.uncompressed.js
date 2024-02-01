@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2013-2022 Michael Daum https://michaeldaumconsulting.com
+ * Copyright (c) 2013-2024 Michael Daum https://michaeldaumconsulting.com
  *
  * Licensed under the GPL license http://www.gnu.org/licenses/gpl.html
  *
  */
 "use strict";
+
 jQuery(function($) {
 
   var defaults = {
@@ -28,7 +29,7 @@ jQuery(function($) {
   }
 
   function getThumbnailUrl(file) {
-    if (file.match(/\.(gif|png|jpe?g|webp)$/i)) {
+    if (file.match(/\.(avif|jpe?g|gif|png|bmp|webp|svg|ico|tiff?|xcf|psd|heic|heif)$/i)) {
       return foswiki.getScriptUrlPath("rest", "ImagePlugin", "resize", {
         topic: foswiki.getPreference("WEB")+"."+foswiki.getPreference("TOPIC"),
         file: encodeURIComponent(file),
@@ -48,8 +49,7 @@ jQuery(function($) {
     var $this = $(this), 
         opts = $.extend({}, defaults, $this.data()),
         requestOpts = $.extend({}, opts),
-        val = $this.val(),
-        fileInput = $this.next().children("input:first");
+        val = $this.val();
 
     delete requestOpts.minimumInputLength;
     delete requestOpts.url;
@@ -116,34 +116,35 @@ jQuery(function($) {
       });
     }
 
-    $(document).on("afterUpload", function() {
-      var fileName = fileInput.val().replace(/^.*[\/\\]/, ""),
-          regex;
+    $this.next(".jqUploadButton").on("afterUpload", function(ev, files) {
+      var regex;
 
-      if (opts.acceptFileTypes) {
-        regex = new RegExp(opts.acceptFileTypes);
-        if (!regex.test(fileName)) {
-          fileName = "";
+      files.forEach(function(fileName) {
+        if (opts.acceptFileTypes) {
+          regex = new RegExp(opts.acceptFileTypes);
+          if (!regex.test(fileName)) {
+            fileName = "";
+          }
         }
-      }
 
-      if (fileName !== '') {
-        var data = $this.select2("data");
-        if ($.isArray(data)) {
-          data.push({
-            id: fileName, 
-            text: fileName,
-            thumbnail: getThumbnailUrl(fileName)
-          });
-        } else {
-          data = {
-            id: fileName, 
-            text: fileName,
-            thumbnail: getThumbnailUrl(fileName)
-          };
+        if (fileName !== '') {
+          var data = $this.select2("data");
+          if ($.isArray(data)) {
+            data.push({
+              id: fileName, 
+              text: fileName,
+              thumbnail: getThumbnailUrl(fileName)
+            });
+          } else {
+            data = {
+              id: fileName, 
+              text: fileName,
+              thumbnail: getThumbnailUrl(fileName)
+            };
+          }
+          $this.select2("data", data);
         }
-        $this.select2("data", data);
-      }
+      });
     });
   });
 

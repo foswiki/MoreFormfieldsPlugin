@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2018-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2018-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -68,7 +68,7 @@ sub getParams {
   $params{skip} = $params{limit} * ($params{page}-1);
 
   $params{include} = $request->param("include");
-  $params{exclude} = $request->param("exclude");
+  $params{exclude} = $request->param("exclude") // '^(ProjectContributor|RegistrationAgent|NobodyGroup|BaseGroup)$';
 
   $params{showlogin} = Foswiki::isTrue($request->param("showlogin"), 0);
 
@@ -122,22 +122,28 @@ sub getUsers {
 
   return $results;
 }
-sub _isGroupMember {
-  my ($user, @groups) = @_;
-
-  foreach my $group (@groups) {
-    return 1 if Foswiki::Func::isGroupMember($group, $user, {expand => 1});
-  }
-
-  return 0;
-}
 
 sub getGroups {
   my ($this, $params) = @_;
 
   my $results = [];
 
-  my $it = Foswiki::Func::eachGroup();
+  my $it;
+
+  if (scalar(@{$params->{groups}}))  {
+    my @list = ();
+    foreach my $group (@{$params->{groups}}) {
+      my $members = Foswiki::Func::eachGroupMember($group, {expand => 'false'});
+      while ($members->hasNext()) {
+        my $member = $members->next();
+        push @list, $member if Foswiki::Func::isGroup($member);
+      }
+    }
+    $it = Foswiki::ListIterator->new(\@list);
+  } else {
+    $it = Foswiki::Func::eachGroup();
+  }
+
   my $thisUser = Foswiki::Func::getWikiName();
 
   while ($it->hasNext()) {

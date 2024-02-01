@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,11 +18,12 @@ package Foswiki::Form::Date2;
 use strict;
 use warnings;
 
-use Foswiki::Form::FieldDefinition ();
+use Foswiki::Form::BaseField ();
 use Foswiki::Plugins::JQueryPlugin ();
+use Foswiki::Func ();
 use Foswiki::Time ();
 use Foswiki::Render ();
-our @ISA = ('Foswiki::Form::FieldDefinition');
+our @ISA = ('Foswiki::Form::BaseField');
 
 sub new {
   my $class = shift;
@@ -35,27 +36,6 @@ sub new {
 }
 
 sub isTextMergeable { return 0; }
-
-sub getDefaultValue {
-  my $this = shift;
-
-  my $value = $this->{default};
-  $value = '' unless defined $value;
-
-  return $value;
-}
-
-sub param {
-  my ($this, $key) = @_;
-
-  unless (defined $this->{_params}) {
-    my %params = Foswiki::Func::extractParameters($this->{value});
-    $this->{_params} = \%params;
-  }
-
-
-  return (defined $key) ? $this->{_params}{$key} : $this->{_params};
-}
 
 sub getLang {
   my ($this) = @_;
@@ -105,6 +85,9 @@ sub renderForEdit {
   }
 
   my $dateFormat = $this->convertFormatToJQueryUI($this->getDateFormat());
+  my $minDate = $this->param("mindate") // 'null';
+  my $maxDate = $this->param("maxdate") // 'null';
+  my $doWeekends = Foswiki::Func::isTrue($this->param("weekends"), 1) ? "true": "false";
 
   $value = Foswiki::Render::html("input", {
       type => "text",
@@ -116,8 +99,11 @@ sub renderForEdit {
       "data-change-month" => "true",
       "data-change-year" => "true",
       "data-date-format" => $dateFormat,
+      "data-min-date" => $minDate,
+      "data-max-date" => $maxDate,
       "data-lang" => $this->getLang(),
       "data-show-on" => "both",
+      "data-do-weekends" => $doWeekends,
       class => $this->cssClasses('foswikiInputField', 'jqUIDatepicker')
     }
   );
@@ -125,7 +111,29 @@ sub renderForEdit {
   return ('', $value);
 }
 
-sub DIS_saveMetaDataHandler {
+sub beforeSaveHandler {
+  my ($this, $meta, $form) = @_;
+
+  my $request = Foswiki::Func::getRequestObject();
+  my $dateStr = $request->param($this->{name});
+  return if !defined($dateStr) || $dateStr =~ /^\d*$/;
+
+  my $epoch = $this->parseDate($dateStr) // 0;
+  my $reformat = $epoch ? $this->formatDate($epoch) : "";
+  #print STDERR "date=$dateStr, time=$timeStr, epoch=$epoch, reformat=$reformat\n";
+
+  my $field = $meta->get('FIELD', $this->{name});
+  $field //= {
+    name => $this->{name},
+    title => $this->{title},
+  };
+  $field->{value} = $epoch ? $epoch : "";
+  $field->{origvalue} = $reformat;
+
+  $meta->putKeyed('FIELD', $field);
+}
+
+sub saveMetaDataHandler {
   my ($this, $record, $formDef) = @_;
 
   my $fieldName = $this->{name};
@@ -220,7 +228,7 @@ sub getDateFormat {
 sub formatDate {
   my ($this, $epoch, $params) = @_;
 
-  $params ||= $this->param();
+  %{$params} = %{$this->param()} unless defined $params;
   $params->{lang} = $this->getLang();
 
   my $dateFormat = $this->getDateFormat();
@@ -232,7 +240,7 @@ sub formatDate {
 sub parseDate {
   my ($this, $string, $params) = @_;
 
-  $params ||= $this->param();
+  %{$params} = %{$this->param()} unless defined $params;
   $params->{lang} = $this->getLang();
 
   return Foswiki::Time::parseTime($string, 1, $params);

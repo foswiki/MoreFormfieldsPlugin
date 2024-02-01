@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2022 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,8 +20,8 @@ use warnings;
 
 use Foswiki::Render();
 use Foswiki::Plugins::JQueryPlugin ();
-use Foswiki::Form::FieldDefinition ();
-our @ISA = ('Foswiki::Form::FieldDefinition');
+use Foswiki::Form::BaseField ();
+our @ISA = ('Foswiki::Form::BaseField');
 
 sub new {
   my $class = shift;
@@ -37,10 +37,30 @@ sub new {
 
 sub isTextMergeable { return 0; }
 
+sub beforeSaveHandler {
+  my ($this, $meta, $form) = @_;
+
+  my $request = Foswiki::Func::getRequestObject();
+  my $timeStr = $request->param($this->{name});
+  return if !defined($timeStr) || $timeStr =~ /^\d*$/;
+
+  my ($hour, $min) = split(/:/, $timeStr);
+  $timeStr = sprintf("%02d:%02d", $hour, $min);
+
+  my $field = $meta->get('FIELD', $this->{name});
+  $field //= {
+    name => $this->{name},
+    title => $this->{title},
+  };
+  $field->{value} = $timeStr;
+  $meta->putKeyed('FIELD', $field);
+}
+
 sub renderForEdit {
   my ($this, $topicObject, $value) = @_;
 
-  Foswiki::Plugins::JQueryPlugin::createPlugin("clockpicker");
+  Foswiki::Plugins::JQueryPlugin::createPlugin("ClockPicker");
+  Foswiki::Plugins::JQueryPlugin::createPlugin("imask");
 
   return (
     '',
@@ -52,7 +72,9 @@ sub renderForEdit {
           "name" => $this->{name},
           "size" => $this->{size},
           "value" => $value,
-          "class" => $this->cssClasses('foswikiInputField')
+          "class" => $this->cssClasses('foswikiInputField imask'),
+          "data-type" => "time",
+          "placeholder" => "hh:mm"
         })
 
         . Foswiki::Render::html("button", {
