@@ -28,7 +28,7 @@ sub new {
   # SMELL: template only present in NatSkin
   Foswiki::Func::readTemplate("user");
 
-  $this->{_formfieldClass} = 'foswikiUserField';
+  #$this->{_formfieldClass} = 'foswikiUserField';
   $this->{_web} = $this->param("web") || $Foswiki::cfg{UsersWebName};
 
   $this->{_url} = Foswiki::Func::expandTemplate("select2::user::url");

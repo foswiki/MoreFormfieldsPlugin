@@ -68,7 +68,9 @@ sub getParams {
   $params{skip} = $params{limit} * ($params{page}-1);
 
   $params{include} = $request->param("include");
+  $params{include} = join("|", split(/\s*,\s*/, $params{include})) if defined $params{include};
   $params{exclude} = $request->param("exclude") // '^(ProjectContributor|RegistrationAgent|NobodyGroup|BaseGroup)$';
+  $params{exclude} = join("|", split(/\s*,\s*/, $params{exclude})) if defined $params{exclude};
 
   $params{showlogin} = Foswiki::isTrue($request->param("showlogin"), 0);
 

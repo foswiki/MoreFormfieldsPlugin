@@ -86,18 +86,21 @@ sub getOptions {
   return $this->{_options};
 }
 
+sub getWeb {
+  my $this = shift;
+  return $this->{_web};
+}
+
 sub getDisplayValue {
-  my ($this, $value, $web) = @_;
+  my ($this, $value) = @_;
 
   return '' unless defined $value && $value ne '';
-
-  $web ||= $this->{_web};
 
   if ($this->isMultiValued) {
     my @result = ();
     foreach my $val (split(/\s*,\s*/, $value)) {
       next if $val eq "";
-      my ($thisWeb, $thisTopic) = Foswiki::Func::normalizeWebTopicName($web, $val);
+      my ($thisWeb, $thisTopic) = Foswiki::Func::normalizeWebTopicName($this->{_web}, $val);
       if ($this->isValueMapped) {
         if (defined($this->{valueMap}{$val})) {
           $val = $this->{valueMap}{$val};
@@ -110,7 +113,7 @@ sub getDisplayValue {
     }
     $value = join(", ", @result);
   } else {
-    my ($thisWeb, $thisTopic) = Foswiki::Func::normalizeWebTopicName($web, $value);
+    my ($thisWeb, $thisTopic) = Foswiki::Func::normalizeWebTopicName($this->{_web}, $value);
     if ($this->isValueMapped) {
       if (defined($this->{valueMap}{$value})) {
         $value = $this->{valueMap}{$value};

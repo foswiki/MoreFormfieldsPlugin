@@ -55,7 +55,7 @@ sub renderForEdit {
 }
 
 sub getDisplayValue {
-  my ($this, $value) = @_;
+  my ($this, $value, $web, $topic) = @_;
 
   my $format = $this->param("display");
   if ($format) {
@@ -69,7 +69,7 @@ sub getDisplayValue {
   my $type = $this->param("type");
   if ($type) {
     my $fieldDef = $this->createField($type);
-    return $fieldDef->getDisplayValue($value) if $fieldDef;
+    return $fieldDef->getDisplayValue($value, $web, $topic) if $fieldDef;
   }
 
   return $value unless defined $format;

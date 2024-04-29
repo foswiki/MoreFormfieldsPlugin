@@ -32,7 +32,7 @@ sub getDateTimeFormat {
 sub formatDate {
   my ($this, $epoch, $params) = @_;
 
-  $params ||= $this->param();
+  %{$params} = %{$this->param()} unless defined $params;
   $params->{lang} = $this->getLang();
 
   my $dateFormat = $this->getDateTimeFormat();

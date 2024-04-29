@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="reprev" date="1692614734" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" comment="reprev" date="1710839706" format="1.1" version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -50,9 +50,10 @@ specified in the =topic= parameter. The formfield lets you upload new attachment
 
    * =web=, =topic=: location where attachments are searched for, defaults to current web.topic
    * =url=: url for autocompletion, defaults to an internal template =select2::attachment::url=
-   * =filter=: regular expression of files allowed to be uploaded
+   * =filter=: regular expression of files allowed to be uploaded (note you may use a comma instead of the pipe symbol)
    * =sortable=: entries in an =attachment+multi= formfield can be reordered using drag'n'drop if set to =true=
    * =upload=: boolean switch to enable/disable uploading an attachment, defaults to =off=
+   * =format=: format string to display the attachment, expands =$file=, and =$url= to the actual attachment
 
 ---+++ autofill
 
@@ -167,6 +168,8 @@ A group reference using !JQSelect2Contrib for autocompletion.
    * =exclude=: regular expression a group must not match to be included
    * =sortable=: entries in an =group+multi= formfield can be reordered using drag'n'drop if set to =true=
 
+Note you may use a comma instead of the pipe symbol in regular expressions.
+
 ---+++ icon
 
 A select box to chose an icon supported by Foswiki (famfamfam and fontawesome).
@@ -176,6 +179,8 @@ A select box to chose an icon supported by Foswiki (famfamfam and fontawesome).
    * =cat=: list of icon categories to be included in the selection
    * =include=: regular expression of icons to include in the selection
    * =exclude=: regular expression of icons to be excluded from the selection
+
+Note you may use a comma instead of the pipe symbol in regular expressions.
 
 An icon category can be either a topic on the icon search path as defined in =$Foswiki::cfg{JQueryPlugin}{IconSearchPath}=:
 
@@ -383,6 +388,8 @@ A topic reference using !JQSelect2Contrib for autocompletion.
    * =format=: format string how to render a topic value while editing, defaults to =$topictitle=
    * =sortable=: entries in an =topic+multi= formfield can be reordered using drag'n'drop if set to =true=
 
+Note you may use a comma instead of the pipe symbol in regular expressions.
+
 Custom parameters may be added. These will be appended to the autocompletion url.
 
 There are a couple of parameters that further customize the behavior of the select2 widget. Some of the most useful ones are:
@@ -408,6 +415,8 @@ A user reference using !JQSelect2Contrib for autocompletion.
    * =include=: regular expression a user must match to be included in the selection
    * =exclude=: regular expression a user must not match to be included
    * =sortable=: entries in an =user+multi= formfield can be reordered using drag'n'drop if set to =true=
+
+Note you may use a comma instead of the pipe symbol in regular expressions.
 
 ---+++ uuid
 
@@ -442,6 +451,8 @@ This formfield stores a reference to  web.
 
 ---++ Change History
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  29 Apr 2024: | allow regexes to be comma separated in formfield definitions |
+|  19 Mar 2024: | added =format= parameter to =attachment= field |
 |  04 Dec 2023: | added =upload= parameter to =attachment= field |
 |  30 Nov 2023: | added =weekend= parameter to =date2= and =datetime= fields |
 |  11 Oct 2023: | added masked input to =time= and =datetime= fields; \

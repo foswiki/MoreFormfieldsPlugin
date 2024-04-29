@@ -109,21 +109,21 @@ sub getDisplayValue {
   $topic ||= $this->{_topic};
 
   my @result = ();
-  my $format = Foswiki::Func::expandTemplate("attachments::preview");
+  my $format = $this->param("format") // Foswiki::Func::expandTemplate("attachments::preview");
 
   if ($this->isMultiValued) {
     foreach my $val (split(/\s*,\s*/, $value)) {
       my $line = $format;
-      my ($href, $cls) = _getHref($web, $topic, $val);
+      my ($url, $cls) = _getHref($web, $topic, $val);
       $line =~ s/\$file\b/$val/g;
-      $line =~ s/\$href\b/$href/g;
+      $line =~ s/\$url\b/$url/g;
       $line =~ s/\$class\b/$cls/g;
       push @result, $line;
     }
   } else {
-    my ($href, $cls) = _getHref($web, $topic, $value);
+    my ($url, $cls) = _getHref($web, $topic, $value);
     $format =~ s/\$file\b/$value/g;
-    $format =~ s/\$href\b/$href/g;
+    $format =~ s/\$url\b/$url/g;
     $format =~ s/\$class\b/$cls/g;
     push @result, $format;
   }
@@ -137,7 +137,7 @@ sub getDisplayValue {
 sub _getHref {
   my ($web, $topic, $attachment) = @_;
 
-  my $href = Foswiki::Func::getPubUrlPath($web, $topic, $attachment);
+  my $url = Foswiki::Func::getPubUrlPath($web, $topic, $attachment);
   my $cls = "";
   if (Foswiki::Func::getContext()->{TopicInteractionPluginEnabled}) {
     my $webDAVFilter = $Foswiki::cfg{TopicInteractionPlugin}{WebDAVFilter};
@@ -151,12 +151,12 @@ sub _getHref {
       $webDavUrl =~ s/\$topic/$topic/g;
       $webDavUrl =~ s/\$attachment/$encName/g;
 
-      $href = $webDavUrl;
+      $url = $webDavUrl;
       $cls = "jqWebDAVLink";
     }
   }
 
-  return wantarray ? ($href, $cls) : $href;
+  return wantarray ? ($url, $cls) : $url;
 }
 
 sub renderForEdit {

@@ -9,7 +9,7 @@
 %TMPL:DEF{"video::exts"}%mp4|MP4|ogv|OGV|mkv|MKV|avi|AVI|webm|WEBM|mpe?g|MPE?G|ogv|OGV%TMPL:END%
 %TMPL:DEF{"imageregex"}%\.(%TMPL:P{"image::exts"}%|%TMPL:P{"video::exts"}%)$%TMPL:END%
 
-%TMPL:DEF{"attachments::preview"}%<div class="foswikiAttachmentFile clearfix">%MIMEICON{"$file" size="32"}% <a href='$href' class='$class'>$file</a></div>%TMPL:END%
+%TMPL:DEF{"attachments::preview"}%<div class="foswikiAttachmentFile clearfix">%MIMEICON{"$file" size="16"}% <a href='$url' class='$class'>$file</a></div>%TMPL:END%
 
 %TMPL:DEF{"select2::attachments"}%<literal>%ATTACHMENTS{
   include="(?=.*(%URLPARAM{"filter" default=""}%))(?=.*(%FORMATLIST{
