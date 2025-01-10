@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,7 +30,7 @@ sub new {
   $size = 10 if (!$size || $size < 1);
   $this->{size} = $size;
 
-  Foswiki::Func::readTemplate("moreformfields");
+  $this->readTemplate("moreformfields");
 
   $this->{_formfieldClass} = 'foswikiAttachmentField';
   $this->{_web} = $this->param("web") || $this->{session}{webName};
@@ -83,14 +83,24 @@ sub populateMetaFromQueryData {
 }
 
 sub getOptions {
-  my ($this, $topicObject) = @_;
+  my ($this, $metaOrWeb, $topic) = @_;
+
+  my $meta;
+  my $web;
+  if (ref($metaOrWeb)) {
+    $meta = $metaOrWeb;
+    $web = $meta->web;
+    $topic = $meta->topic;
+  } else {
+    $web = $metaOrWeb;
+  }
 
   return $this->{_options} if $this->{_options};
 
-  if ($topicObject) {
+  if ($meta) {
     $this->{_options} = [''];
 
-    foreach my $attachment ($topicObject->find('FILEATTACHMENT')) {
+    foreach my $attachment ($meta->find('FILEATTACHMENT')) {
       push @{$this->{_options}}, $attachment->{name};
     }
 
@@ -241,7 +251,7 @@ sub addJavaScript {
   Foswiki::Plugins::JQueryPlugin::createPlugin("uploader");
   Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
   Foswiki::Func::addToZone("script", "FOSWIKI::ATTACHMENTFIELD", <<"HERE", "JQUERYPLUGIN::SELECT2, JQUERYPLUGIN::UPLOADER");
-<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/attachmentfield.js'></script>
+<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/build/attachmentfield.js'></script>
 HERE
 }
 

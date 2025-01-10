@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2018-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2018-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -256,7 +256,12 @@ sub handleUserOrGroup {
 
   foreach my $item (@$results) {
     my ($web, $topic) = Foswiki::Func::normalizeWebTopicName($Foswiki::cfg{UsersWebName}, $item->{id});
-    my $thumbnail = $this->{thumbnailFormat};
+    my $thumbnail;
+    if (Foswiki::Func::topicExists($web, $topic)) {
+      $thumbnail = $this->{thumbnailFormat};
+    } else {
+      $thumbnail = '%GENIMAGEURL{"'.$item->{id}.'" size="%size%"}%';
+    }
     $thumbnail =~ s/%topic%/$topic/g;
     $thumbnail =~ s/%web%/$web/g;
     $thumbnail =~ s/%size%/$this->{userPhotoSize}/g;

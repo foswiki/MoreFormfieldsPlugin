@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,6 +20,7 @@ use warnings;
 use Foswiki::Func();
 use Foswiki::Form::BaseField ();
 use Foswiki::Plugins::JQueryPlugin ();
+use Foswiki::Plugins::FlexWebListPlugin ();
 use Assert;
 our @ISA = ('Foswiki::Form::BaseField');
 
@@ -27,7 +28,7 @@ sub new {
   my $class = shift;
   my $this = $class->SUPER::new(@_);
 
-  Foswiki::Func::readTemplate("moreformfields");
+  $this->readTemplate("moreformfields");
 
   $this->{_formfieldClass} = 'foswikiWebField';
   $this->{_url} = Foswiki::Func::expandTemplate("select2::web::url");
@@ -81,12 +82,11 @@ sub getOptions {
   return $this->{_options};
 }
 
+
 sub getDisplayValue {
   my ($this, $value) = @_;
 
   return '' unless defined $value && $value ne '';
-
-  my $webHome = $Foswiki::cfg{HomeTopicName};
 
   if ($this->isMultiValued) {
     my @result = ();
@@ -97,9 +97,9 @@ sub getDisplayValue {
           $text = $this->{valueMap}{$val};
         }
       } else {
-        $text = Foswiki::Func::getTopicTitle($val, $webHome);
+        $text = _getWebTitle($val);
       }
-      my $url = Foswiki::Func::getScriptUrl($val, $webHome, "view");
+      my $url = Foswiki::Func::getScriptUrl($val, $Foswiki::cfg{HomeTopicName}, "view");
       push @result, "<a href='$url' class='".$this->{_formfieldClass}."'>$text</a>";
     }
     $value = join(", ", @result);
@@ -110,9 +110,9 @@ sub getDisplayValue {
         $text = $this->{valueMap}{$value};
       }
     } else {
-      $text = Foswiki::Func::getTopicTitle($value, $webHome);
+      $text = _getWebTitle($value);
     }
-    my $url = Foswiki::Func::getScriptUrl($value, $webHome, "view");
+    my $url = Foswiki::Func::getScriptUrl($value, $Foswiki::cfg{HomeTopicName}, "view");
     $value = "<a href='$url' class='".$this->{_formfieldClass}."'>$text</a>";
   }
 
@@ -152,17 +152,16 @@ sub renderForEdit {
   }
   push @htmlData, 'data-width="' . $size . '"';
 
-  my $webHome = $Foswiki::cfg{HomeTopicName};
   if ($this->isMultiValued) {
     push @htmlData, 'data-multiple="true"';
     my @topicTitles = ();
     foreach my $v (split(/\s*,\s*/, $value)) {
-      my $topicTitle = Foswiki::Func::getTopicTitle($v, $webHome);
+      my $topicTitle = _getWebTitle($v);
       push @topicTitles, '"' . $v . '":"' . $this->encode($topicTitle) . '"';
     }
     push @htmlData, "data-value-text='{" . join(', ', @topicTitles) . "}'";
   } else {
-    my $topicTitle = $this->encode(Foswiki::Func::getTopicTitle($value, $webHome));
+    my $topicTitle = $this->encode(_getWebTitle($value));
     push @htmlData, 'data-value-text="' . $topicTitle . '"';
   }
 
@@ -193,8 +192,12 @@ sub addJavaScript {
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
   Foswiki::Func::addToZone("script", "FOSWIKI::WEBFIELD", <<"HERE", "JQUERYPLUGIN::SELECT2");
-<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/webfield.js'></script>
+<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/build/webfield.js'></script>
 HERE
+}
+
+sub _getWebTitle {
+  return Foswiki::Plugins::FlexWebListPlugin->getCore()->getWebTitle(@_) // '';
 }
 
 1;

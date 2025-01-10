@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -82,7 +82,7 @@ sub addJavaScript {
   Foswiki::Plugins::JQueryPlugin::createPlugin("validate");
   Foswiki::Func::addToZone("script", 
     "MOREFORMFIELDSPLUGIN::PHONENUMBER::JS",
-    "<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/phonenumber.js'></script>", 
+    "<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/build/phonenumber.js'></script>", 
     "JQUERYPLUGIN::FOSWIKI, JQUERYPLUGIN::VALIDATE");
 }
 

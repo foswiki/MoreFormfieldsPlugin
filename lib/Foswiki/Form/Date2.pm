@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -94,6 +94,8 @@ sub renderForEdit {
       name => $this->{name},
       id => 'id' . $this->{name} . int(rand() * 1000),
       size => $this->{size},
+      autocomplete => "off",
+      autocorrection => "off",
       value => $value,
       "data-auto-size" => "true",
       "data-change-month" => "true",

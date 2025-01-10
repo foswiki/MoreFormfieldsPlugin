@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -81,7 +81,7 @@ sub renderForEdit {
   my ($this, $topicObject, $value) = @_;
 
   Foswiki::Func::addToZone("script", "FOSWIKI::SMARTBOX", <<'HERE', "JQUERYPLUGIN");
-<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/smartbox.js'></script>
+<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/build/smartbox.js'></script>
 HERE
 
   my %isSelected = map { $_ => 1 } split(/\s*,\s*/, $value);

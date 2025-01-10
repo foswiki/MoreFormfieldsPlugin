@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -58,7 +58,6 @@ sub finish {
   undef $this->{options};
 }
 
-#use Data::Dump qw(dump);
 sub getOptions {
   my $this = shift;
 
@@ -138,7 +137,6 @@ sub getOptions {
     $this->{options} = \@vals;
   }
 
-  #print STDERR "options=".dump($this->{options})."\n";
   return $this->{options};
 }
 

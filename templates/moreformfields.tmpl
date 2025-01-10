@@ -5,7 +5,7 @@
 %TMPL:DEF{"select2::userorgroup::url"}%%SCRIPTURLPATH{"rest"}%/MoreFormfieldsPlugin/userorgroup%TMPL:END%
 %TMPL:DEF{"select2::attachments::url"}%%SCRIPTURLPATH{"rest"}%/RenderPlugin/template?name=moreformfields;expand=select2::attachments;contenttype=application/json;t=%NOW%%TMPL:END%
 
-%TMPL:DEF{"image::exts"}%avif|jpe?g|gif|png|bmp|webp|svg|ico|tiff?|xcf|psd|heic|heif|AVIF|JE?PG|GIF|PNG|BMP|WEBP|SVG|ICO|TIFF|XCF|PSD?|HEIC|HEIF%TMPL:END%
+%TMPL:DEF{"image::exts"}%avif|jpe?g|gif|png|bmp|webp|svg|ico|tiff?|xcf|psd|heic|heif|AVIF|JPE?G|GIF|PNG|BMP|WEBP|SVG|ICO|TIFF|XCF|PSD?|HEIC|HEIF%TMPL:END%
 %TMPL:DEF{"video::exts"}%mp4|MP4|ogv|OGV|mkv|MKV|avi|AVI|webm|WEBM|mpe?g|MPE?G|ogv|OGV%TMPL:END%
 %TMPL:DEF{"imageregex"}%\.(%TMPL:P{"image::exts"}%|%TMPL:P{"video::exts"}%)$%TMPL:END%
 
@@ -14,9 +14,9 @@
 %TMPL:DEF{"select2::attachments"}%<literal>%ATTACHMENTS{
   include="(?=.*(%URLPARAM{"filter" default=""}%))(?=.*(%FORMATLIST{
       "%IF{
-        "'%URLPARAM{"q"}%'=''" 
+        "$'URLPARAM{q}'=''" 
         then="." 
-        else="%URLPARAM{"q"}%"
+        else="$percntURLPARAM{\"q\"}$percnt"
       }%" 
       split="\s+" 
       format="$1" 
@@ -55,9 +55,9 @@
       then="(TopicType=~'\b%URLPARAM{"topicType"}%\b' OR @Target.TopicType=~'\b%URLPARAM{"topicType"}%\b') AND "
     }%%FORMATLIST{
       "%IF{
-        "'%URLPARAM{"q"}%'=''" 
+        "$'URLPARAM{q}'=''" 
         then="." 
-        else="%URLPARAM{"q"}%"
+        else="$percntURLPARAM{\"q\"}$percnt"
       }%" 
       split="\s+" 
       format="lc(%URLPARAM{"property" default="topictitle"}%)=~lc('$1')" separator=" AND "
@@ -75,7 +75,7 @@
 }%</literal>%TMPL:END%
 
 %TMPL:DEF{"select2::topic::format"}% {
-  \"id\":\"$percntIF{\"'%WEB%'!='$web'\" then=\"$web.\"}$percnt$topic\", 
+  \"id\":\"%IF{"$'URLPARAM{relative}'!='on'" then="$web."}%$topic\", 
   \"text\":\"$percntENCODE{\"$expand(topictitle)\" type=\"quote\"}$percnt\",
   \"thumbnail\": \"$percntTMPL:P{\"select2::topic::thumbnail::url\" web=\"$web\" topic=\"$topic\"}$percnt\"
 } %TMPL:END%

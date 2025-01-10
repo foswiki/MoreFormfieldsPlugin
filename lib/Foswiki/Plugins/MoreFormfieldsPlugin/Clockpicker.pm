@@ -15,10 +15,10 @@ sub new {
       version => '0.07',
       author => 'Wang Shenwei',
       homepage => 'http://weareoutman.github.io/clockpicker',
-      javascript => ['clockpicker.js', 'clockpicker.init.js'],
+      javascript => ['clockpicker.js'],
       css => ['clockpicker.css'],
       documentation => 'MoreFormfieldsPlugin',
-      puburl => '%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin',
+      puburl => '%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/build',
     ),
     $class
   );

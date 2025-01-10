@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,7 +26,7 @@ sub new {
   my $this = $class->SUPER::new(@_);
 
   # SMELL: template only present in NatSkin
-  Foswiki::Func::readTemplate("user");
+  $this->readTemplate("user");
 
   #$this->{_formfieldClass} = 'foswikiUserField';
   $this->{_web} = $this->param("web") || $Foswiki::cfg{UsersWebName};
@@ -43,6 +43,13 @@ sub getDisplayValue {
   my ($this, $value) = @_;
 
   return $this->SUPER::getDisplayValue($value, $this->{_web});
+}
+
+sub getFormfieldClass {
+  my ($this, $val) = @_;
+
+  return $this->{_formfieldClass} if Foswiki::Func::getCanonicalUserID($val);
+  return "$this->{_formfieldClass}  foswikiAlert";
 }
 
 1;

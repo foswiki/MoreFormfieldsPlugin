@@ -233,7 +233,9 @@ It defines the source from which to derive the value of the =id= formfield.
 
 A general purpose IPv4 address, consisting of 4 octets, e.g. =10.0.0.1= 
 
-*Parameters*: none
+*Parameters*: 
+
+  * =normalize=: normalize address segments to 3 digits, default "false"
 
 ---+++ ipv6address
 
@@ -243,9 +245,19 @@ A general purpose IPv6 address,e.g. =2001:db8:85a3:8d3:1319:8a2e:370:7348=
 
 ---+++ macaddress
 
-A hardware address given in 6 hex values, e.g. =00:1a:10:6f:ba:12=
+A hardware address given in 6 hex values, e.g. =00:1A:10:6F:BA:12=
 
-*Parameters*: none
+*Parameters*: 
+
+  * =normalize=: normalize address segments to 2 hex values upper case, default "false"
+
+---+++ netmask
+
+A special IP address used for routing, consisting of 4 octets, e.g. =255.255.255.0=
+
+*Parameters*: 
+
+  * =normalize=: normalize address segments to 3 digits, default "false"
 
 ---+++ masked
 
@@ -281,10 +293,6 @@ formfield type.
   * =autoMaxExpand=: boolean to automatically expand the editor to a maximum height, default "false"
   * =minHeight=: minimum height of the editor
   * =maxHeight=: maximum height of the editor
-
----+++ netmask
-
-A special IP address used for routing, consisting of 4 octets, e.g. =255.255.255.0=
 
 ---+++ phonenumber
 
@@ -387,6 +395,7 @@ A topic reference using !JQSelect2Contrib for autocompletion.
    * =exclude=: regular expression topics must not match to be included
    * =format=: format string how to render a topic value while editing, defaults to =$topictitle=
    * =sortable=: entries in an =topic+multi= formfield can be reordered using drag'n'drop if set to =true=
+   * =relative=: boolean to enable relative topic names leaving out the web part, defaults to absolute web.topic values
 
 Note you may use a comma instead of the pipe symbol in regular expressions.
 
@@ -451,6 +460,9 @@ This formfield stores a reference to  web.
 
 ---++ Change History
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  10 Jan 2025: | fixed compatibility with newer !FlexWebListPlugin; added =relative= parameter to topic field |
+|  11 Nov 2024: | reorganized js and css files |
+|  30 Jul 2024: | added =normalize= parameter to ipaddress, netmask and macaddress |
 |  29 Apr 2024: | allow regexes to be comma separated in formfield definitions |
 |  19 Mar 2024: | added =format= parameter to =attachment= field |
 |  04 Dec 2023: | added =upload= parameter to =attachment= field |
@@ -503,7 +515,7 @@ This formfield stores a reference to  web.
 %META:FIELD{name="Release" title="Release" value="%25$RELEASE%25"}%
 %META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
 %META:FIELD{name="Repository" title="Repository" value="https://github.com/foswiki/%25TOPIC%25"}%
-%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2024 Michael Daum"}%
+%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2025 Michael Daum"}%
 %META:FIELD{name="License" title="License" value="[[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]]"}%
 %META:FIELD{name="Home" title="Home" value="Foswiki:Extensions/%25TOPIC%25"}%
 %META:FIELD{name="Support" title="Support" value="Foswiki:Support/%25TOPIC%25"}%

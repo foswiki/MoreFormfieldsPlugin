@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -29,9 +29,12 @@ sub new {
 }
 
 sub beforeSaveHandler {
-  my ($this, $topicObject) = @_;
+  my ($this, $meta) = @_;
 
-  my $field = $topicObject->get('FIELD', $this->{name});
+  my $doNormalize = Foswiki::Func::isTrue($this->param("normalize"), 0);
+  return unless $doNormalize;
+
+  my $field = $meta->get('FIELD', $this->{name});
 
   $field = {
     name => $this->{name},
@@ -44,7 +47,7 @@ sub beforeSaveHandler {
   }
   $field->{value} = join(":", @segments);
 
-  $topicObject->putKeyed('FIELD', $field);
+  $meta->putKeyed('FIELD', $field);
 }
 
 1;

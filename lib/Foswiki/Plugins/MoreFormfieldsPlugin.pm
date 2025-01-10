@@ -1,6 +1,6 @@
 # Plugin for Foswiki -V The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2013-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2013-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,7 +25,7 @@ use Foswiki::Plugins ();
 
 use Error qw(:try);
 
-our $VERSION = '11.30';
+our $VERSION = '11.51';
 our $RELEASE = '%$RELEASE%';
 our $SHORTDESCRIPTION = 'Additional formfield types for %SYSTEMWEB%.DataForms';
 our $LICENSECODE = '%$LICENSECODE%';

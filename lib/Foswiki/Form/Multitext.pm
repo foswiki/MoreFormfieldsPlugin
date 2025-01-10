@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -45,7 +45,7 @@ sub getDisplayValue {
 
   return
     join("<span class='jqMultiTextSep'>, </span>", 
-      map { "<span class='jqMultiTextItem'>$_</span>"} 
+      map { "<span class='jqMultiTextItem'> $_ </span>"} 
         split (/$sep/, $value));
 }
 
@@ -162,7 +162,7 @@ sub addJavaScript {
 
   Foswiki::Func::addToZone("script", 
     "MOREFORMFIELDSPLUGIN::MULTITEXT::JS",
-    "<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/multitext.js'></script>", 
+    "<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/build/multitext.js'></script>", 
     "JQUERYPLUGIN::FOSWIKI, JQUERYPLUGIN::UI");
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("ui");

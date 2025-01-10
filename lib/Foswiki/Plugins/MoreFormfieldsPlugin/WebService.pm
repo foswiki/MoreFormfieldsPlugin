@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2018-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2018-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,13 +19,16 @@ use strict;
 use warnings;
 
 use Foswiki::Func ();
+use Foswiki::Plugins::FlexWebListPlugin ();
 use JSON ();
+
 use constant TRACE => 0;
 
 sub new {
   my $class = shift;
 
   my $this = bless({
+    translateWebTitles => $Foswiki::cfg{MoreFormfieldsPlugin}{TranslateWebTitles} // 1,
     @_
   }, $class);
 
@@ -51,7 +54,7 @@ sub getParams {
   }
   $params{search} = $search;
 
-  my $webs = $request->param("webs") // 'user';
+  my $webs = $request->param("webs") // 'all';
   $params{webs} = [];
   $params{webs} = [split(/\s*,\s*/, $webs)] if defined $webs;
 
@@ -63,7 +66,7 @@ sub getParams {
   $params{exclude} = $request->param("exclude");
 
   if (!defined($params{exclude}) && $webs =~ /\buser\b/) {
-    $params{exclude} = "^(Applications|$Foswiki::cfg{TrashWebName}|$Foswiki::cfg{SystemWebName})";
+    $params{exclude} = "^(Applications|Archive|$Foswiki::cfg{TrashWebName}|$Foswiki::cfg{SystemWebName})";
   }
 
   return \%params;
@@ -73,9 +76,8 @@ sub handleWebs {
   my ($this, $session, $subject, $verb, $response) = @_;
 
   my $params = $this->getParams();
-  my $results = $this->getWebs($params);
+  my ($results, $total) = $this->getWebs($params);
 
-  my $total = scalar(@$results);
   @$results = sort {$a->{text} cmp $b->{text}} @$results;
 
   $results = JSON::to_json({
@@ -101,29 +103,53 @@ sub getWebs {
   my $limit = $params->{limit} // 10;
   my $skip = $params->{skip} // 0;
 
-  my $results = [];
-  my $index = 0;
+  my @webs = ();
   foreach my $web (Foswiki::Func::getListOfWebs(join(", ", @{$params->{webs}}))) {
 
     $web =~ s/\//./g;
 
-    next if defined($params->{search}) && $web !~ /$params->{search}/i;# && $topicTitle !~ /$params->{search}/i;
-    next if defined($params->{include}) && $web !~ /$params->{include}/i; # && $topicTitle !~ /$params->{include}/i;
-    next if defined($params->{exclude}) && $web =~ /$params->{exclude}/i; # || $topicTitle =~ /$params->{exclude}/i);
+    my $webTitle = $this->getWebTitle($web);
+    next if defined($params->{search}) && $web !~ /$params->{search}/i && $webTitle !~ /$params->{search}/i;
+    next if defined($params->{include}) && $web !~ /$params->{include}/i && $webTitle !~ /$params->{include}/i;
+    next if defined($params->{exclude}) && ($web =~ /$params->{exclude}/i || $webTitle =~ /$params->{exclude}/i);
+    
+    push @webs, $web;
+  }
+
+  my $results = [];
+  my $index = 0;
+  foreach my $web (@webs) {
 
     $index++;
     next if $index <= $skip;
     last if $index > ($skip + $limit);
 
-    my $topicTitle = Foswiki::Func::getTopicTitle($web, $Foswiki::cfg{HomeTopicName}); #expensive
     push @$results, {
       id => $web,
-      text => $topicTitle,
+      text => $this->getWebTitle($web),
     };
 
   }
 
-  return $results;
+  return ($results, scalar(@webs));
+}
+
+sub translate {
+  my ($this, $web, $topic, $string) = @_;
+
+  if (Foswiki::Func::getContext()->{MultiLingualPluginEnabled}) {
+    require Foswiki::Plugins::MultiLingualPlugin;
+    return Foswiki::Plugins::MultiLingualPlugin::translate($string, $web, $topic);
+  } 
+    
+  return $this->{session}->i18n->maketeyt($string);
+}
+
+sub getWebTitle {
+  my ($this, $web) = @_;
+
+  my $text = Foswiki::Plugins::FlexWebListPlugin->getCore()->getWebTitle($web);
+  return $this->{translateWebTitles} ? $this->translate($web, $Foswiki::cfg{HomeTopicName}, $text) : $text;
 }
 
 1;

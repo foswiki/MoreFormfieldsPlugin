@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,7 +30,7 @@ sub addJavaScript {
   #my $this = shift;
   Foswiki::Func::addToZone("script", 
     "MOREFORMFIELDSPLUGIN::IPADDRESS::JS",
-    "<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/networkaddress.js'></script>", 
+    "<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/build/networkaddress.js'></script>", 
     "JQUERYPLUGIN::FOSWIKI, JQUERYPLUGIN::VALIDATE");
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("validate");

@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -44,6 +44,15 @@ sub param {
   return (defined $key) ? $this->{_params}{$key} : $this->{_params};
 }
 
+sub readTemplate {
+  my ($this, $name) = @_;
+
+  return if exists $this->{session}{doneReadTemplate}{$name};
+  $this->{session}{doneReadTemplate}{$name} = 1;
+ 
+  return Foswiki::Func::readTemplate($name);
+}
+
 sub getDefaultValue {
   my $this = shift;
 
@@ -55,6 +64,12 @@ sub getDefaultValue {
   }
 
   return $value;
+}
+
+sub getFormfieldClass {
+  my $this = shift;
+
+  return $this->{_formfieldClass} // 'foswikiFormfield';
 }
 
 sub renderForDisplay {
@@ -73,7 +88,7 @@ sub addStyles {
   #my $this = shift;
   Foswiki::Func::addToZone("head", 
     "MOREFORMFIELDSPLUGIN::CSS", 
-    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/moreformfields.css' media='all' />"
+    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/build/moreformfields.css' media='all' />"
   );
 }
 

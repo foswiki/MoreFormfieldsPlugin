@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,6 +30,9 @@ sub new {
 
 sub beforeSaveHandler {
   my ($this, $topicObject) = @_;
+
+  my $doNormalize = Foswiki::Func::isTrue($this->param("normalize"), 0);
+  return unless $doNormalize;
 
   my $field = $topicObject->get('FIELD', $this->{name});
 

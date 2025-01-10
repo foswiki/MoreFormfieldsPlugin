@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2024 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -27,7 +27,7 @@ sub new {
   my $class = shift;
   my $this = $class->SUPER::new(@_);
 
-  Foswiki::Func::readTemplate("moreformfields");
+  $this->readTemplate("moreformfields");
 
   $this->{_formfieldClass} = 'foswikiTopicField';
   $this->{_web} = $this->param("web") || $this->{session}{webName};
@@ -35,6 +35,7 @@ sub new {
   $this->{_templateName} = 'moreformfields';
   $this->{_definitionName} = 'select2::topic';
   $this->{_thumbnailFormat} = Foswiki::Func::expandTemplate("select2::topic::thumbnail::url");
+  $this->{_separator} = $this->param("separator") // ", ";
 
   return $this;
 }
@@ -92,15 +93,17 @@ sub getWeb {
 }
 
 sub getDisplayValue {
-  my ($this, $value) = @_;
+  my ($this, $value, $web) = @_;
 
   return '' unless defined $value && $value ne '';
 
   if ($this->isMultiValued) {
     my @result = ();
+    $web //= $this->getWeb();
     foreach my $val (split(/\s*,\s*/, $value)) {
       next if $val eq "";
-      my ($thisWeb, $thisTopic) = Foswiki::Func::normalizeWebTopicName($this->{_web}, $val);
+      my $class = $this->getFormfieldClass($val);
+      my ($thisWeb, $thisTopic) = Foswiki::Func::normalizeWebTopicName($web, $val);
       if ($this->isValueMapped) {
         if (defined($this->{valueMap}{$val})) {
           $val = $this->{valueMap}{$val};
@@ -109,11 +112,12 @@ sub getDisplayValue {
         $val = Foswiki::Func::getTopicTitle($thisWeb, $thisTopic);
       }
       my $url = Foswiki::Func::getScriptUrl($thisWeb, $thisTopic, "view");
-      push @result, "<a href='$url' class='".$this->{_formfieldClass}."' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$val</noautolink></a>";
+      push @result, "<a href='$url' class='$class' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$val</noautolink></a>";
     }
-    $value = join(", ", @result);
+    $value = join($this->{_separator}, @result);
   } else {
-    my ($thisWeb, $thisTopic) = Foswiki::Func::normalizeWebTopicName($this->{_web}, $value);
+    my $class = $this->getFormfieldClass($value);
+    my ($thisWeb, $thisTopic) = Foswiki::Func::normalizeWebTopicName($web, $value);
     if ($this->isValueMapped) {
       if (defined($this->{valueMap}{$value})) {
         $value = $this->{valueMap}{$value};
@@ -122,7 +126,7 @@ sub getDisplayValue {
       $value = Foswiki::Func::getTopicTitle($thisWeb, $thisTopic);
     }
     my $url = Foswiki::Func::getScriptUrl($thisWeb, $thisTopic, "view");
-    $value = "<a href='$url' class='".$this->{_formfieldClass}."' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$value</noautolink></a>";
+    $value = "<a href='$url' class='$class' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$value</noautolink></a>";
   }
 
   return $value;
@@ -152,7 +156,7 @@ sub renderForEdit {
   my $thisTopic = $topicObject->topic;
   $thisWeb =~ s/\//./g;
 
-  my $baseWeb = $this->{_web};
+  my $baseWeb = $this->getWeb();
   my $baseTopic = $this->{session}{topicName};
   $baseWeb =~ s/\//./g;
 
@@ -211,6 +215,8 @@ sub renderForEdit {
   }
   push @htmlData, 'data-web="' . $baseWeb . '"';
 
+  push @htmlData, 'data-relative="on"' if Foswiki::Func::isTrue($this->param("relative"));
+
   $this->addJavaScript();
   $this->addStyles();
 
@@ -239,7 +245,7 @@ sub addJavaScript {
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("select2");
   Foswiki::Func::addToZone("script", "FOSWIKI::TOPICFIELD", <<"HERE", "JQUERYPLUGIN::SELECT2");
-<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/topicfield.js'></script>
+<script src='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/build/topicfield.js'></script>
 HERE
 }
 
