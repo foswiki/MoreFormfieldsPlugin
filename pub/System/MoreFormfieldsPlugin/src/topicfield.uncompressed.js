@@ -137,10 +137,10 @@
 
     // make it sortable
     if (self.opts.sortable) {
-      self.elem.this.select2("container").find("ul.select2-choices").sortable({
+      self.elem.select2("container").find("ul.select2-choices").sortable({
 	  items: "> .select2-search-choice",
-          start: function() { self.elem.this.select2( 'onSortStart' ); },
-          stop: function() { self.elem.this.select2( 'onSortEnd' ); }
+          start: function() { self.elem.select2( 'onSortStart' ); },
+          stop: function() { self.elem.select2( 'onSortEnd' ); }
       });
     }
   };
