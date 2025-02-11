@@ -20,6 +20,8 @@ use warnings;
 
 use Foswiki::Form::Textarea ();
 use Foswiki::Form::BaseField ();
+use Foswiki::Func();
+
 our @ISA = ('Foswiki::Form::Textarea', 'Foswiki::Form::BaseField'); 
 
 sub new {
@@ -48,22 +50,41 @@ sub renderForEdit {
   my ($this, $topicObject, $value) = @_;
 
   Foswiki::Plugins::JQueryPlugin::createPlugin("natedit");
+  my $web = $topicObject->web;
+  my $topic = $topicObject->topic;
+  Foswiki::Func::pushTopicContext($web, $topic);
 
   my @html5Data = ();
 
   foreach my $param (keys %{$this->param()}) {
     my $key = $param;
     my $val = $this->param($key);
+    if ($key =~ /^(lineWrapping|engine|keymap|normalizeTables|purify|spellcheck)$/) {
+      Foswiki::Func::setPreferencesValue("NATEDIT_".uc($key), $val);
+      next;
+    }
+    if ($key =~ /^(nowysiwyg)$/) {
+      Foswiki::Func::setPreferencesValue(uc($key), $val);
+      next;
+    }
     $key =~ s/([[:upper:]])/-\l$1/g;
     $key = 'data-'.$key unless $key eq 'style';
     push @html5Data, $key.'="'.$val.'"';
   }
 
+  #Foswiki::Func::readTemplate("editbase");
+  my $html5Data = Foswiki::Func::expandTemplate("natedit::options") || '';
+  $html5Data = Foswiki::Func::expandCommonVariables($html5Data, $topic, $web, $topicObject) if $html5Data =~ /%/;
+  $html5Data .= " " . join(" ", @html5Data);
+
   $value =~ s/</&lt;/g;
   $value =~ s/>/&gt;/g;
+
   my $classes = $this->cssClasses("foswikiTextarea", "natedit");
 
-  my $textarea = '<textarea class="'.$classes.'" rows="'.$this->{rows}.'" cols="'.$this->{cols}.'" '.join(" ", @html5Data)." name='$this->{name}'>\n$value</textarea>";
+  my $textarea = '<textarea class="'.$classes.'" rows="'.$this->{rows}.'" cols="'.$this->{cols}.'" '.$html5Data." name='$this->{name}'>\n$value</textarea>";
+
+  Foswiki::Func::popTopicContext();
 
   return ('', $textarea);
 }

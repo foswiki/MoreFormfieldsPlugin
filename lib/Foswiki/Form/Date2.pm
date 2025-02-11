@@ -97,6 +97,7 @@ sub renderForEdit {
       autocomplete => "off",
       autocorrection => "off",
       value => $value,
+      "data-tz-offset" => _getTimezoneOffset(),
       "data-auto-size" => "true",
       "data-change-month" => "true",
       "data-change-year" => "true",
@@ -246,6 +247,29 @@ sub parseDate {
   $params->{lang} = $this->getLang();
 
   return Foswiki::Time::parseTime($string, 1, $params);
+}
+
+sub _getTimezoneOffset {
+
+  # get the current local time
+  my @localtime = localtime();
+
+  # get the current GMT time
+  my @gmtime = gmtime();
+
+  # calculate the time difference in hours
+  my $offset = ($localtime[2] - $gmtime[2]);
+
+  # if the day is different, adjust the timezone
+  if ($localtime[3] != $gmtime[3]) {
+    if ($localtime[3] < $gmtime[3]) {
+        $offset += 24;
+    } else {
+        $offset -= 24;
+    }
+  }
+
+  return -$offset * 60;
 }
 
 1;

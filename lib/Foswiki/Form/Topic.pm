@@ -46,8 +46,8 @@ sub finish {
   undef $this->{_options};
 }
 
-sub isMultiValued { return shift->{type} =~ /\+multi/; }
-sub isValueMapped { return shift->{type} =~ /\+values/; }
+sub isMultiValued { return shift->{type} =~ /\+multi/ ? 1 : 0; }
+sub isValueMapped { return shift->{type} =~ /\+values/ ? 1 : 0; }
 sub isTextMergeable { return 0; }
 
 sub populateMetaFromQueryData {

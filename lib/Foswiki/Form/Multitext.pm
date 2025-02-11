@@ -40,7 +40,7 @@ sub param {
 sub getDisplayValue {
   my ($this, $value) = @_;
 
-  $value =~ s/([<>%'"])/'&#'.ord($1).';'/ge;
+  $value =~ s/(['"])/'&#'.ord($1).';'/ge;
   my $sep = Foswiki::expandStandardEscapes($this->param("separator") || '\s*,\s*');
 
   return

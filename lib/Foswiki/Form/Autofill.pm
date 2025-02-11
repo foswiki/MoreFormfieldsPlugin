@@ -78,10 +78,11 @@ sub getDisplayValue {
 sub createField {
   my ($this, $type) = @_;
 
-  $type =~ s/\+values//;
-  $type =~ s/\+multi//;
+  my $cls = $type;
+  $cls =~ s/\+values//;
+  $cls =~ s/\+multi//;
 
-  my $class = "Foswiki::Form::".ucfirst($type);
+  my $class = "Foswiki::Form::".ucfirst($cls);
 
   eval 'require ' . $class;
 
@@ -96,15 +97,15 @@ sub createField {
     name => $this->{name},
     attributes => $this->{attributes},
     description => $this->{description},
-    type => $type,
     size => $this->{size},
     validModifiers => $this->{validModifiers},
   );
 
   my $params = ();
   foreach my $key (keys %{$this->param()}) {
-    next unless $key =~ /^${type}_(.*)$/;
+    next unless $key =~ /^${cls}_(.*)$/;
     my $val = $this->param($key);
+    $impl->param($key, $val);
     $impl->param($1, $val);
   }
 
