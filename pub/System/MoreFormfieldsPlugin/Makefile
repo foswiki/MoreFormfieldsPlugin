@@ -1,5 +1,6 @@
 FOSWIKI_ROOT?=~/foswiki/core
 TARGET= \
+  build \
   build/moreformfields.css \
   build/networkaddress.js \
   build/topicfield.js \
@@ -22,8 +23,15 @@ TARGET= \
 
 CLOCKPICKER_JS=lib/clockpicker.uncompressed.js src/clockpicker.init.uncompressed.js
 
+clean:
+	rm -f build/*
+
+build:
+	@mkdir build
+
 build/clockpicker.js: $(CLOCKPICKER_JS)
 	@echo "creating $@"; $(JSMIN) $^ > $@
+
 
 git:
 	git clone https://github.com/weareoutman/clockpicker.git git

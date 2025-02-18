@@ -88,7 +88,7 @@ sub addStyles {
   #my $this = shift;
   Foswiki::Func::addToZone("head", 
     "MOREFORMFIELDSPLUGIN::CSS", 
-    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/build/moreformfields.css' media='all' />"
+    "<link rel='stylesheet' href='%PUBURLPATH%/%SYSTEMWEB%/MoreFormfieldsPlugin/build/moreformfields.css' media='all'>"
   );
 }
 

@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="" date="1739284695" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1739865243" format="1.1" version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -460,6 +460,7 @@ This formfield stores a reference to  web.
 
 ---++ Change History
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  18 Feb 2025: | add class =foswikiUserField= to user formfields instead of just being a kind of a topic formfield |
 |  11 Feb 2025: | fixed broken editing of dates across timezones; \
                   properly type cast autofill formfields |
 |  15 Jan 2025: | fixed error in sortable topic+multi formfields |

@@ -111,7 +111,7 @@ sub getDisplayValue {
       } else {
         $val = Foswiki::Func::getTopicTitle($thisWeb, $thisTopic);
       }
-      my $url = Foswiki::Func::getScriptUrl($thisWeb, $thisTopic, "view");
+      my $url = Foswiki::Func::getScriptUrlPath($thisWeb, $thisTopic, "view");
       push @result, "<a href='$url' class='$class' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$val</noautolink></a>";
     }
     $value = join($this->{_separator}, @result);
@@ -125,7 +125,7 @@ sub getDisplayValue {
     } else {
       $value = Foswiki::Func::getTopicTitle($thisWeb, $thisTopic);
     }
-    my $url = Foswiki::Func::getScriptUrl($thisWeb, $thisTopic, "view");
+    my $url = Foswiki::Func::getScriptUrlPath($thisWeb, $thisTopic, "view");
     $value = "<a href='$url' class='$class' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$value</noautolink></a>";
   }
 
