@@ -24,6 +24,12 @@ use Foswiki::Func();
 
 our @ISA = ('Foswiki::Form::Textarea', 'Foswiki::Form::BaseField'); 
 
+my %natEditDefaults = (
+  lineWrapping => "on",
+  lineNumbers => "off",
+  foldGutter => "off",
+);
+
 sub new {
   my $class = shift;
 
@@ -56,20 +62,34 @@ sub renderForEdit {
 
   my @html5Data = ();
 
+  my %seen = ();
   foreach my $param (keys %{$this->param()}) {
     my $key = $param;
     my $val = $this->param($key);
-    if ($key =~ /^(lineWrapping|engine|keymap|normalizeTables|purify|spellcheck)$/) {
-      Foswiki::Func::setPreferencesValue("NATEDIT_".uc($key), $val);
-      next;
+    $seen{$key} = 1;
+
+    if ($key eq 'nowysiwyg') {
+      $key = "engine";
+      $val = ($val eq "on" ? "CodemirrorEngine" : "TinyMCEEgine");
+    } elsif ($key eq 'wysiwyg') {
+      $key = "engine";
+      $val = ($val eq "off" ? "CodemirrorEngine" : "TinyMCEEgine");
     }
-    if ($key =~ /^(nowysiwyg)$/) {
-      Foswiki::Func::setPreferencesValue(uc($key), $val);
+
+    if ($key =~ /^(lineWrapping|engine|keymap|normalizeTables|purify|spellcheck|lineNumbers|foldGutter)$/) {
+
+      Foswiki::Func::setPreferencesValue("NATEDIT_".uc($key), $val); 
       next;
     }
     $key =~ s/([[:upper:]])/-\l$1/g;
     $key = 'data-'.$key unless $key eq 'style';
     push @html5Data, $key.'="'.$val.'"';
+  }
+
+  foreach my $key (keys %natEditDefaults) {
+    next if $seen{$key};
+    my $val = $natEditDefaults{$key};
+    Foswiki::Func::setPreferencesValue("NATEDIT_".uc($key), $val); 
   }
 
   #Foswiki::Func::readTemplate("editbase");

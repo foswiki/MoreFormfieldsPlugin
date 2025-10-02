@@ -43,7 +43,7 @@ sub formatDate {
 
 #use Data::Dump qw(dump);
 sub saveMetaDataHandler {
-  my ($this, $record, $formDef) = @_;
+  my ($this, $record, $formDef, $web, $topic) = @_;
 
   my $fieldName = $this->{name};
   #print STDERR "called saveMetaDataHandler($fieldName)\n";

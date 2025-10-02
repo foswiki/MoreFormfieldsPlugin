@@ -1,4 +1,4 @@
-Foswiki::Plugins::FlexWebListPlugin,>=%.00,perl,Required
+Foswiki::Plugins::FlexWebListPlugin,>=5.00,perl,Required
 Foswiki::Plugins::DBCachePlugin,>=9.00,perl,Required
 Foswiki::Plugins::JQueryPlugin,>=11.20,perl,Required
 Foswiki::Plugins::RenderPlugin,>=4.00,perl,Required

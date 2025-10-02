@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="" date="1739865243" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1759393833" format="1.1" version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -21,8 +21,8 @@ To make use of these formfields use their type identifier in the "Type" column o
 | Ipv6address | ipv6address | 40  | |  |  |
 | Macaddress | macaddress | 17  | | | |
 | Masked | masked | 17 | | | |
-| Natedit | natedit | 80x25 | | | |
 | Multitext | multitext | 80 | | | |
+| Natedit | natedit | 80x25 | | | |
 | Netmask | netmask | 15  | | |  |
 | Phonenumber | phonenumber | 20 | | | | 
 | Random | random | 20 | | | | 
@@ -32,6 +32,7 @@ To make use of these formfields use their type identifier in the "Type" column o
 | Time | time | 20 | | | |
 | Toggle | toggle | 2 | | | |
 | Topic | topic | 30 | | | |
+| Upload | upload | 30 | | | |
 | User Or Group | userorgroup | 30 | | | |
 | User | user | 30 | | | |
 | Uuid | uuid | 30 | | | |
@@ -140,6 +141,7 @@ While the _value_ stored into a =date2= formfield is locale-independent will it 
 
 Example:
 
+| *Name* | *Type* | *Size* | *Values* | *Description* | *Attributes* | *Default* |
 | Date | date2 | 40 | mindate="-7d" maxdate="+7d" weekends="off" | | |
 
 ---+++ datetime
@@ -374,10 +376,10 @@ Example:
 
 A toggle formfield may switch between two values, by default between "on" and "off". Alternative values may be specified like this:
 
-| *Name*  | *Type* | *Size* | *Values* | *Description* | *Attributes* | *Default* |
-| *Toggle*  | toggle | 1 | done | |  | |
-| *Toggle*  | toggle | 2 | on, off | |  | off |
-| *Toggle*  | toggle+values | 2 | enabled=1, disabled=0 | |  | disabled |
+| *Name* | *Type* | *Size* | *Values* | *Description* | *Attributes* | *Default* |
+| Toggle | toggle | 1 | done | |  | |
+| Toggle | toggle | 2 | on, off | |  | off |
+| Toggle | toggle+values | 2 | enabled=1, disabled=0 | |  | disabled |
 
 Note that the size column has no effect.
 
@@ -408,6 +410,23 @@ There are a couple of parameters that further customize the behavior of the sele
    * =limit=: maximum number of values fetched from the autocompletion backend, default 10
 
 These are also available for the =user= and =icon= formfield types.
+
+---+++ upload
+
+This adds an input field of type file commonly used to select files from your local drive to be uploaded to the system. 
+
+| *Name* | *Type* | *Size* | *Values* | *Description* | *Attributes* | *Default* |
+| Upload | upload | 1 | | | | |
+| Upload | upload+multi | 1 | | | | |
+| Upload | upload | 1 | accept=".pdf" | | | |
+| Upload | upload+multi | 1 | accept="image/*" | | | |
+| Upload | upload | 1 | accept=".jpeg, .jpg, .png" | | | |
+
+*Parameters*:
+
+   * =accept=: specify the allowed type of files to be selectable; this can be
+    a file extension, a specific [[https://www.iana.org/assignments/media-types/media-types.xhtml][media type or
+    a wildcard such as =audio/*=, =video/*= or =image/*=; more than one value can be specified such as =audio/*,video/*,image/*=
 
 ---+++ userorgroup
 
@@ -460,6 +479,10 @@ This formfield stores a reference to  web.
 
 ---++ Change History
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  02 Oct 2025: | new formfield =upload=; \
+                  default values can depend on the base topic now; \
+                  extended parameters passed to =natedit= formfields covering upcoming new version of <nop>NatEditPlugin; \
+                  formfield =web= now displays the fill web.topic path in addition to the title of the web |
 |  18 Feb 2025: | add class =foswikiUserField= to user formfields instead of just being a kind of a topic formfield |
 |  11 Feb 2025: | fixed broken editing of dates across timezones; \
                   properly type cast autofill formfields |

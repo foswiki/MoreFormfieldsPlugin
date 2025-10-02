@@ -178,7 +178,7 @@ sub handleUsers {
   my $total = scalar(@$results);
   @$results = sort {$a->{text} cmp $b->{text}} @$results;
 
-  @$results = splice(@$results, $params->{skip}, $params->{limit});
+  @$results = splice(@$results, $params->{skip}, $params->{limit}); # SMELL: very inefficient
 
   foreach my $item (@$results) {
     my ($web, $topic) = Foswiki::Func::normalizeWebTopicName($Foswiki::cfg{UsersWebName}, $item->{id});

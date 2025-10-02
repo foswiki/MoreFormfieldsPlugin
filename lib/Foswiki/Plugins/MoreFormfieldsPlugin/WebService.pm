@@ -124,9 +124,12 @@ sub getWebs {
     next if $index <= $skip;
     last if $index > ($skip + $limit);
 
+    my $webTitle = $this->getWebTitle($web);
+
     push @$results, {
       id => $web,
-      text => $this->getWebTitle($web),
+      title => $webTitle,
+      text => "<div class='foswikiNoWrap'>$webTitle <span class='foswikiGrayText foswikiSmall'>($web)</span></div>",
     };
 
   }

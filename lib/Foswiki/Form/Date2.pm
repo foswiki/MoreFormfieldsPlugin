@@ -117,19 +117,20 @@ sub renderForEdit {
 sub beforeSaveHandler {
   my ($this, $meta, $form) = @_;
 
-  my $request = Foswiki::Func::getRequestObject();
-  my $dateStr = $request->param($this->{name});
-  return if !defined($dateStr) || $dateStr =~ /^\d*$/;
-
-  my $epoch = $this->parseDate($dateStr) // 0;
-  my $reformat = $epoch ? $this->formatDate($epoch) : "";
-  #print STDERR "date=$dateStr, time=$timeStr, epoch=$epoch, reformat=$reformat\n";
-
   my $field = $meta->get('FIELD', $this->{name});
   $field //= {
     name => $this->{name},
     title => $this->{title},
   };
+
+  my $request = Foswiki::Func::getRequestObject();
+  my $dateStr = $request->param($this->{name}) // $field->{value};
+
+  return if !defined($dateStr) || $dateStr =~ /^\d*$/;
+
+  my $epoch = $this->parseDate($dateStr) // 0;
+  my $reformat = $epoch ? $this->formatDate($epoch) : "";
+
   $field->{value} = $epoch ? $epoch : "";
   $field->{origvalue} = $reformat;
 
@@ -137,7 +138,7 @@ sub beforeSaveHandler {
 }
 
 sub saveMetaDataHandler {
-  my ($this, $record, $formDef) = @_;
+  my ($this, $record, $formDef, $web, $topic) = @_;
 
   my $fieldName = $this->{name};
   my $fieldValue = $record->{$fieldName};

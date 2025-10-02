@@ -109,7 +109,7 @@ sub getDisplayValue {
           $val = $this->{valueMap}{$val};
         }
       } else {
-        $val = Foswiki::Func::getTopicTitle($thisWeb, $thisTopic);
+        $val = $this->getTopicTitle($thisWeb, $thisTopic);
       }
       my $url = Foswiki::Func::getScriptUrlPath($thisWeb, $thisTopic, "view");
       push @result, "<a href='$url' class='$class' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$val</noautolink></a>";
@@ -123,7 +123,7 @@ sub getDisplayValue {
         $value = $this->{valueMap}{$value};
       }
     } else {
-      $value = Foswiki::Func::getTopicTitle($thisWeb, $thisTopic);
+      $value = $this->getTopicTitle($thisWeb, $thisTopic);
     }
     my $url = Foswiki::Func::getScriptUrlPath($thisWeb, $thisTopic, "view");
     $value = "<a href='$url' class='$class' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$value</noautolink></a>";
@@ -180,7 +180,7 @@ sub renderForEdit {
     my @thumbnails = ();
     foreach my $v (split(/\s*,\s*/, $value)) {
       next if $v eq "";
-      my $topicTitle = $this->getTopicTitle($baseWeb, $v);
+      my $topicTitle = $this->formatTopicTitle($baseWeb, $v);
       push @topicTitles, '"' . $v . '":"' . $this->encode($topicTitle) . '"';
       my $thumb = $this->getThumbnailUrl($baseWeb, $v);
       push @thumbnails, '"' . $v .'":"'. $thumb . '"';
@@ -188,7 +188,7 @@ sub renderForEdit {
     push @htmlData, "data-value-text='{" . join(', ', @topicTitles) . "}'";
     push @htmlData, "data-thumbnail='{" . join(', ', @thumbnails) . "}'";
   } else {
-    my $topicTitle = $this->encode($this->getTopicTitle($baseWeb, $value));
+    my $topicTitle = $this->encode($this->formatTopicTitle($baseWeb, $value));
     push @htmlData, 'data-value-text="' . $topicTitle . '"';
     my $thumb = $this->getThumbnailUrl($baseWeb, $value);
     push @htmlData, 'data-thumbnail="' .$thumb. '"';
@@ -225,13 +225,13 @@ sub renderForEdit {
   return ('', $field);
 }
 
-sub getTopicTitle {
+sub formatTopicTitle {
   my ($this, $web, $topic) = @_;
 
   my $format = $this->param("format") // '$topictitle';
   $format = Foswiki::Func::decodeFormatTokens($format);
 
-  my $topicTitle = Foswiki::Func::getTopicTitle($web, $topic);
+  my $topicTitle = $this->getTopicTitle($web, $topic);
 
   $format =~ s/\$topictitle\b/$topicTitle/g;
   $format =~ s/\$web\b/$web/g;
@@ -239,6 +239,19 @@ sub getTopicTitle {
   $format = Foswiki::Func::expandCommonVariables($format, $topic, $web) if $format =~ /%/;
 
   return $format;
+}
+
+sub getTopicTitle {
+  my ($this, $web, $topic) = @_;
+
+  return Foswiki::Func::getTopicTitle($web, $topic) if $Foswiki::cfg{Plugins}{TopicTitlePlugin}{Enabled};
+
+  return $topic if $topic ne $Foswiki::cfg{HomeTopicName};
+
+  my $webTitle = $web;
+  $webTitle =~ s/^.*[\/\.]//;
+
+  return $webTitle;
 }
 
 sub addJavaScript {

@@ -172,13 +172,13 @@ sub _getHref {
 sub renderForEdit {
   my ($this, $topicObject, $value) = @_;
 
-  my $default = $this->getDefaultValue();
+  my $web = $topicObject->web;
+  my $topic = $topicObject->topic;
+
+  my $default = $this->getDefaultValue($web, $topic);
   $value = "" if $value eq $default; # don't insert default
 
   $this->getOptions($topicObject);
-
-  my $web = $topicObject->web;
-  my $topic = $topicObject->topic;
 
   my @htmlData = ();
   push @htmlData, 'type="hidden"';

@@ -153,9 +153,9 @@ sub getDisplayValue {
 }
 
 sub renderForEdit {
-  my ($this, $topicObject, $value) = @_;
+  my ($this, $obj, $value) = @_;
 
-  $value //= $this->getDefaultValue();
+  $value //= $this->getDefaultValue($obj->web, $obj->topic);
 
   my $attrs = {
     type => "checkbox",

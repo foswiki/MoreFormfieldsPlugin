@@ -113,7 +113,7 @@ sub createField {
 }
 
 sub saveMetaDataHandler {
-  my ($this, $record, $formDef) = @_;
+  my ($this, $record, $formDef, $web, $topic) = @_;
 
   my $fieldName = $this->{name};
   #print STDERR "... saveMetaDataHandler($fieldName)\n";
@@ -141,7 +141,7 @@ sub saveMetaDataHandler {
       my $value = $record->{$name};
       unless (defined $value) {
         my $fieldDef = $formDef->getField($name);
-        $value = $fieldDef->getDefaultValue() if $fieldDef->can("getDefaultValue");
+        $value = $fieldDef->getDefaultValue($web, $topic) if $fieldDef->can("getDefaultValue");
         $value = $fieldDef->{default} unless defined $value;
       }
       $result =~ s/\$$name\b/\0$value\0/g;
@@ -155,7 +155,7 @@ sub saveMetaDataHandler {
       my $value = $record->{$name};
       unless (defined $value) {
         my $fieldDef = $formDef->getField($name);
-        $value = $fieldDef->getDefaultValue() if $fieldDef->can("getDefaultValue");
+        $value = $fieldDef->getDefaultValue($web, $topic) if $fieldDef->can("getDefaultValue");
         $value = $fieldDef->{default} unless defined $value;
       }
       push @result, $value if defined $value && $value ne "";
@@ -165,6 +165,9 @@ sub saveMetaDataHandler {
   }
 
   return unless defined $result;
+
+  $result =~ s/\$web\b/$web/g;
+  $result =~ s/\$topic\b/$topic/g;
 
   my $value = $this->formatValue($result);
   return if $value eq $fieldValue;
@@ -225,7 +228,12 @@ sub afterSaveHandler {
   my $request = Foswiki::Func::getRequestObject();
   $request->delete($this->{name});
 
-  my $value = $this->formatValue($result, $topicObject->web, $topicObject->topic, $topicObject);
+  my $web = $topicObject->web;
+  my $topic = $topicObject->topic;
+  $result =~ s/\$web\b/$web/g;
+  $result =~ s/\$topic\b/$topic/g;
+
+  my $value = $this->formatValue($result, $web, $topic, $topicObject);
   return if $thisField->{value} eq $value;
 
   $thisField->{value} = $value;
@@ -272,7 +280,7 @@ sub getFieldDefault {
   my $fieldDef = $form->getField($name);
   return unless $fieldDef;
 
-  return $fieldDef->getDefaultValue() if $fieldDef->can("getDefaultValue");
+  return $fieldDef->getDefaultValue($obj->web, $obj->topic) if $fieldDef->can("getDefaultValue");
   return $fieldDef->{default};
 }
 

@@ -90,6 +90,7 @@
             text = decodeURIComponent(text);
             data = {
               id: val, 
+              title: text,
               text: text
             };
           } catch(err) {
@@ -102,7 +103,7 @@
         return item.text;
       },
       formatSelection: function(item) {
-        return item.text;
+        return item.title;
       }
     });
 

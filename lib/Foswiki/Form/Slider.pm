@@ -42,9 +42,9 @@ sub getDefaultValue {
   $value = $this->param("default") unless defined($value) && $value ne "";
   return $value if defined($value) && $value ne "";
 
-  my @values = $this->getValues();
-  if (@values) {
-    $value = shift @values;
+  my $values = $this->getOptions();
+  if ($values && @$values) {
+    $value = shift @$values;
   } else {
     $value = 0;
   }
@@ -60,10 +60,10 @@ sub renderForEdit {
   return ('', $this->_html($value));
 }
 
-sub getValues {
+sub getOptions {
   my $this = shift;
 
-  my $values = $this->param("_DEFAULT") // $this->param("values");
+  my $values = $this->param("_DEFAULT") // $this->param("values"); # SMELL?
   return unless defined $values;
 
   my @values = ();
@@ -79,13 +79,13 @@ sub getValues {
     @values = split(/\s*,\s*/, $values);
   }
 
-  return @values;
+  return \@values;
 }
 
 sub getDisplayValue {
   my ($this, $value) = @_;
 
-  $this->getValues();
+  $this->getOptions();
   $value = $this->getDefaultValue() if !defined($value) || $value eq '';
 
   my $range = $this->getRange() // '';
@@ -142,16 +142,16 @@ sub _html {
   push @html5Data, "data-name='$this->{name}'";
   push @html5Data, "data-animate='true'";
 
-  my @values = $this->getValues();
-  if (@values) {
+  my $values = $this->getOptions();
+  if ($values && @$values) {
     if ($this->isValueMapped()) {
       push @html5Data, "data-is-mapped='true'";
-      push @html5Data, "data-mapped-values='{".join(', ', map {'"'.$_.'":"'.$this->{valueMap}{$_}.'"'} @values)."}'";
+      push @html5Data, "data-mapped-values='{".join(', ', map {'"'.$_.'":"'.$this->{valueMap}{$_}.'"'} @$values)."}'";
     } else {
       push @html5Data, "data-is-mapped='false'";
-      push @html5Data, "data-mapped-values='[".join(', ', map {'"'.$_.'"'} @values)."]'";
+      push @html5Data, "data-mapped-values='[".join(', ', map {'"'.$_.'"'} @$values)."]'";
     }
-    push @html5Data, "data-max='".(scalar(@values)-1)."'";
+    push @html5Data, "data-max='".(scalar(@$values)-1)."'";
   } else {
 
     my $min = $this->param("min") // 0;

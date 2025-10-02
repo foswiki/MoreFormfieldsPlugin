@@ -27,6 +27,7 @@ lib/Foswiki/Form/Time.pm 0644
 lib/Foswiki/Form/Toggle.pm 0644
 lib/Foswiki/Form/Topic.pm 0644
 lib/Foswiki/Form/Userorgroup.pm 0644
+lib/Foswiki/Form/Upload.pm 0644
 lib/Foswiki/Form/User.pm 0644
 lib/Foswiki/Form/Uuid.pm 0644
 lib/Foswiki/Form/Web.pm 0644

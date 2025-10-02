@@ -1,4 +1,4 @@
-# Plugin for Foswiki -V The Free and Open Source Wiki, http://foswiki.org/
+# Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
 # MoreFormfieldsPlugin is Copyright (C) 2013-2025 Michael Daum http://michaeldaumconsulting.com
 #
@@ -25,7 +25,7 @@ use Foswiki::Plugins ();
 
 use Error qw(:try);
 
-our $VERSION = '11.70';
+our $VERSION = '12.00';
 our $RELEASE = '%$RELEASE%';
 our $SHORTDESCRIPTION = 'Additional formfield types for %SYSTEMWEB%.DataForms';
 our $LICENSECODE = '%$LICENSECODE%';
@@ -210,7 +210,7 @@ sub saveMetaDataHandler {
 
   foreach my $field (@{$formDef->getFields}) {
     if ($field->can("saveMetaDataHandler")) {
-      $field->saveMetaDataHandler($record, $formDef);
+      $field->saveMetaDataHandler($record, $formDef, $web, $topic);
     }
   }
 }

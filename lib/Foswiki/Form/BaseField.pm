@@ -54,13 +54,13 @@ sub readTemplate {
 }
 
 sub getDefaultValue {
-  my $this = shift;
+  my ($this, $web, $topic) = @_;
 
   my $value = $this->{default} // "";
 
   if ($value eq "") {
     $value = Foswiki::Func::decodeFormatTokens($this->param("default") // "");
-    $value = Foswiki::Func::expandCommonVariables($value) if $value =~ /%/;
+    $value = Foswiki::Func::expandCommonVariables($value, $topic, $web) if $value =~ /%/;
   }
 
   return $value;
