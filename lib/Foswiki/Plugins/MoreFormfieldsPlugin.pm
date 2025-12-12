@@ -315,4 +315,3 @@ sub afterRenameHandler {
 }
 
 1;
-

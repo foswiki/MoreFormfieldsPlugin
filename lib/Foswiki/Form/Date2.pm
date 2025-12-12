@@ -264,13 +264,13 @@ sub _getTimezoneOffset {
   # if the day is different, adjust the timezone
   if ($localtime[3] != $gmtime[3]) {
     if ($localtime[3] < $gmtime[3]) {
-        $offset += 24;
-    } else {
         $offset -= 24;
+    } else {
+        $offset += 24;
     }
   }
 
-  return -$offset * 60;
+  return $offset * 3600;
 }
 
 1;

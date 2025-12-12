@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="" date="1759393833" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1765544414" format="1.1" version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -479,6 +479,8 @@ This formfield stores a reference to  web.
 
 ---++ Change History
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  12 Dec 2025: | fixed calculation of timezone offset in date2; \
+                  added support for upcoming !NatEditPlugin in natedit formfields |
 |  02 Oct 2025: | new formfield =upload=; \
                   default values can depend on the base topic now; \
                   extended parameters passed to =natedit= formfields covering upcoming new version of <nop>NatEditPlugin; \

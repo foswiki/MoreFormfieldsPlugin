@@ -69,18 +69,25 @@ sub renderForEdit {
     $seen{$key} = 1;
 
     if ($key eq 'nowysiwyg') {
-      $key = "engine";
-      $val = ($val eq "on" ? "CodemirrorEngine" : "TinyMCEEgine");
-    } elsif ($key eq 'wysiwyg') {
-      $key = "engine";
-      $val = ($val eq "off" ? "CodemirrorEngine" : "TinyMCEEgine");
+      Foswiki::Func::setPreferencesValue("NOWYSIWYG", Foswiki::Func::isTrue($val) ? "on" : "off"); 
+      next;
+    } 
+
+    if ($key eq 'wysiwyg') {
+      Foswiki::Func::setPreferencesValue("NOWYSIWYG", Foswiki::Func::isTrue($val) ? "off" : "on"); 
+      next;
     }
 
-    if ($key =~ /^(lineWrapping|engine|keymap|normalizeTables|purify|spellcheck|lineNumbers|foldGutter)$/) {
-
+    if ($key =~ /^(lineWrapping|keymap|normalizeTables|purify|spellcheck|lineNumbers|foldGutter)$/) {
       Foswiki::Func::setPreferencesValue("NATEDIT_".uc($key), $val); 
       next;
     }
+
+    $key = "showToolbar" if $key eq 'toolbar'; # compatibility
+    if ($val =~ /^\s*(on|off|yes|no|true|false|0|1)\s*$/) {
+      $val = Foswiki::Func::isTrue($val) ? "true" : "false"; 
+    }
+
     $key =~ s/([[:upper:]])/-\l$1/g;
     $key = 'data-'.$key unless $key eq 'style';
     push @html5Data, $key.'="'.$val.'"';
