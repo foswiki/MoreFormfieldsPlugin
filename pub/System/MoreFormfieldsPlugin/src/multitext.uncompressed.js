@@ -1,7 +1,7 @@
 /*
  * MultiText 
  *
- * Copyright (c) 2019-2025 Michael Daum https://michaeldaumconsulting.com
+ * Copyright (c) 2019-2026 Michael Daum https://michaeldaumconsulting.com
  *
  * Licensed under the GPL license http://www.gnu.org/licenses/gpl.html
  *

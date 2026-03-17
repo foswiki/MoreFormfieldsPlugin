@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="" date="1765544414" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1773770083" format="1.1" version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -169,6 +169,7 @@ A group reference using !JQSelect2Contrib for autocompletion.
    * =include=: regular expression a group must match to be included in the selection
    * =exclude=: regular expression a group must not match to be included
    * =sortable=: entries in an =group+multi= formfield can be reordered using drag'n'drop if set to =true=
+   * =link=: boolean to switch on/off linking to the user topic, defaults to =on=
 
 Note you may use a comma instead of the pipe symbol in regular expressions.
 
@@ -398,6 +399,7 @@ A topic reference using !JQSelect2Contrib for autocompletion.
    * =format=: format string how to render a topic value while editing, defaults to =$topictitle=
    * =sortable=: entries in an =topic+multi= formfield can be reordered using drag'n'drop if set to =true=
    * =relative=: boolean to enable relative topic names leaving out the web part, defaults to absolute web.topic values
+   * =link=: boolean to switch on/off linking to the selected topic, defaults to =on=
 
 Note you may use a comma instead of the pipe symbol in regular expressions.
 
@@ -443,6 +445,7 @@ A user reference using !JQSelect2Contrib for autocompletion.
    * =include=: regular expression a user must match to be included in the selection
    * =exclude=: regular expression a user must not match to be included
    * =sortable=: entries in an =user+multi= formfield can be reordered using drag'n'drop if set to =true=
+   * =link=: boolean to switch on/off linking to the user topic, defaults to =on=
 
 Note you may use a comma instead of the pipe symbol in regular expressions.
 
@@ -470,6 +473,7 @@ This formfield stores a reference to  web.
    * =exclude=: regular expression webs must match to be excluded; =exclude= has got higher precedence than the =webs= parameter if specified.
    * =url=: url for autocompletion, defaults to an internal template =select2::wweb::url=
    * =sortable=: entries in an =web+multi= formfield can be reordered using drag'n'drop if set to =true=
+   * =link=: boolean to switch on/off linking to the selected web, defaults to =on=
 
 ---++ Installation Instructions
 %$INSTALL_INSTRUCTIONS%
@@ -479,6 +483,8 @@ This formfield stores a reference to  web.
 
 ---++ Change History
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  17 Mar 2026: | compatibility with jquery-3 and jquery-4 |
+|  02 Feb 2026: | added =link= flag to web, topic, user and group formfields |
 |  12 Dec 2025: | fixed calculation of timezone offset in date2; \
                   added support for upcoming !NatEditPlugin in natedit formfields |
 |  02 Oct 2025: | new formfield =upload=; \
@@ -544,7 +550,7 @@ This formfield stores a reference to  web.
 %META:FIELD{name="Release" title="Release" value="%25$RELEASE%25"}%
 %META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
 %META:FIELD{name="Repository" title="Repository" value="https://github.com/foswiki/%25TOPIC%25"}%
-%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2025 Michael Daum"}%
+%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2010-2026 Michael Daum"}%
 %META:FIELD{name="License" title="License" value="[[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]]"}%
 %META:FIELD{name="Home" title="Home" value="Foswiki:Extensions/%25TOPIC%25"}%
 %META:FIELD{name="Support" title="Support" value="Foswiki:Support/%25TOPIC%25"}%

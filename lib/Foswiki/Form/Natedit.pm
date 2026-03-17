@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2026 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,9 +25,9 @@ use Foswiki::Func();
 our @ISA = ('Foswiki::Form::Textarea', 'Foswiki::Form::BaseField'); 
 
 my %natEditDefaults = (
-  lineWrapping => "on",
-  lineNumbers => "off",
-  foldGutter => "off",
+  NATEDIT_LINEWRAPPING => "on",
+  NATEDIT_LINENUMBERS => "off",
+  NATEDIT_FOLDGUTTER => "off",
 );
 
 sub new {
@@ -62,24 +62,23 @@ sub renderForEdit {
 
   my @html5Data = ();
 
-  my %seen = ();
+  my %internalPrefs = %natEditDefaults;
   foreach my $param (keys %{$this->param()}) {
     my $key = $param;
     my $val = $this->param($key);
-    $seen{$key} = 1;
 
     if ($key eq 'nowysiwyg') {
-      Foswiki::Func::setPreferencesValue("NOWYSIWYG", Foswiki::Func::isTrue($val) ? "on" : "off"); 
+      $internalPrefs{NOWYSIWYG} = Foswiki::Func::isTrue($val) ? "on" : "off";
       next;
     } 
 
     if ($key eq 'wysiwyg') {
-      Foswiki::Func::setPreferencesValue("NOWYSIWYG", Foswiki::Func::isTrue($val) ? "off" : "on"); 
+      $internalPrefs{NOWYSIWYG} = Foswiki::Func::isTrue($val) ? "off" : "on";
       next;
     }
 
     if ($key =~ /^(lineWrapping|keymap|normalizeTables|purify|spellcheck|lineNumbers|foldGutter)$/) {
-      Foswiki::Func::setPreferencesValue("NATEDIT_".uc($key), $val); 
+      $internalPrefs{"NATEDIT".uc($key)} = $val;
       next;
     }
 
@@ -93,16 +92,16 @@ sub renderForEdit {
     push @html5Data, $key.'="'.$val.'"';
   }
 
-  foreach my $key (keys %natEditDefaults) {
-    next if $seen{$key};
-    my $val = $natEditDefaults{$key};
-    Foswiki::Func::setPreferencesValue("NATEDIT_".uc($key), $val); 
-  }
+  #print STDERR "internalPrefs=".dump(\%internalPrefs)."\n";
+  $this->{session}{prefs}->setInternalPreferences(%internalPrefs);
 
-  #Foswiki::Func::readTemplate("editbase");
+  Foswiki::Func::readTemplate("editbase") unless Foswiki::Func::expandTemplate("natedit::engine");
+
   my $html5Data = Foswiki::Func::expandTemplate("natedit::options") || '';
   $html5Data = Foswiki::Func::expandCommonVariables($html5Data, $topic, $web, $topicObject) if $html5Data =~ /%/;
   $html5Data .= " " . join(" ", @html5Data);
+
+  #print STDERR "html5Data=$html5Data\n";
 
   $value =~ s/</&lt;/g;
   $value =~ s/>/&gt;/g;

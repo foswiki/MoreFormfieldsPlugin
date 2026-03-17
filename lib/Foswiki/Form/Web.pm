@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2026 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,12 +26,14 @@ our @ISA = ('Foswiki::Form::BaseField');
 
 sub new {
   my $class = shift;
+  
   my $this = $class->SUPER::new(@_);
 
   $this->readTemplate("moreformfields");
 
   $this->{_formfieldClass} = 'foswikiWebField';
   $this->{_url} = Foswiki::Func::expandTemplate("select2::web::url");
+  $this->{_doLink} = Foswiki::Func::isTrue($this->param("link"), 1);
 
   return $this;
 }
@@ -92,6 +94,7 @@ sub getDisplayValue {
     my @result = ();
     foreach my $val (split(/\s*,\s*/, $value)) {
       my $text;
+
       if ($this->isValueMapped) {
         if (defined($this->{valueMap}{$val})) {
           $text = $this->{valueMap}{$val};
@@ -99,12 +102,18 @@ sub getDisplayValue {
       } else {
         $text = _getWebTitle($val);
       }
-      my $url = Foswiki::Func::getScriptUrl($val, $Foswiki::cfg{HomeTopicName}, "view");
-      push @result, "<a href='$url' class='".$this->{_formfieldClass}."'>$text</a>";
+
+      if ($this->{_doLink}) {
+        my $url = Foswiki::Func::getScriptUrl($val, $Foswiki::cfg{HomeTopicName}, "view");
+        push @result, "<a href='$url' class='".$this->{_formfieldClass}."'>$text</a>";
+      } else {
+        push @result, $text;
+      }
     }
     $value = join(", ", @result);
   } else {
     my $text;
+
     if ($this->isValueMapped) {
       if (defined($this->{valueMap}{$value})) {
         $text = $this->{valueMap}{$value};
@@ -112,8 +121,13 @@ sub getDisplayValue {
     } else {
       $text = _getWebTitle($value);
     }
-    my $url = Foswiki::Func::getScriptUrl($value, $Foswiki::cfg{HomeTopicName}, "view");
-    $value = "<a href='$url' class='".$this->{_formfieldClass}."'>$text</a>";
+
+    if ($this->{_doLink}) {
+      my $url = Foswiki::Func::getScriptUrl($value, $Foswiki::cfg{HomeTopicName}, "view");
+      $value = "<a href='$url' class='".$this->{_formfieldClass}."'>$text</a>";
+    } else {
+      $value = $text;
+    }
   }
 
   return $value;

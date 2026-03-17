@@ -1,7 +1,7 @@
 /*
  * Slider input 
  *
- * Copyright (c) 2022-2025 Michael Daum https://michaeldaumconsulting.com
+ * Copyright (c) 2022-2026 Michael Daum https://michaeldaumconsulting.com
  *
  * Licensed under the GPL license http://www.gnu.org/licenses/gpl.html
  *

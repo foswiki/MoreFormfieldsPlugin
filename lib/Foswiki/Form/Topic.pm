@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# MoreFormfieldsPlugin is Copyright (C) 2010-2025 Michael Daum http://michaeldaumconsulting.com
+# MoreFormfieldsPlugin is Copyright (C) 2010-2026 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -36,6 +36,7 @@ sub new {
   $this->{_definitionName} = 'select2::topic';
   $this->{_thumbnailFormat} = Foswiki::Func::expandTemplate("select2::topic::thumbnail::url");
   $this->{_separator} = $this->param("separator") // ", ";
+  $this->{_doLink} = Foswiki::Func::isTrue($this->param("link"), 1);
 
   return $this;
 }
@@ -102,8 +103,10 @@ sub getDisplayValue {
     $web //= $this->getWeb();
     foreach my $val (split(/\s*,\s*/, $value)) {
       next if $val eq "";
+
       my $class = $this->getFormfieldClass($val);
       my ($thisWeb, $thisTopic) = Foswiki::Func::normalizeWebTopicName($web, $val);
+
       if ($this->isValueMapped) {
         if (defined($this->{valueMap}{$val})) {
           $val = $this->{valueMap}{$val};
@@ -111,13 +114,19 @@ sub getDisplayValue {
       } else {
         $val = $this->getTopicTitle($thisWeb, $thisTopic);
       }
-      my $url = Foswiki::Func::getScriptUrlPath($thisWeb, $thisTopic, "view");
-      push @result, "<a href='$url' class='$class' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$val</noautolink></a>";
+
+      if ($this->{_doLink}) {
+        my $url = Foswiki::Func::getScriptUrlPath($thisWeb, $thisTopic, "view");
+        push @result, "<a href='$url' class='$class' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$val</noautolink></a>";
+      } else {
+        push @result, $val;
+      }
     }
     $value = join($this->{_separator}, @result);
   } else {
     my $class = $this->getFormfieldClass($value);
     my ($thisWeb, $thisTopic) = Foswiki::Func::normalizeWebTopicName($web, $value);
+
     if ($this->isValueMapped) {
       if (defined($this->{valueMap}{$value})) {
         $value = $this->{valueMap}{$value};
@@ -125,8 +134,11 @@ sub getDisplayValue {
     } else {
       $value = $this->getTopicTitle($thisWeb, $thisTopic);
     }
-    my $url = Foswiki::Func::getScriptUrlPath($thisWeb, $thisTopic, "view");
-    $value = "<a href='$url' class='$class' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$value</noautolink></a>";
+
+    if ($this->{_doLink}) {
+      my $url = Foswiki::Func::getScriptUrlPath($thisWeb, $thisTopic, "view");
+      $value = "<a href='$url' class='$class' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$value</noautolink></a>";
+    }
   }
 
   return $value;
