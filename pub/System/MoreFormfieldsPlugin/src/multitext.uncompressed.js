@@ -62,7 +62,9 @@
   MultiText.prototype.clear = function() {
     var self = this;
 
-    self.container.children(":not(.orig)").remove();
+    self.container.children().slice(1).each(function() {
+      $(this).remove();
+    });
     self.elem.val("");
   };
 
@@ -129,7 +131,9 @@
     } 
 
     if (empty.length > 1) {
-      empty.slice(0, -1).remove();
+      empty.slice(0, -1).each(function() {
+        $(this).parent().remove();
+      });
     }
   };
 
@@ -140,7 +144,7 @@
       val = "";
     }
 
-    clone = self.elem.clone(true);
+    clone = self.container.find(self.opts.selector).first().clone(true);
     clone
       .removeClass('foswikiMandatory valid jqMultiText')
       .removeAttr("value")

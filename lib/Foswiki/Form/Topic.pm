@@ -116,7 +116,7 @@ sub getDisplayValue {
       }
 
       if ($this->{_doLink}) {
-        my $url = Foswiki::Func::getScriptUrlPath($thisWeb, $thisTopic, "view");
+        my $url = $this->getScriptUrl($thisWeb, $thisTopic);
         push @result, "<a href='$url' class='$class' data-web='$thisWeb' data-topic='$thisTopic'><noautolink>$val</noautolink></a>";
       } else {
         push @result, $val;
@@ -142,6 +142,11 @@ sub getDisplayValue {
   }
 
   return $value;
+}
+
+sub getScriptUrl {
+  my ($this, $web, $topic) = @_;
+  return Foswiki::Func::getScriptUrlPath($web, $topic, "view");
 }
 
 sub renderForEdit {
@@ -288,6 +293,8 @@ sub getThumbnailUrl {
   $result =~ s/\%topic\%/$topic/g;
   $result =~ s/\%size\%/$size/g;
   $result = Foswiki::Func::expandCommonVariables($result) if $result =~ /%/;
+
+  $result =~ s/([<>])/'&#'.ord($1).';'/ge;
 
   return $result;
 }

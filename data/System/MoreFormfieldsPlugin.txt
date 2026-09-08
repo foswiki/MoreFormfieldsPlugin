@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="" date="1773770083" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1788863307" format="1.1" version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -277,6 +277,7 @@ This is a kind of =text+multi= formfield. it stores multiple text formfields in 
 
 *Parameters*: 
 
+   * =placeholder=: string to be displayed as a placeholder in input fields
    * =sortable=: set this to =true= to be able to reorder entries using drag'n'drop
    * =separator=: separator between individual text entries, defaults to =,=. NOTE that you need to choose a separator string appropriate for the expected input.
      for instance, by default entries are separated by comma (=,=), so any string holding a comma will be separated in multiple text entries during edit. a good 
@@ -483,6 +484,9 @@ This formfield stores a reference to  web.
 
 ---++ Change History
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  08 Sep 2026: | make autoinc formfields compatible with <nop>MetaDataPlugin; \
+                  fixed display of group and userorgroup formfields for imported groups (ldap, ...); \
+                  added placeholder parameter to multitext formfields  |
 |  17 Mar 2026: | compatibility with jquery-3 and jquery-4 |
 |  02 Feb 2026: | added =link= flag to web, topic, user and group formfields |
 |  12 Dec 2025: | fixed calculation of timezone offset in date2; \

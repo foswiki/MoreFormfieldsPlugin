@@ -45,4 +45,13 @@ sub getDisplayValue {
   return $this->SUPER::getDisplayValue($value, $this->{_web});
 }
 
+sub getScriptUrl {
+  my ($this, $web, $topic) = @_;
+
+  return $this->SUPER::getScriptUrl($web, $topic)
+    if !Foswiki::Func::isGroup($topic) || Foswiki::Func::topicExists($web, $topic);
+
+  return Foswiki::Func::getScriptUrlPath($web, "WikiGroups", "view", group => $topic);
+}
+
 1;

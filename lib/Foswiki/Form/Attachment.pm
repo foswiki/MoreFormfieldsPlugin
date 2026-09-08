@@ -214,7 +214,7 @@ sub renderForEdit {
     $key = lc(Foswiki::spaceOutWikiWord($key, "-"));
     if ($key eq 'filter') {
       $val = join("|", split(/\s*,\s*/, $val));
-      push @uploadButtonHtmlData, 'data-accept-file-types-="' . $val . '"';
+      push @uploadButtonHtmlData, 'data-accept-file-types="' . $val . '"';
       push @htmlData, 'data-' . $key . '="' . $val . '"';
     } else {
       push @htmlData, 'data-' . $key . '="' . $val . '"';

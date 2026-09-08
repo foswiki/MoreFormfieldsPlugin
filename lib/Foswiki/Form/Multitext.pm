@@ -183,9 +183,13 @@ sub renderForEdit {
 
   my @html5Data = ();
 
+  my $placeholder = $this->param("placeholder") // '';
+  $placeholder = "placeholder='$placeholder' " if $placeholder;
+
   foreach my $param (keys %{$this->param()}) {
     my $key = $param;
     my $val = $this->param($key);
+    next if $key eq 'placeholder';
     $val = Foswiki::expandStandardEscapes($val);
     $val = _encode($val);
 
@@ -199,6 +203,7 @@ sub renderForEdit {
     . 'size="'.$this->{size}.'" '
     . 'name="'.$this->{name}.'" '
     . 'value="'._encode($value).'" '
+    . $placeholder
     . join(" ", @html5Data).' />';
 
   return ('', $result);

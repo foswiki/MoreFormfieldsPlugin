@@ -158,4 +158,50 @@ sub afterSaveHandler {
   return 1;    # trigger mustSave
 }
 
+sub saveMetaDataHandler {
+  my ($this, $record, $formDef, $web, $topic) = @_;
+
+  my $onlyNew = Foswiki::Func::isTrue($this->param("onlynew"), 1);
+  #print STDERR "... onlyNew=$onlyNew\n";
+
+  my $fieldName = $this->{name};
+  my $fieldValue = $record->{$fieldName};
+  return if $onlyNew && defined($fieldValue) && $fieldValue ne "";
+
+  #print STDERR "... computing new value\n";
+  #print STDERR "... record=".dump($record)."\n";
+
+  require Foswiki::Plugins::MetaDataPlugin;
+
+  my $metaDataName = uc($formDef->topic);
+  my $value = $this->getMaxIdFromMetaData($web, $topic, $metaDataName) + 1;
+
+  #print STDERR "value=$value\n";
+
+  my $size = $this->{size} || 1;
+  $size =~ /(\d+)/;
+  $size = $1;
+  $value = sprintf("%0" . $size . "d", $value);
+
+  $record->{$fieldName} = $value;
+
+  return 1;
+}
+
+sub getMaxIdFromMetaData {
+  my ($this, $web, $topic, $name) = @_;
+
+  my $core =Foswiki::Plugins::MetaDataPlugin::getCore();
+  my $meta = $core->getTopicObject($web, $topic);
+
+  my $max = int($this->param("start") || 0);
+  my $fieldName = $this->{name};
+  foreach my $rec ($meta->find($name)) {
+    my $val = int($rec->{$fieldName} || 0);
+    $max = $val if $val > $max;
+  }
+
+  return $max;
+}
+
 1;

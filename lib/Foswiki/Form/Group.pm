@@ -39,5 +39,14 @@ sub new {
   return $this;
 }
 
+sub getScriptUrl {
+  my ($this, $web, $topic) = @_;
+
+  return $this->SUPER::getScriptUrl($web, $topic)
+    if Foswiki::Func::topicExists($web, $topic);
+
+  return Foswiki::Func::getScriptUrlPath($web, "WikiGroups", "view", group => $topic);
+}
+
 1;
 
